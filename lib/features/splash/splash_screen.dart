@@ -41,12 +41,14 @@ class _SplashScreenState extends State<SplashScreen> {
           ),
           Align(
             alignment: Alignment.topCenter,
-            child: Container(
-              margin: const EdgeInsets.only(top: 50),
-              child: SvgPicture.asset(
-                'assets/images/splash_screen_top_shade.svg',
-                width: 100,
-                height: 100,
+            child: Transform.translate(
+              offset: const Offset(0, -200),
+              // moves the image up by half its height
+              child: Image.asset(
+                "assets/images/splash_screen_top_shade.png",
+                width: 500,
+                height: 500,
+                fit: BoxFit.cover,
               ),
             ),
           ),

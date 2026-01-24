@@ -1,6 +1,8 @@
 import 'package:askfemi/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 
+import '../../widget/dotted_line_widget.dart';
+
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
 
@@ -23,7 +25,7 @@ class OnboardingScreen extends StatelessWidget {
 
           // Bottom-left background image
           Positioned(
-            bottom: 30,
+            bottom: 110,
             left: -50,
             child: Image.asset(
               'assets/images/onbording_bottom_shape.png',
@@ -37,25 +39,8 @@ class OnboardingScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: [
-                  // Skip button
-                  Align(
-                    alignment: Alignment.topRight,
-                    child: TextButton(
-                      onPressed: () {
-                        // TODO: Navigate to next screen
-                      },
-                      child: Text(
-                        'Skip',
-                        style: TextStyle(
-                          color: AppColors.black,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
 
-                  const SizedBox(height: 20),
-
+                  SizedBox(height: MediaQuery.of(context).size.height*0.2,),
                   // Expanded scrollable content
                   Expanded(
                     child: SingleChildScrollView(
@@ -91,8 +76,13 @@ class OnboardingScreen extends StatelessWidget {
 
                           // Info Card
                           Card(
+                            color: AppColors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
+                              side: BorderSide(
+                                width: 1.5,
+                                color: AppColors.secondaryColor,
+                              )
                             ),
                             elevation: 3,
                             child: Padding(
@@ -103,12 +93,22 @@ class OnboardingScreen extends StatelessWidget {
                                       icon: '🎯',
                                       title: 'Daily Focus',
                                       subtitle: '3–5 tasks max per day'),
-                                  const Divider(),
+                                  const DottedLine(
+                                    height: 1,
+                                    color: Colors.grey,
+                                    dashWidth: 4,
+                                    dashSpacing: 4,
+                                  ),
                                   _buildInfoRow(
                                       icon: '🧠',
                                       title: 'Mental Clarity',
                                       subtitle: 'Calm interface, zero clutter'),
-                                  const Divider(),
+                                  const DottedLine(
+                                    height: 1,
+                                    color: Colors.grey,
+                                    dashWidth: 4,
+                                    dashSpacing: 4,
+                                  ),
                                   _buildInfoRow(
                                       icon: '🌱',
                                       title: 'Adaptive Support',
@@ -141,6 +141,8 @@ class OnboardingScreen extends StatelessWidget {
                       child: const Text(
                         'Continue',
                         style: TextStyle(
+                          fontFamily: 'Plus Jakarta Sans',
+                          color: AppColors.white,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -148,7 +150,7 @@ class OnboardingScreen extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  SizedBox(height: MediaQuery.of(context).size.height*0.03,),
                 ],
               ),
             ),
