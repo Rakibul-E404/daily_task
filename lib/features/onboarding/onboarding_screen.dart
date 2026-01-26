@@ -1,6 +1,8 @@
 import 'package:askfemi/utils/app_colors.dart';
 import 'package:flutter/material.dart';
-
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
+import '../../auth/sign_in/singn_in_screen.dart';
 import '../../widget/dotted_line_widget.dart';
 
 class OnboardingScreen extends StatelessWidget {
@@ -39,8 +41,10 @@ class OnboardingScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: [
-
-                  SizedBox(height: MediaQuery.of(context).size.height*0.2,),
+                  SizedBox(height: MediaQuery
+                      .of(context)
+                      .size
+                      .height * 0.2),
                   // Expanded scrollable content
                   Expanded(
                     child: SingleChildScrollView(
@@ -59,17 +63,40 @@ class OnboardingScreen extends StatelessWidget {
                           ),
 
                           const SizedBox(height: 12),
-
-                          // Subtitle
-                          Text(
-                            "Clarity helps you focus on 3-5 meaningful tasks per day. "
-                                "No overwhelm, just intentional progress",
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontFamily: 'Plus Jakarta Sans',
-                              fontWeight: FontWeight.normal,
-                            ),
+                          RichText(
                             textAlign: TextAlign.center,
+                            text: TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: "Clarity helps you focus on ",
+                                  style: TextStyle(
+                                    color: AppColors.black,
+                                    fontSize: 15,
+                                    fontFamily: 'Plus Jakarta Sans',
+                                    fontWeight: FontWeight.normal,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: "3-5 ",
+                                  style: const TextStyle(
+                                    color: AppColors.primaryColor,
+                                    fontSize: 15,
+                                    fontFamily: 'Plus Jakarta Sans',
+                                    fontWeight: FontWeight.normal,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text:
+                                  "meaningful tasks per day. No overwhelm, just intentional progress",
+                                  style: const TextStyle(
+                                    color: AppColors.black,
+                                    fontSize: 15,
+                                    fontFamily: 'Plus Jakarta Sans',
+                                    fontWeight: FontWeight.normal,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
 
                           const SizedBox(height: 40),
@@ -82,7 +109,7 @@ class OnboardingScreen extends StatelessWidget {
                               side: BorderSide(
                                 width: 1.5,
                                 color: AppColors.secondaryColor,
-                              )
+                              ),
                             ),
                             elevation: 3,
                             child: Padding(
@@ -90,9 +117,10 @@ class OnboardingScreen extends StatelessWidget {
                               child: Column(
                                 children: [
                                   _buildInfoRow(
-                                      icon: '🎯',
-                                      title: 'Daily Focus',
-                                      subtitle: '3–5 tasks max per day'),
+                                    icon: '🎯',
+                                    title: 'Daily Focus',
+                                    subtitle: '3–5 tasks max per day',
+                                  ),
                                   const DottedLine(
                                     height: 1,
                                     color: Colors.grey,
@@ -100,9 +128,10 @@ class OnboardingScreen extends StatelessWidget {
                                     dashSpacing: 4,
                                   ),
                                   _buildInfoRow(
-                                      icon: '🧠',
-                                      title: 'Mental Clarity',
-                                      subtitle: 'Calm interface, zero clutter'),
+                                    icon: '🧠',
+                                    title: 'Mental Clarity',
+                                    subtitle: 'Calm interface, zero clutter',
+                                  ),
                                   const DottedLine(
                                     height: 1,
                                     color: Colors.grey,
@@ -110,9 +139,10 @@ class OnboardingScreen extends StatelessWidget {
                                     dashSpacing: 4,
                                   ),
                                   _buildInfoRow(
-                                      icon: '🌱',
-                                      title: 'Adaptive Support',
-                                      subtitle: 'Learns your rhythm and adapts'),
+                                    icon: '🌱',
+                                    title: 'Adaptive Support',
+                                    subtitle: 'Learns your rhythm and adapts',
+                                  ),
                                 ],
                               ),
                             ),
@@ -136,7 +166,7 @@ class OnboardingScreen extends StatelessWidget {
                         ),
                       ),
                       onPressed: () {
-                        // TODO: Navigate to next screen
+                        Get.to(SignInScreen());
                       },
                       child: const Text(
                         'Continue',
@@ -150,7 +180,10 @@ class OnboardingScreen extends StatelessWidget {
                     ),
                   ),
 
-                  SizedBox(height: MediaQuery.of(context).size.height*0.03,),
+                  SizedBox(height: MediaQuery
+                      .of(context)
+                      .size
+                      .height * 0.03),
                 ],
               ),
             ),
@@ -169,10 +202,7 @@ class OnboardingScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         children: [
-          Text(
-            icon,
-            style: const TextStyle(fontSize: 28),
-          ),
+          Text(icon, style: const TextStyle(fontSize: 28)),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -181,13 +211,17 @@ class OnboardingScreen extends StatelessWidget {
                 Text(
                   title,
                   style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 16),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   subtitle,
                   style: const TextStyle(
-                      fontWeight: FontWeight.normal, fontSize: 14),
+                    fontWeight: FontWeight.normal,
+                    fontSize: 14,
+                  ),
                 ),
               ],
             ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../utils/app_colors.dart';
+
 class DottedLine extends StatelessWidget {
   final double height;
   final Color color;
@@ -8,7 +10,7 @@ class DottedLine extends StatelessWidget {
 
   const DottedLine({
     this.height = 1,
-    this.color = Colors.grey,
+    this.color = AppColors.grey,
     this.dashWidth = 4,
     this.dashSpacing = 4,
     super.key,
