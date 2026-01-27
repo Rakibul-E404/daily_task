@@ -2,8 +2,8 @@ import 'package:askfemi/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
-import '../../auth/sign_in/singn_in_screen.dart';
-import '../../widget/dotted_line_widget.dart';
+import '../../../auth/sign_in/singn_in_screen.dart';
+import '../../../widget/dotted_line_widget.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
@@ -123,7 +123,7 @@ class OnboardingScreen extends StatelessWidget {
                                   ),
                                   const DottedLine(
                                     height: 1,
-                                    color: Colors.grey,
+                                    color: AppColors.primaryColor,
                                     dashWidth: 4,
                                     dashSpacing: 4,
                                   ),
@@ -134,7 +134,7 @@ class OnboardingScreen extends StatelessWidget {
                                   ),
                                   const DottedLine(
                                     height: 1,
-                                    color: Colors.grey,
+                                    color: AppColors.primaryColor,
                                     dashWidth: 4,
                                     dashSpacing: 4,
                                   ),

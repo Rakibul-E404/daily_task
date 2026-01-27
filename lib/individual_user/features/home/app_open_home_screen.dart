@@ -1,11 +1,11 @@
-import 'package:askfemi/features/subscription/subscription_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 
-import '../../utils/app_colors.dart';
+import '../../../utils/app_colors.dart';
+import '../subscription/subscription_screen.dart';
 
 class AppOpenHomeScreen extends StatelessWidget {
   const AppOpenHomeScreen({super.key});

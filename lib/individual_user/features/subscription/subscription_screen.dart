@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
-import '../../utils/app_colors.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
+import '../../../utils/app_colors.dart';
+import 'package:askfemi/individual_user/features/bottom_navigation/main_bottom_nav.dart';
 
 class SubscriptionPage extends StatelessWidget {
   const SubscriptionPage({super.key});
@@ -9,7 +11,7 @@ class SubscriptionPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:  AppColors.backgroundColor, // Light gray background
+      backgroundColor:  AppColors.backgroundColor,
       appBar: AppBar(
         backgroundColor: AppColors.backgroundColor,
       ),
@@ -48,7 +50,7 @@ class SubscriptionPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
+                        color: Colors.grey.withValues(alpha: 0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),
@@ -161,14 +163,11 @@ class SubscriptionPage extends StatelessWidget {
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: () {
-                            // Navigate to checkout or sign up
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Redirecting to checkout...')),
-                            );
+                            Get.to(()=> MainBottomNav());
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF5C9FFB),
-                            foregroundColor: Colors.white,
+                            backgroundColor: AppColors.primaryColor,
+                            foregroundColor: AppColors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),

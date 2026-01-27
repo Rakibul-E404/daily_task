@@ -350,7 +350,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          isObscured ? Icons.visibility_off : Icons.visibility,
+                          isObscured ? Icons.visibility_off_outlined : Icons.visibility_outlined,
                           color: AppColors.grey,
                         ),
                         onPressed: () {
@@ -503,7 +503,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               ///=========================
               /// Google Sign In
               /// ========================
-              SvgPicture.asset("assets/images/google.svg"),
+              SvgPicture.asset("assets/icons/google.svg"),
             ],
           ),
         ),

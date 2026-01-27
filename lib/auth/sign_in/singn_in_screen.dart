@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
-
-import '../../features/home/app_open_home_screen.dart';
+import '../../individual_user/features/home/app_open_home_screen.dart';
 
 class SignInScreen extends StatelessWidget {
   SignInScreen({super.key}) {
@@ -140,7 +139,7 @@ class SignInScreen extends StatelessWidget {
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        isObscured ? Icons.visibility_off : Icons.visibility,
+                        isObscured ? Icons.visibility_off_outlined : Icons.visibility_outlined,
                         color: AppColors.grey,
                       ),
                       onPressed: () {
