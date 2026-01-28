@@ -1,217 +1,3 @@
-// import 'package:askfemi/auth/sign_up/sign_up_screen.dart';
-// import 'package:askfemi/utils/app_colors.dart';
-// import 'package:flutter/material.dart';
-// import 'package:flutter_svg/flutter_svg.dart';
-// import 'package:get/get_core/src/get_main.dart';
-// import 'package:get/get_navigation/src/extension_navigation.dart';
-// import '../../individual_user/features/home/app_open_home_screen.dart';
-//
-// class SetNewPasswordScreen extends StatelessWidget {
-//   SetNewPasswordScreen({super.key}) {
-//     // Initialize the ValueNotifier
-//     _obscurePassword = ValueNotifier<bool>(true);
-//   }
-//
-//   // Use ValueNotifier for password visibility
-//   late final ValueNotifier<bool> _obscurePassword;
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: AppColors.backgroundColor,
-//       body: Row(
-//         mainAxisAlignment: MainAxisAlignment.center,
-//         children: [
-//           SizedBox(height: MediaQuery.of(context).size.height * 0.45),
-//           SvgPicture.asset("assets/images/logo.svg"),
-//         ],
-//       ),
-//       bottomSheet: Container(
-//         height: MediaQuery.of(context).size.height * 0.65,
-//         width: double.infinity,
-//         padding: const EdgeInsets.all(24),
-//         decoration: const BoxDecoration(
-//           color: Colors.white,
-//           borderRadius: BorderRadius.only(
-//             topLeft: Radius.circular(80),
-//             topRight: Radius.circular(80),
-//           ),
-//           border: Border(
-//             top: BorderSide(color: AppColors.primaryColor, width: 1.5),
-//           ),
-//         ),
-//         child: Column(
-//           mainAxisSize: MainAxisSize.min,
-//           children: [
-//             const Text(
-//               "Set New Password",
-//               style: TextStyle(
-//                 fontSize: 24,
-//                 fontWeight: FontWeight.bold,
-//                 fontFamily: 'Plus Jakarta Sans',
-//               ),
-//             ),
-//             const SizedBox(height: 24),
-//
-//             ///===============================
-//             ///========= password  ===========
-//             ///===============================
-//             ValueListenableBuilder<bool>(
-//               valueListenable: _obscurePassword,
-//               builder: (context, isObscured, child) {
-//                 return TextField(
-//                   obscureText: isObscured,
-//                   decoration: InputDecoration(
-//                     focusedBorder: OutlineInputBorder(
-//                       borderRadius: BorderRadius.circular(10),
-//                       borderSide: const BorderSide(
-//                         color: AppColors.grey,
-//                         width: 2.0,
-//                       ),
-//                     ),
-//                     prefixIcon: Container(
-//                       padding: const EdgeInsets.symmetric(horizontal: 12),
-//                       child: IntrinsicHeight(
-//                         child: Row(
-//                           mainAxisSize: MainAxisSize.min,
-//                           children: [
-//                             Icon(Icons.lock, color: Colors.grey[700]),
-//                             const SizedBox(width: 12),
-//                             Padding(
-//                               padding: const EdgeInsets.only(top: 8, bottom: 8),
-//                               child: VerticalDivider(
-//                                 color: AppColors.grey,
-//                                 width: 1,
-//                                 thickness: 1.0,
-//                               ),
-//                             ),
-//                           ],
-//                         ),
-//                       ),
-//                     ),
-//                     suffixIcon: IconButton(
-//                       icon: Icon(
-//                         isObscured ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-//                         color: AppColors.grey,
-//                       ),
-//                       onPressed: () {
-//                         // Toggle password visibility
-//                         _obscurePassword.value = !_obscurePassword.value;
-//                       },
-//                     ),
-//                     hintText: 'Enter Password',
-//                     hintStyle: TextStyle(fontFamily: 'Plus Jakarta Sans'),
-//                     border: const OutlineInputBorder(
-//                       borderRadius: BorderRadius.all(Radius.circular(10)),
-//                       borderSide: BorderSide(color: AppColors.grey),
-//                     ),
-//                     enabledBorder: const OutlineInputBorder(
-//                       borderRadius: BorderRadius.all(Radius.circular(10)),
-//                       borderSide: BorderSide(color: AppColors.grey),
-//                     ),
-//                   ),
-//                 );
-//               },
-//             ),
-//
-//             const SizedBox(height: 16),
-//
-//             ///===============================
-//             ///========= Password ===========
-//             ///===============================
-//             ValueListenableBuilder<bool>(
-//               valueListenable: _obscurePassword,
-//               builder: (context, isObscured, child) {
-//                 return TextField(
-//                   obscureText: isObscured,
-//                   decoration: InputDecoration(
-//                     focusedBorder: OutlineInputBorder(
-//                       borderRadius: BorderRadius.circular(10),
-//                       borderSide: const BorderSide(
-//                         color: AppColors.grey,
-//                         width: 2.0,
-//                       ),
-//                     ),
-//                     prefixIcon: Container(
-//                       padding: const EdgeInsets.symmetric(horizontal: 12),
-//                       child: IntrinsicHeight(
-//                         child: Row(
-//                           mainAxisSize: MainAxisSize.min,
-//                           children: [
-//                             Icon(Icons.lock, color: Colors.grey[700]),
-//                             const SizedBox(width: 12),
-//                             Padding(
-//                               padding: const EdgeInsets.only(top: 8, bottom: 8),
-//                               child: VerticalDivider(
-//                                 color: AppColors.grey,
-//                                 width: 1,
-//                                 thickness: 1.0,
-//                               ),
-//                             ),
-//                           ],
-//                         ),
-//                       ),
-//                     ),
-//                     suffixIcon: IconButton(
-//                       icon: Icon(
-//                         isObscured ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-//                         color: AppColors.grey,
-//                       ),
-//                       onPressed: () {
-//                         // Toggle password visibility
-//                         _obscurePassword.value = !_obscurePassword.value;
-//                       },
-//                     ),
-//                     hintText: 'Confirm Password',
-//                     hintStyle: TextStyle(fontFamily: 'Plus Jakarta Sans'),
-//                     border: const OutlineInputBorder(
-//                       borderRadius: BorderRadius.all(Radius.circular(10)),
-//                       borderSide: BorderSide(color: AppColors.grey),
-//                     ),
-//                     enabledBorder: const OutlineInputBorder(
-//                       borderRadius: BorderRadius.all(Radius.circular(10)),
-//                       borderSide: BorderSide(color: AppColors.grey),
-//                     ),
-//                   ),
-//                 );
-//               },
-//             ),
-//             const SizedBox(height: 30),
-//             ///=======================
-//             /// sign in button
-//             /// ========================
-//             SizedBox(
-//               width: double.infinity,
-//               height: 50,
-//               child: ElevatedButton(
-//                 style: ElevatedButton.styleFrom(
-//                   backgroundColor: AppColors.primaryColor,
-//                   shape: RoundedRectangleBorder(
-//                     borderRadius: BorderRadius.circular(12),
-//                   ),
-//                 ),
-//                 onPressed: () {
-//                   Get.offAll(AppOpenHomeScreen());
-//                 },
-//                 child: const Text(
-//                   'Save Password',
-//                   style: TextStyle(
-//                     fontFamily: 'Plus Jakarta Sans',
-//                     color: AppColors.white,
-//                     fontSize: 16,
-//                     fontWeight: FontWeight.bold,
-//                   ),
-//                 ),
-//               ),
-//             ),
-//
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
 import 'package:askfemi/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -221,19 +7,29 @@ import '../../individual_user/features/home/app_open_home_screen.dart';
 class SetNewPasswordScreen extends StatelessWidget {
   SetNewPasswordScreen({super.key}) {
     _obscurePassword = ValueNotifier<bool>(true);
+    _obscureConfirmPassword = ValueNotifier<bool>(true);
   }
 
   late final ValueNotifier<bool> _obscurePassword;
+  late final ValueNotifier<bool> _obscureConfirmPassword;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
-      body: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      body: Column(
         children: [
-          SizedBox(height: MediaQuery.of(context).size.height * 0.45),
-          SvgPicture.asset("assets/images/logo.svg"),
+          // Top logo section
+          SizedBox(height: MediaQuery.of(context).size.height * 0.15),
+          Center(
+            child: SvgPicture.asset(
+              "assets/images/logo.svg",
+              height: 130,
+              width: 130,
+              semanticsLabel: 'App Logo',
+            ),
+          ),
+          const Spacer(),
         ],
       ),
       bottomSheet: Container(
@@ -251,45 +47,81 @@ class SetNewPasswordScreen extends StatelessWidget {
           ),
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Set New Password",
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Plus Jakarta Sans',
+            const SizedBox(height: 8),
+            const Center(
+              child: Text(
+                "Set New Password",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Plus Jakarta Sans',
+                  color: Colors.black,
+                ),
               ),
             ),
             const SizedBox(height: 24),
 
-            /// New Password
+
+            /// New Password Field
             ValueListenableBuilder<bool>(
               valueListenable: _obscurePassword,
               builder: (context, isObscured, _) {
                 return TextField(
+                  style: TextStyle(
+                    fontFamily: 'Plus Jakarta Sans',
+                      color: AppColors.black
+                  ),
                   obscureText: isObscured,
                   decoration: _inputDecoration(
-                    hint: "Enter Password",
+                    hint: "New password",
                     isObscured: isObscured,
+                    onToggle: () {
+                      _obscurePassword.value = !_obscurePassword.value;
+                    },
                   ),
                 );
               },
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
 
-            /// Confirm Password
+            /// Confirm Password Field
             ValueListenableBuilder<bool>(
-              valueListenable: _obscurePassword,
+              valueListenable: _obscureConfirmPassword,
               builder: (context, isObscured, _) {
                 return TextField(
+                  style: TextStyle(
+                      fontFamily: 'Plus Jakarta Sans',
+                    color: AppColors.black
+                  ),
                   obscureText: isObscured,
                   decoration: _inputDecoration(
-                    hint: "Confirm Password",
+                    hint: "Confirm password",
                     isObscured: isObscured,
+                    onToggle: () {
+                      _obscureConfirmPassword.value = !_obscureConfirmPassword.value;
+                    },
                   ),
                 );
               },
+            ),
+
+            const SizedBox(height: 8),
+
+            /// Password requirements
+            Padding(
+              padding: const EdgeInsets.only(left: 4, top: 8),
+              child: Text(
+                "• At least 8 characters\n• One uppercase letter\n• One number\n• One special character",
+                style: TextStyle(
+                  fontSize: 12,
+                  fontFamily: 'Plus Jakarta Sans',
+                  color: Colors.grey[600],
+                  height: 1.5,
+                ),
+              ),
             ),
 
             const SizedBox(height: 30),
@@ -304,6 +136,7 @@ class SetNewPasswordScreen extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
+                  elevation: 0,
                 ),
                 onPressed: () {
                   _showSuccessBottomSheet(context);
@@ -325,33 +158,56 @@ class SetNewPasswordScreen extends StatelessWidget {
     );
   }
 
-  /// Input Decoration
+  /// Input Decoration with vertical divider
   InputDecoration _inputDecoration({
     required String hint,
     required bool isObscured,
+    required VoidCallback onToggle,
   }) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(fontFamily: 'Plus Jakarta Sans'),
-      prefixIcon: const Icon(Icons.lock, color: AppColors.grey),
+      hintStyle: const TextStyle(
+        fontFamily: 'Plus Jakarta Sans',
+        color: Colors.grey,
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      prefixIcon: Container(
+        padding: const EdgeInsets.only(left: 16, right: 12),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.lock_outline, color: AppColors.iconColor, size: 20),
+            const SizedBox(width: 12),
+            Container(
+              height: 24,
+              width: 1,
+              color: Colors.grey[300],
+            ),
+          ],
+        ),
+      ),
       suffixIcon: IconButton(
         icon: Icon(
           isObscured
-              ? Icons.visibility_off_outlined
-              : Icons.visibility_outlined,
-          color: AppColors.grey,
+              ? Icons.visibility_off
+              : Icons.visibility,
+          color:  AppColors.iconColor,
         ),
-        onPressed: () {
-          _obscurePassword.value = !_obscurePassword.value;
-        },
+        onPressed: onToggle,
       ),
+      filled: true,
+      fillColor: Colors.grey[50],
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: AppColors.grey),
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.grey[300]!),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: AppColors.grey),
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.grey[300]!),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.primaryColor, width: 1.5),
       ),
     );
   }
@@ -365,50 +221,69 @@ class SetNewPasswordScreen extends StatelessWidget {
       backgroundColor: Colors.transparent,
       builder: (_) {
         return Container(
+          height: MediaQuery.of(context).size.height * 0.5,
           padding: const EdgeInsets.all(24),
           decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.vertical(
               top: Radius.circular(30),
             ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 20,
+                spreadRadius: 5,
+              ),
+            ],
           ),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox(height: 16),
-
-              /// Key Circle (SVG)
+              /// Success Icon
               Container(
-                height: 90,
-                width: 90,
-                decoration: const BoxDecoration(
+                height: 100,
+                width: 100,
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Color(0xFFE8F1FF),
+                  color: AppColors.primaryColor.withOpacity(0.1),
                 ),
                 child: Center(
-                  child: SvgPicture.asset(
-                    "assets/icons/key.svg",
-                    height: 40,
-                    width: 40,
-                    color: AppColors.primaryColor,
-                  ),
+                  child: SvgPicture.asset("assets/icons/key.svg",
+                  height: 150,
+                  width: 150,),
                 ),
               ),
 
               const SizedBox(height: 24),
 
+              /// Success Title
               const Text(
                 "Password Update Successfully",
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Plus Jakarta Sans',
+                  color: Colors.black,
                 ),
               ),
 
               const SizedBox(height: 8),
 
+              /// Success Message
+              const Text(
+                "Return to the login page to enter your account with your new password.",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontFamily: 'Plus Jakarta Sans',
+                  color: Colors.black54,
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              /// Go to Homepage Button
               SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -420,10 +295,10 @@ class SetNewPasswordScreen extends StatelessWidget {
                     ),
                   ),
                   onPressed: () {
-                    Get.offAll(AppOpenHomeScreen());
+                    Get.offAll(const AppOpenHomeScreen());
                   },
                   child: const Text(
-                    "Go to homepage",
+                    "Go to Homepage",
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 16,

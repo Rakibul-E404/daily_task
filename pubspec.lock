@@ -57,6 +57,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.8"
+  dashed_line:
+    dependency: "direct main"
+    description:
+      name: dashed_line
+      sha256: e66c20b5aabd3e774328f495c6d6b80c85193bf6474f9bd7f902d6d06c1caddd
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0+3"
   dropdown_search:
     dependency: "direct main"
     description:
@@ -78,6 +86,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_gif:
+    dependency: "direct main"
+    description:
+      name: flutter_gif
+      sha256: b13d7e484e40685e9236ffbaddf012c2448a2e2c1ac48bed345184dd7bc87f88
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.4"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -131,6 +147,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.2"
+  intl:
+    dependency: "direct main"
+    description:
+      name: intl
+      sha256: "3df61194eb431efc39c4ceba583b95633a403f46c9fd341e550ce0bfa50e9aa5"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.20.2"
   leak_tracker:
     dependency: transitive
     description:
@@ -256,6 +280,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.1"
+  svg_path_parser:
+    dependency: transitive
+    description:
+      name: svg_path_parser
+      sha256: adff09b1099a0c9e0dc81e1975de70999889f825c1a2e8e9139bab03464a3657
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.2"
   term_glyph:
     dependency: transitive
     description:

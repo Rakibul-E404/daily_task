@@ -12,9 +12,9 @@ class SplashScreenController {
   void startTimer() {
     _timer = Timer(Duration(seconds: splashDuration), () {
       Get.off(
-        () => GetStartedScreen(),
         transition: Transition.fade,
-        duration: const Duration(milliseconds: 600),
+        duration: const Duration(milliseconds: 500),
+        () => GetStartedScreen(),
       );
     });
   }
@@ -23,3 +23,6 @@ class SplashScreenController {
     _timer?.cancel();
   }
 }
+
+
+

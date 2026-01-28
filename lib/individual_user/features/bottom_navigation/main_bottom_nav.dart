@@ -25,44 +25,29 @@ class _MainBottomNavState extends State<MainBottomNav> {
     const ProfileScreen(),
   ];
 
-  // Simple bottom navigation using Material icons
-  final List<BottomNavigationBarItem> _bottomNavItems = [
-    BottomNavigationBarItem(
-      icon: SvgPicture.asset(
-        "assets/icons/home_inactive.svg",
-        width: 24,
-        height: 24,
-        colorFilter: const ColorFilter.mode(
-          Colors.grey, // Default inactive color
-          BlendMode.srcIn,
-        ),
-      ),
-      activeIcon: SvgPicture.asset(
-        "assets/icons/home_active.svg",
-        width: 24,
-        height: 24,
-        colorFilter: const ColorFilter.mode(
-          Colors.blue, // Active color
-          BlendMode.srcIn,
-        ),
-      ),
-      label: 'Home',
-    ),
-    const BottomNavigationBarItem(
-      icon: Icon(Icons.add_box_outlined),
-      activeIcon: Icon(Icons.add_box_outlined),
-      label: 'Add',
-    ),
-    const BottomNavigationBarItem(
-      icon: Icon(CupertinoIcons.chart_pie),
-      activeIcon: Icon(Icons.pie_chart_outline),
-      label: 'Status',
-    ),
-    const BottomNavigationBarItem(
-      icon: Icon(Icons.person_outlined),
-      activeIcon: Icon(Icons.person_outlined),
-      label: 'Profile',
-    ),
+  // Custom navigation items data
+  final List<Map<String, dynamic>> _navItems = [
+    {
+      'icon': 'assets/icons/home_inactive.svg',
+      'activeIcon': 'assets/icons/home_active.svg',
+      'label': 'Home',
+    },
+    {
+      'icon': 'assets/icons/add_inactive.svg',
+      'activeIcon': 'assets/icons/add_active.svg',
+      'label': 'Add',
+    },
+    {
+      'icon': 'assets/icons/status_inactive.svg',
+      'activeIcon': 'assets/icons/status_active.svg',
+      'label': 'Status',
+    },
+    {
+      'icon': 'assets/icons/profile_inactive.svg',
+      'activeIcon': 'assets/icons/profile_active.svg',
+      'label': 'Profile',
+    },
+
   ];
 
   void _onItemTapped(int index) {
@@ -74,21 +59,72 @@ class _MainBottomNavState extends State<MainBottomNav> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.white,
       body: _screens[_selectedIndex],
-      bottomNavigationBar: SizedBox(
-        height: 80.0, // Increased height for debugging
-        child: BottomNavigationBar(
-          items: _bottomNavItems,
-          currentIndex: _selectedIndex,
-          selectedItemColor: AppColors.primaryColor,
-          unselectedItemColor: Colors.grey,
-          showSelectedLabels: true,
-          showUnselectedLabels: true,
-          type: BottomNavigationBarType.fixed,
-          onTap: _onItemTapped,
-          // Additional properties for debugging
-          backgroundColor: AppColors.primaryColor,
-          elevation: 8.0,
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.fromLTRB(14,8,14,8),
+        child: Container(
+          height: 90.0,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          decoration: BoxDecoration(
+            color: AppColors.mainBottomNavColor,
+            borderRadius: BorderRadius.circular(12)
+          ),
+          child: Row(
+            children: List.generate(_navItems.length, (index) {
+              final item = _navItems[index];
+              final isSelected = _selectedIndex == index;
+              final isIcon = item['isIcon'] == true;
+
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () => _onItemTapped(index),
+                  child: Container(
+                    height: MediaQuery.of(context).size.height*0.5,
+                    margin: const EdgeInsets.symmetric(horizontal: 2),
+                    decoration: BoxDecoration(
+                      color: isSelected ? AppColors.primaryColor : Colors.transparent,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Label
+                        Text(
+                          item['label'],
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: isSelected ? AppColors.white : Colors.grey,
+                            fontFamily: 'Plus Jakarta Sans',
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+
+                        // Icon/Image
+                        if (isIcon)
+                          Icon(
+                            isSelected ? item['activeIcon'] : item['icon'],
+                            size: 28,
+                            color: isSelected ? AppColors.white : Colors.grey,
+                          )
+                        else
+                          SvgPicture.asset(
+                            isSelected ? item['activeIcon'] : item['icon'],
+                            width: 30,
+                            height: 30,
+                            colorFilter: ColorFilter.mode(
+                              isSelected ? AppColors.white : Colors.grey,
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
         ),
       ),
     );

@@ -140,7 +140,7 @@ class SignInScreen extends StatelessWidget {
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        isObscured ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        isObscured ? Icons.visibility_off : Icons.visibility,
                         color: AppColors.grey,
                       ),
                       onPressed: () {
