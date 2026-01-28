@@ -1,3 +1,4 @@
+import 'package:askfemi/auth/password/set_new_password_screen.dart';
 import 'package:askfemi/auth/sign_up/sign_up_screen.dart';
 import 'package:askfemi/utils/app_colors.dart';
 import 'package:flutter/material.dart';
@@ -166,7 +167,9 @@ class SignInScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Get.to(()=> SetNewPasswordScreen());
+                  },
                   child: Text(
                     "Forgot Password?",
                     style: TextStyle(
