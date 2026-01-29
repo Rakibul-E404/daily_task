@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../individual_user/features/home/task_details/task_details_screen.dart';
-import '../individual_user/features/home/task_details/task_model.dart';
+import '../individual_user/features/home/task_details/model/task_model.dart';
 import '../utils/app_colors.dart';
 import 'dotted_line_widget.dart';
 

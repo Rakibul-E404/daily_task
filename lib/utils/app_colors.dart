@@ -16,6 +16,7 @@ class AppColors{
   static const Color black = Colors.black;
   static const Color white = Colors.white;
   static const Color grey = Colors.grey;
+  static const Color transparent = Colors.transparent;
   static const Color lightGrey = Color(0xffe6e6e6);
   static const Color pendingStatusColor = Color(0xffe6e6e6);
   static const Color inProgressStatusColor = Color(0xffe2edf9);

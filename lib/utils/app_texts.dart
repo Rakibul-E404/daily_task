@@ -20,11 +20,19 @@ class AppTextStyles {
     color: Colors.black,
   );
 
+  /// Small Heading
+  static TextStyle get smallHeading => const TextStyle(
+    fontFamily: 'Plus Jakarta Sans',
+    fontSize: 20,
+    fontWeight: FontWeight.bold,
+    color: Colors.black,
+  );
+
   /// Small Text
   static TextStyle get smallText => const TextStyle(
     fontFamily: 'Plus Jakarta Sans',
     fontSize: 12,
     fontWeight: FontWeight.normal,
-    color: Colors.black54,
+    color: AppColors.grey,
   );
 }

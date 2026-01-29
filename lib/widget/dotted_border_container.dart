@@ -7,7 +7,7 @@ Widget dottedBorderContainer({
   double dashWidth = 4.0,
   double dashSpace = 3.0,
   double borderRadius = 12.0,
-  EdgeInsetsGeometry padding = const EdgeInsets.all(16),
+  EdgeInsetsGeometry padding = const EdgeInsets.all(0),
 }) {
   return Container(
     padding: padding,
