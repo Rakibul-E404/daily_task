@@ -326,10 +326,11 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 40),
 
                   // Create Task Button
                   SizedBox(
+                    height: 50,
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {

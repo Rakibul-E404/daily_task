@@ -30,9 +30,14 @@ class AppOpenHomeScreen extends StatelessWidget {
                         width: 48,
                         height: 48,
                         decoration: BoxDecoration(
+                          image: const DecorationImage(
+                            image: AssetImage("assets/images/dummy_user_image.png"),
+                            fit: BoxFit.cover,
+                          ),
                           color: Colors.grey[300],
                           shape: BoxShape.circle,
                         ),
+
                       ),
                       const SizedBox(width: 12),
                       Column(

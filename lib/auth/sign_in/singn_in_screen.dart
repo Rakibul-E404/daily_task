@@ -1,5 +1,6 @@
 import 'package:askfemi/auth/password/set_new_password_screen.dart';
 import 'package:askfemi/auth/sign_up/sign_up_screen.dart';
+import 'package:askfemi/user_type.dart';
 import 'package:askfemi/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -169,6 +170,7 @@ class SignInScreen extends StatelessWidget {
                 children: [
                   TextButton(
                     onPressed: () {
+                      ///todo:: need to modify this
                       Get.to(()=> SetNewPasswordScreen());
                     },
                     child: Text(
@@ -199,7 +201,9 @@ class SignInScreen extends StatelessWidget {
                     ),
                   ),
                   onPressed: () {
-                    Get.offAll(AppOpenHomeScreen());
+                    // Get.offAll(AppOpenHomeScreen());
+                    ///todo:: this will be removed after api
+                    Get.offAll(UserTypeSelection());
                   },
                   child: const Text(
                     'Sign in',
