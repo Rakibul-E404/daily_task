@@ -1,3 +1,4 @@
+import 'package:askfemi/individual_user/features/choose_support_mode/choose_support_mode_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -163,7 +164,7 @@ class SubscriptionPage extends StatelessWidget {
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: () {
-                            Get.to(()=> MainBottomNav());
+                            Get.offAll(()=> ChooseSupportModeScreen());
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primaryColor,

@@ -52,7 +52,7 @@ Widget buildTaskCard({
 
   return InkWell(
     onTap: () {
-      Get.to(() => TaskDetailsScreen(task: task));
+      Get.to(() => TaskDetailsScreen(task: task),transition: Transition.leftToRight);
     },
     child: Stack(
       children: [

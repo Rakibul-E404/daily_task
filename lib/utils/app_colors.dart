@@ -13,11 +13,11 @@ class AppColors{
   static const Color subscriptionPriceTextColor = Color(0xff455e7e);
   static const Color mainBottomNavColor = Color(0xffe0ecfb);
   static const Color lightBlueColor = Color(0xffe0ecfb);
+  static const Color lightGrey = Color(0xffe6e6e6);
   static const Color black = Colors.black;
   static const Color white = Colors.white;
   static const Color grey = Colors.grey;
   static const Color transparent = Colors.transparent;
-  static const Color lightGrey = Color(0xffe6e6e6);
   static const Color pendingStatusColor = Color(0xffe6e6e6);
   static const Color inProgressStatusColor = Color(0xffe2edf9);
   static const Color completedStatusColor = Color(0xffdaf1e6);
