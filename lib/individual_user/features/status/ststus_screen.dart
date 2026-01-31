@@ -2,17 +2,13 @@ import 'package:askfemi/individual_user/features/home/task_details/model/sub_tas
 import 'package:askfemi/individual_user/features/home/task_details/model/task_model.dart';
 import 'package:askfemi/utils/app_colors.dart';
 import 'package:askfemi/widget/build_task_card.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:get/get.dart';
 
 class StatusScreen extends StatefulWidget {
   final TaskStatus? filterStatus; // null means show all
 
-  const StatusScreen({
-    super.key,
-    this.filterStatus,
-  });
+  const StatusScreen({super.key, this.filterStatus});
 
   @override
   State<StatusScreen> createState() => _StatusScreenState();
@@ -30,14 +26,14 @@ class _StatusScreenState extends State<StatusScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.backgroundColor,
         elevation: 0,
         surfaceTintColor: Colors.white,
         automaticallyImplyLeading: false,
         title: const Text(
-          'All Status History',
+          'Task History',
           style: TextStyle(
             fontSize: 30,
             fontWeight: FontWeight.bold,
@@ -46,170 +42,23 @@ class _StatusScreenState extends State<StatusScreen> {
           ),
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12.0),
-            child: PopupMenuButton<TaskStatus?>(
-              offset: const Offset(0, 48),
-              splashRadius: 0.1,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              elevation: 8,
-              color: Colors.white,
-              surfaceTintColor: Colors.white,
-              shadowColor: Colors.black.withOpacity(0.15),
-              position: PopupMenuPosition.under,
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: null,
-                  height: 48,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    children: [
-                      if (selectedStatus == null)
-                        const Icon(Icons.check, size: 20, color: Colors.blue),
-                      if (selectedStatus == null) const SizedBox(width: 8),
-                      const Text(
-                        'All Tasks',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const PopupMenuDivider(height: 1),
-                PopupMenuItem(
-                  value: TaskStatus.pending,
-                  height: 48,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    children: [
-                      if (selectedStatus == TaskStatus.pending)
-                        const Icon(Icons.check, size: 20, color: Colors.blue),
-                      if (selectedStatus == TaskStatus.pending)
-                        const SizedBox(width: 8),
-                      const Text(
-                        'Pending',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const PopupMenuDivider(height: 1),
-                PopupMenuItem(
-                  value: TaskStatus.inProgress,
-                  height: 48,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    children: [
-                      if (selectedStatus == TaskStatus.inProgress)
-                        const Icon(Icons.check, size: 20, color: Colors.blue),
-                      if (selectedStatus == TaskStatus.inProgress)
-                        const SizedBox(width: 8),
-                      const Text(
-                        'In Progress',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const PopupMenuDivider(height: 1),
-                PopupMenuItem(
-                  value: TaskStatus.completed,
-                  height: 48,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    children: [
-                      if (selectedStatus == TaskStatus.completed)
-                        const Icon(Icons.check, size: 20, color: Colors.blue),
-                      if (selectedStatus == TaskStatus.completed)
-                        const SizedBox(width: 8),
-                      const Text(
-                        'Completed',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-              onSelected: (value) {
-                setState(() {
-                  selectedStatus = value;
-                });
-              },
-              child: SizedBox(
-                width: 40,
-                height: 40,
-                child: Center(
-                  child: SvgPicture.asset(
-                    "assets/icons/filter_icon.svg", // Your filter icon
-                    width: 24,
-                    height: 24,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ),
-            ),
+          IconButton(
+            onPressed: () {},
+            icon: Icon(CupertinoIcons.calendar_today),
           ),
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.only(top: 16,left: 16, right: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Section title based on filter
-            Text(
-              _getSectionTitle(),
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Plus Jakarta Sans',
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 16),
-
             // Task list
-            Expanded(
-              child: _buildTaskList(),
-            ),
+            Expanded(child: _buildTaskList()),
           ],
         ),
       ),
     );
-  }
-
-  String _getSectionTitle() {
-    if (selectedStatus == null) return 'All tasks';
-
-    switch (selectedStatus!) {
-      case TaskStatus.pending:
-        return 'Pending tasks';
-      case TaskStatus.inProgress:
-        return 'In Progress tasks';
-      case TaskStatus.completed:
-        return 'Completed tasks';
-    }
   }
 
   Widget _buildTaskList() {
@@ -220,11 +69,7 @@ class _StatusScreenState extends State<StatusScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.task_alt,
-              size: 64,
-              color: Colors.grey[300],
-            ),
+            Icon(Icons.task_alt, size: 64, color: Colors.grey[300]),
             const SizedBox(height: 16),
             Text(
               'No tasks found',
@@ -244,10 +89,7 @@ class _StatusScreenState extends State<StatusScreen> {
       itemCount: tasks.length,
       separatorBuilder: (context, index) => const SizedBox(height: 16),
       itemBuilder: (context, index) {
-        return buildTaskCard(
-          context: context,
-          task: tasks[index],
-        );
+        return buildTaskCard(context: context, task: tasks[index]);
       },
     );
   }
@@ -296,11 +138,7 @@ class _StatusScreenState extends State<StatusScreen> {
             isCompleted: true,
             duration: '20 min',
           ),
-          SubTask(
-            title: 'Submit homework',
-            isCompleted: true,
-            duration: null,
-          ),
+          SubTask(title: 'Submit homework', isCompleted: true, duration: null),
         ],
       ),
       Task(

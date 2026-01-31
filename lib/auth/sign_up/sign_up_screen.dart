@@ -11,7 +11,7 @@ import 'package:get/get_navigation/src/extension_navigation.dart';
 import '../../widget/date_input_field.dart';
 
 class SignUpScreen extends StatefulWidget {
-  SignUpScreen({super.key});
+  const SignUpScreen({super.key});
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
@@ -51,7 +51,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         width: double.infinity,
         padding: const EdgeInsets.all(24),
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: AppColors.backgroundColor,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(80),
             topRight: Radius.circular(80),

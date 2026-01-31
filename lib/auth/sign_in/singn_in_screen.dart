@@ -1,12 +1,11 @@
-import 'package:askfemi/auth/password/set_new_password_screen.dart';
-import 'package:askfemi/auth/sign_up/sign_up_screen.dart';
-import 'package:askfemi/user_type.dart';
-import 'package:askfemi/utils/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:askfemi/user_type.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:askfemi/utils/app_colors.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:askfemi/auth/sign_up/sign_up_screen.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
-import '../../individual_user/features/home/app_open_home_screen.dart';
+import 'package:askfemi/auth/forgot_password/forgot_password_screen.dart';
 
 class SignInScreen extends StatelessWidget {
   SignInScreen({super.key}) {
@@ -33,7 +32,7 @@ class SignInScreen extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(24),
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: AppColors.backgroundColor,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(80),
             topRight: Radius.circular(80),
@@ -171,7 +170,7 @@ class SignInScreen extends StatelessWidget {
                   TextButton(
                     onPressed: () {
                       ///todo:: need to modify this
-                      Get.to(()=> SetNewPasswordScreen());
+                      Get.to(()=> ForgotPasswordScreen());
                     },
                     child: Text(
                       "Forgot Password?",

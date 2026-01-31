@@ -127,32 +127,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     return SafeArea(
       child: Scaffold(
         backgroundColor: AppColors.backgroundColor,
-        appBar: AppBar(
-          toolbarHeight: 70,
-          surfaceTintColor: AppColors.transparent,
-          backgroundColor: AppColors.backgroundColor,
-          title: Row(
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Add New Task',
-                    style: AppTextStyles.largeHeading.copyWith(
-                      fontSize: 30,
-                      fontWeight: FontWeight.normal,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'You can add 3 to 5 more tasks today!',
-                    style: AppTextStyles.smallText.copyWith(fontSize: 16),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
         body: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           child: SizedBox(
@@ -162,6 +136,28 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Row(
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Add New Task',
+                            style: AppTextStyles.largeHeading.copyWith(
+                              fontSize: 30,
+                              fontWeight: FontWeight.normal,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'You can add 3 to 5 more tasks today!',
+                            style: AppTextStyles.smallText.copyWith(fontSize: 16),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 30),
                   // Task Title
                   Text('Task Title', style: AppTextStyles.smallHeading),
                   const SizedBox(height: 12),
