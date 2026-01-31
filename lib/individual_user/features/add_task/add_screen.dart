@@ -127,238 +127,271 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     return SafeArea(
       child: Scaffold(
         backgroundColor: AppColors.backgroundColor,
-        body: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height,
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
+        appBar: AppBar(
+          toolbarHeight: 70,
+          backgroundColor: AppColors.backgroundColor,
+          title: Row(
+            children: [
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Add New Task',
-                            style: AppTextStyles.largeHeading.copyWith(
-                              fontSize: 30,
-                              fontWeight: FontWeight.normal,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            'You can add 3 to 5 more tasks today!',
-                            style: AppTextStyles.smallText.copyWith(fontSize: 16),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 30),
-                  // Task Title
-                  Text('Task Title', style: AppTextStyles.smallHeading),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _titleController,
-                    decoration: InputDecoration(
-                      hintText: 'Type now',
-                      hintStyle: AppTextStyles.defaultTextStyle,
-                      filled: true,
-                      fillColor: AppColors.backgroundColor,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColors.grey, width: 1),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColors.grey, width: 1),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColors.grey, width: 2),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                    ),
-                    cursorColor: AppColors.primaryColor,
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Task Description
-                  Text('Task Description', style: AppTextStyles.smallHeading),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _descriptionController,
-                    maxLines: 4,
-                    cursorColor: AppColors.primaryColor,
-                    decoration: InputDecoration(
-                      hintText: 'What needs your attention?',
-                      hintStyle: AppTextStyles.defaultTextStyle,
-                      filled: true,
-                      fillColor: AppColors.backgroundColor,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColors.grey, width: 2),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColors.grey, width: 1),
-                      ),
+                  Text(
+                    'Add New Task',
+                    style: AppTextStyles.largeHeading.copyWith(
+                      fontSize: 30,
+                      fontWeight: FontWeight.normal,
                     ),
                   ),
-                  const SizedBox(height: 24),
-
-                  // Task Date & Time
-                  Text('Task Date & Time', style: AppTextStyles.smallHeading),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _dateTimeController,
-                    readOnly: true,
-                    onTap: _selectDateTime,
-                    decoration: InputDecoration(
-                      hintText: '-- : -- --',
-                      hintStyle: const TextStyle(color: AppColors.grey, fontSize: 15),
-                      filled: true,
-                      fillColor: Colors.white,
-                      suffixIcon: const Icon(Icons.access_time, color: Color(0xFF6B7280)),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColors.grey, width: 1),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColors.grey, width: 1),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColors.grey, width: 1),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Subtasks list
-                  ...List.generate(_subTasks.length, (index) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.grey),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: _subtaskControllers[index],
-                                focusNode: _subtaskFocusNodes[index],
-                                decoration: const InputDecoration(
-                                  hintText: 'Enter Sub Task Details',
-                                  border: InputBorder.none,
-                                  hintStyle: TextStyle(color: AppColors.grey),
-                                ),
-                              ),
-                            ),
-                            ValueListenableBuilder<TextEditingValue>(
-                              valueListenable: _subtaskControllers[index],
-                              builder: (context, value, child) {
-                                final hasFocus = _subtaskFocusNodes[index].hasFocus;
-                                final hasText = value.text.isNotEmpty;
-
-                                return IconButton(
-                                  onPressed: () {
-                                    if (hasFocus && hasText) {
-                                      _saveSubTask(index);
-                                    } else {
-                                      _removeSubTask(index);
-                                    }
-                                  },
-                                  icon: Icon(
-                                    (hasFocus && hasText) ? Icons.check : CupertinoIcons.trash,
-                                    color: (hasFocus && hasText)
-                                        ? AppColors.primaryColor
-                                        : AppColors.iconColor,
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }),
-
-                  // Add Sub Task Button
-                  GestureDetector(
-                    onTap: _addNewSubTask,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      decoration: BoxDecoration(
-                        color: AppColors.mainBottomNavColor,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.lightGrey),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.add, color: AppColors.black),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Add Sub Task',
-                            style: AppTextStyles.defaultTextStyle.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.black,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 40),
-
-                  // Create Task Button
-                  SizedBox(
-                    height: 50,
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (_titleController.text.isNotEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Task created successfully!'),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryColor,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: Text(
-                        'Create Task',
-                        style: AppTextStyles.defaultTextStyle.copyWith(
-                          color: AppColors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'You can add 3 to 5 more tasks today!',
+                    style: AppTextStyles.smallText.copyWith(fontSize: 16),
                   ),
                 ],
               ),
+            ],
+          ),
+        ),
+        body: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                /// Task Title
+                Text('Task Title', style: AppTextStyles.smallHeading),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _titleController,
+                  decoration: InputDecoration(
+                    hintText: 'Type now',
+                    hintStyle: AppTextStyles.defaultTextStyle,
+                    filled: true,
+                    fillColor: AppColors.backgroundColor,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.grey, width: 1),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.grey, width: 1),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.grey, width: 2),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  ),
+                  cursorColor: AppColors.primaryColor,
+                  style: const TextStyle(color: Colors.black),
+                ),
+                const SizedBox(height: 24),
+
+                // Task Description
+                Text('Task Description', style: AppTextStyles.smallHeading),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _descriptionController,
+                  maxLines: 4,
+                  cursorColor: AppColors.primaryColor,
+                  decoration: InputDecoration(
+                    hintText: 'What needs your attention?',
+                    hintStyle: AppTextStyles.defaultTextStyle,
+                    filled: true,
+                    fillColor: AppColors.backgroundColor,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.grey, width: 2),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.grey, width: 1),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Task Date & Time
+                Text('Task Date & Time', style: AppTextStyles.smallHeading),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _dateTimeController,
+                  readOnly: true,
+                  onTap: _selectDateTime,
+                  decoration: InputDecoration(
+                    hintText: '-- : -- --',
+                    hintStyle: const TextStyle(color: AppColors.grey, fontSize: 15),
+                    filled: true,
+                    fillColor: AppColors.backgroundColor,
+                    suffixIcon: const Icon(Icons.access_time, color: Color(0xFF6B7280)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.grey, width: 1),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.grey, width: 1),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.grey, width: 1),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Subtasks list - UPDATED TO MATCH EditTaskScreen
+                ...List.generate(_subTasks.length, (index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.grey),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryColor.withOpacity(0.5),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  'Sub Task',
+                                  style: AppTextStyles.smallText.copyWith(
+                                    color: AppColors.black,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: _subtaskControllers[index],
+                                  focusNode: _subtaskFocusNodes[index],
+                                  maxLines: null,
+                                  minLines: 1,
+                                  decoration: const InputDecoration(
+                                    hintText: 'Enter Sub Task Details',
+                                    border: InputBorder.none,
+                                    hintStyle: TextStyle(color: AppColors.grey),
+                                  ),
+                                ),
+                              ),
+                              ValueListenableBuilder<TextEditingValue>(
+                                valueListenable: _subtaskControllers[index],
+                                builder: (context, value, child) {
+                                  final hasFocus = _subtaskFocusNodes[index].hasFocus;
+                                  final hasText = value.text.isNotEmpty;
+
+                                  return IconButton(
+                                    onPressed: () {
+                                      if (hasFocus && hasText) {
+                                        _saveSubTask(index);
+                                      } else {
+                                        _removeSubTask(index);
+                                      }
+                                    },
+                                    icon: Icon(
+                                      (hasFocus && hasText) ? Icons.check : CupertinoIcons.trash,
+                                      color: (hasFocus && hasText)
+                                          ? AppColors.primaryColor
+                                          : AppColors.iconColor,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+
+                // Add Sub Task Button
+                GestureDetector(
+                  onTap: _addNewSubTask,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    decoration: BoxDecoration(
+                      color: AppColors.mainBottomNavColor,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.lightGrey),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.add, color: AppColors.black),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Add Sub Task',
+                          style: AppTextStyles.defaultTextStyle.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 40),
+
+                // Create Task Button
+                SizedBox(
+                  height: 50,
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (_titleController.text.isNotEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Task created successfully!'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      'Create Task',
+                      style: AppTextStyles.defaultTextStyle.copyWith(
+                        color: AppColors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
             ),
           ),
         ),

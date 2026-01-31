@@ -68,11 +68,7 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
                 width: 50,
               ),
               const SizedBox(height: 32),
-              Icon(
-                Icons.insert_drive_file_outlined,
-                size: 80,
-                color: AppColors.primaryColor,
-              ),
+              SvgPicture.asset("assets/icons/insert_drive_file.svg"),
               const SizedBox(height: 16),
               Text('Delete Task?', style: AppTextStyles.smallHeading), // Changed from 'Delete subtask?'
               const SizedBox(height: 8),
