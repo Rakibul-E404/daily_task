@@ -1,201 +1,3 @@
-// import 'package:askfemi/individual_user/features/home/task_details/model/sub_task_model.dart';
-// import 'package:askfemi/individual_user/features/home/task_details/model/task_model.dart';
-// import 'package:askfemi/utils/app_colors.dart';
-// import 'package:askfemi/widget/build_task_card.dart';
-// import 'package:flutter/cupertino.dart';
-// import 'package:flutter/material.dart';
-//
-// class StatusScreen extends StatefulWidget {
-//   final TaskStatus? filterStatus; // null means show all
-//
-//   const StatusScreen({super.key, this.filterStatus});
-//
-//   @override
-//   State<StatusScreen> createState() => _StatusScreenState();
-// }
-//
-// class _StatusScreenState extends State<StatusScreen> {
-//   late TaskStatus? selectedStatus;
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     selectedStatus = widget.filterStatus;
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: AppColors.backgroundColor,
-//       appBar: AppBar(
-//         backgroundColor: AppColors.backgroundColor,
-//         elevation: 0,
-//         surfaceTintColor: Colors.white,
-//         automaticallyImplyLeading: false,
-//         title: const Text(
-//           'Task History',
-//           style: TextStyle(
-//             fontSize: 30,
-//             fontWeight: FontWeight.bold,
-//             fontFamily: 'Plus Jakarta Sans',
-//             color: Colors.black87,
-//           ),
-//         ),
-//         actions: [
-//           IconButton(
-//             onPressed: () {},
-//             icon: Icon(CupertinoIcons.calendar_today),
-//           ),
-//         ],
-//       ),
-//       body: Padding(
-//         padding: const EdgeInsets.only(top: 16,left: 16, right: 16),
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             // Task list
-//             Expanded(child: _buildTaskList()),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-//
-//   Widget _buildTaskList() {
-//     final tasks = _getFilteredTasks();
-//
-//     if (tasks.isEmpty) {
-//       return Center(
-//         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: [
-//             Icon(Icons.task_alt, size: 64, color: Colors.grey[300]),
-//             const SizedBox(height: 16),
-//             Text(
-//               'No tasks found',
-//               style: TextStyle(
-//                 fontSize: 16,
-//                 fontFamily: 'Plus Jakarta Sans',
-//                 color: Colors.grey[600],
-//               ),
-//             ),
-//           ],
-//         ),
-//       );
-//     }
-//
-//     return ListView.separated(
-//       physics: const BouncingScrollPhysics(),
-//       itemCount: tasks.length,
-//       separatorBuilder: (context, index) => const SizedBox(height: 16),
-//       itemBuilder: (context, index) {
-//         return buildTaskCard(context: context, task: tasks[index]);
-//       },
-//     );
-//   }
-//
-//   List<Task> _getFilteredTasks() {
-//     final allTasks = _getAllTasks();
-//
-//     if (selectedStatus == null) {
-//       return allTasks;
-//     }
-//
-//     return allTasks.where((task) => task.status == selectedStatus).toList();
-//   }
-//
-//   // Mock data - Replace with your actual data source
-//   List<Task> _getAllTasks() {
-//     return [
-//       Task(
-//         title: 'Complete Math Homework',
-//         description: 'Solve algebra, geometry and calculus problems.',
-//         time: '10:30 AM',
-//         status: TaskStatus.completed,
-//         createdAt: DateTime(2026, 1, 30, 9, 50),
-//         startTime: DateTime(2026, 1, 30, 10, 30),
-//         completedTime: DateTime(2026, 1, 30, 12, 45),
-//         totalSubtasks: 5,
-//         completedSubtasks: 5,
-//         subtasks: [
-//           SubTask(
-//             title: 'Solve algebra problems',
-//             isCompleted: true,
-//             duration: null,
-//           ),
-//           SubTask(
-//             title: 'Complete geometry worksheet',
-//             isCompleted: true,
-//             duration: '30 min',
-//           ),
-//           SubTask(
-//             title: 'Study calculus',
-//             isCompleted: true,
-//             duration: '45 min',
-//           ),
-//           SubTask(
-//             title: 'Review all solutions',
-//             isCompleted: true,
-//             duration: '20 min',
-//           ),
-//           SubTask(title: 'Submit homework', isCompleted: true, duration: null),
-//         ],
-//       ),
-//       Task(
-//         title: 'Prepare Presentation',
-//         description: 'Create slides for tomorrow\'s meeting.',
-//         time: '2:00 PM',
-//         status: TaskStatus.completed,
-//         createdAt: DateTime(2026, 1, 30, 8, 0),
-//         startTime: DateTime(2026, 1, 30, 14, 0),
-//         totalSubtasks: 6,
-//         completedSubtasks: 3,
-//       ),
-//       Task(
-//         title: 'Team Meeting',
-//         description: 'Discuss project updates and next steps.',
-//         time: '3:30 PM',
-//         status: TaskStatus.completed,
-//         createdAt: DateTime(2026, 1, 30, 7, 30),
-//         startTime: DateTime(2026, 1, 30, 15, 30),
-//       ),
-//       Task(
-//         title: 'Code Review',
-//         description: 'Review pull requests from team members.',
-//         time: '11:00 AM',
-//         status: TaskStatus.completed,
-//         createdAt: DateTime(2026, 1, 29, 10, 0),
-//         startTime: DateTime(2026, 1, 29, 11, 0),
-//         completedTime: DateTime(2026, 1, 29, 12, 30),
-//         totalSubtasks: 3,
-//         completedSubtasks: 3,
-//       ),
-//       Task(
-//         title: 'Write Documentation',
-//         description: 'Update API documentation for new features.',
-//         time: '4:00 PM',
-//         status: TaskStatus.completed,
-//         createdAt: DateTime(2026, 1, 30, 9, 0),
-//         startTime: DateTime(2026, 1, 30, 16, 0),
-//         totalSubtasks: 4,
-//         completedSubtasks: 1,
-//       ),
-//       Task(
-//         title: 'Client Call',
-//         description: 'Discuss requirements for new project.',
-//         time: '1:00 PM',
-//         status: TaskStatus.completed,
-//         createdAt: DateTime(2026, 1, 30, 8, 30),
-//         startTime: DateTime(2026, 1, 30, 13, 0),
-//       ),
-//     ];
-//   }
-// }
-
-
-
-
-
 import 'package:askfemi/individual_user/features/home/task_details/model/sub_task_model.dart';
 import 'package:askfemi/individual_user/features/home/task_details/model/task_model.dart';
 import 'package:askfemi/utils/app_colors.dart';
@@ -215,19 +17,40 @@ class StatusScreen extends StatefulWidget {
 
 class _StatusScreenState extends State<StatusScreen> {
   late TaskStatus? selectedStatus;
-  DateTimeRange? _selectedDateRange;
+  DateTime? _selectedFromDate;
+  DateTime? _selectedToDate;
   bool _showCalendar = false;
+  bool _isSelectingFromDate = true;
+  late DateTime _currentDisplayMonth; // Change this line
 
   @override
   void initState() {
     super.initState();
     selectedStatus = widget.filterStatus;
 
-    // Set default date range to current month
+    // Set default dates to current month
     final now = DateTime.now();
-    final firstDayOfMonth = DateTime(now.year, now.month, 1);
-    final lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
-    _selectedDateRange = DateTimeRange(start: firstDayOfMonth, end: lastDayOfMonth);
+    _currentDisplayMonth = DateTime(now.year, now.month); // Initialize here
+    _selectedFromDate = DateTime(now.year, now.month, 1);
+    _selectedToDate = DateTime(now.year, now.month + 1, 0);
+  }
+
+  void _goToPreviousMonth() {
+    setState(() {
+      _currentDisplayMonth = DateTime(
+        _currentDisplayMonth.year,
+        _currentDisplayMonth.month - 1,
+      );
+    });
+  }
+
+  void _goToNextMonth() {
+    setState(() {
+      _currentDisplayMonth = DateTime(
+        _currentDisplayMonth.year,
+        _currentDisplayMonth.month + 1,
+      );
+    });
   }
 
   @override
@@ -253,9 +76,16 @@ class _StatusScreenState extends State<StatusScreen> {
             onPressed: () {
               setState(() {
                 _showCalendar = !_showCalendar;
+                // Reset to current month when opening calendar
+                if (_showCalendar) {
+                  _currentDisplayMonth = DateTime(
+                    DateTime.now().year,
+                    DateTime.now().month,
+                  );
+                }
               });
             },
-            icon: Icon(CupertinoIcons.calendar_today),
+            icon: const Icon(CupertinoIcons.calendar_today),
           ),
         ],
       ),
@@ -265,7 +95,7 @@ class _StatusScreenState extends State<StatusScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Show selected date range
-            if (_selectedDateRange != null && !_showCalendar)
+            if (_selectedFromDate != null && _selectedToDate != null && !_showCalendar)
               _buildDateRangeIndicator(),
 
             const SizedBox(height: 16),
@@ -288,7 +118,7 @@ class _StatusScreenState extends State<StatusScreen> {
     return Row(
       children: [
         Text(
-          '${format.format(_selectedDateRange!.start)} - ${format.format(_selectedDateRange!.end)}',
+          '${format.format(_selectedFromDate!)} - ${format.format(_selectedToDate!)}',
           style: TextStyle(
             fontSize: 14,
             fontFamily: 'Plus Jakarta Sans',
@@ -301,9 +131,6 @@ class _StatusScreenState extends State<StatusScreen> {
   }
 
   Widget _buildCalendar() {
-    final now = DateTime.now();
-    final currentMonth = DateTime(now.year, now.month);
-
     return Column(
       children: [
         // Header
@@ -322,13 +149,13 @@ class _StatusScreenState extends State<StatusScreen> {
           ),
           child: Column(
             children: [
-              // Month and Year
+              // Header with close button
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
+                    const Text(
                       'Task date',
                       style: TextStyle(
                         fontSize: 18,
@@ -350,32 +177,150 @@ class _StatusScreenState extends State<StatusScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Date From/To labels
+              // Date selection fields
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    // From Date
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isSelectingFromDate = true;
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: _isSelectingFromDate
+                                  ? AppColors.primaryColor
+                                  : Colors.grey[300]!,
+                              width: _isSelectingFromDate ? 2 : 1,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Date',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontFamily: 'Plus Jakarta Sans',
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                _selectedFromDate != null
+                                    ? DateFormat('dd/MM/yyyy').format(_selectedFromDate!)
+                                    : '--/--/----',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontFamily: 'Plus Jakarta Sans',
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(width: 16),
+
+                    // To Date
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isSelectingFromDate = false;
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: !_isSelectingFromDate
+                                  ? AppColors.primaryColor
+                                  : Colors.grey[300]!,
+                              width: !_isSelectingFromDate ? 2 : 1,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'To',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontFamily: 'Plus Jakarta Sans',
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                _selectedToDate != null
+                                    ? DateFormat('dd/MM/yyyy').format(_selectedToDate!)
+                                    : '--/--/----',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontFamily: 'Plus Jakarta Sans',
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Month header with navigation
+              const SizedBox(height: 20),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildDateLabel('Date', Colors.black87),
-                    _buildDateLabel('To', Colors.black87),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 8),
+                    IconButton(
+                      onPressed: _goToPreviousMonth,
+                      icon: const Icon(Icons.chevron_left, size: 24),
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.grey[100],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
 
-              // Month header
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
                     Text(
-                      DateFormat('MMMM yyyy').format(currentMonth),
-                      style: TextStyle(
+                      DateFormat('MMMM yyyy').format(_currentDisplayMonth),
+                      style: const TextStyle(
                         fontSize: 16,
                         fontFamily: 'Plus Jakarta Sans',
                         fontWeight: FontWeight.w600,
                         color: Colors.black87,
+                      ),
+                    ),
+
+                    IconButton(
+                      onPressed: _goToNextMonth,
+                      icon: const Icon(Icons.chevron_right, size: 24),
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.grey[100],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                     ),
                   ],
@@ -384,7 +329,7 @@ class _StatusScreenState extends State<StatusScreen> {
               const SizedBox(height: 16),
 
               // Calendar grid
-              _buildCalendarGrid(currentMonth),
+              _buildCalendarGrid(_currentDisplayMonth),
             ],
           ),
         ),
@@ -419,63 +364,13 @@ class _StatusScreenState extends State<StatusScreen> {
     );
   }
 
-  Widget _buildDateLabel(String text, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 12,
-          fontFamily: 'Plus Jakarta Sans',
-          fontWeight: FontWeight.w600,
-          color: color,
-        ),
-      ),
-    );
-  }
-
   Widget _buildCalendarGrid(DateTime currentMonth) {
     final daysInMonth = DateTime(currentMonth.year, currentMonth.month + 1, 0).day;
     final firstDayOfMonth = DateTime(currentMonth.year, currentMonth.month, 1);
     final startingWeekday = firstDayOfMonth.weekday; // 1=Monday, 7=Sunday
 
-    // Adjust for Sunday as first day (if needed)
+    // Adjust for Sunday as first day
     final adjustedWeekday = startingWeekday % 7;
-
-    // Generate day numbers
-    final List<List<int?>> weeks = [];
-    List<int?> currentWeek = List.filled(7, null);
-
-    // Fill first week with nulls for days before the 1st
-    for (int i = 0; i < adjustedWeekday; i++) {
-      currentWeek[i] = null;
-    }
-
-    // Fill the month days
-    int day = 1;
-    for (int i = adjustedWeekday; i < 7; i++) {
-      currentWeek[i] = day;
-      day++;
-    }
-    weeks.add(List.from(currentWeek));
-
-    // Fill remaining weeks
-    while (day <= daysInMonth) {
-      currentWeek = [];
-      for (int i = 0; i < 7 && day <= daysInMonth; i++) {
-        currentWeek.add(day);
-        day++;
-      }
-      // Fill remaining days with nulls
-      while (currentWeek.length < 7) {
-        currentWeek.add(null);
-      }
-      weeks.add(currentWeek);
-    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -483,81 +378,160 @@ class _StatusScreenState extends State<StatusScreen> {
         children: [
           // Day headers
           Row(
-            children: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-                .map((day) => Expanded(
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text(
-                  day,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ),
-            ))
-                .toList(),
+            children: [
+              _buildDayHeader('Sun'),
+              _buildDayHeader('Mon'),
+              _buildDayHeader('Tue'),
+              _buildDayHeader('Wed'),
+              _buildDayHeader('Thu'),
+              _buildDayHeader('Fri'),
+              _buildDayHeader('Sat'),
+            ],
           ),
 
-          // Calendar days
-          ...weeks.map((week) => Row(
-            children: week.map((dayNumber) => Expanded(
-              child: _buildDayCell(dayNumber),
-            )).toList(),
-          )),
+          // Calendar rows (5 rows)
+          const SizedBox(height: 8),
+          _buildCalendarRow(1, 7, currentMonth, adjustedWeekday),
+          const SizedBox(height: 4),
+          _buildCalendarRow(8, 14, currentMonth, adjustedWeekday),
+          const SizedBox(height: 4),
+          _buildCalendarRow(15, 21, currentMonth, adjustedWeekday),
+          const SizedBox(height: 4),
+          _buildCalendarRow(22, 28, currentMonth, adjustedWeekday),
+          const SizedBox(height: 4),
+          _buildCalendarRow(29, daysInMonth, currentMonth, adjustedWeekday, nextMonthDays: 4),
         ],
       ),
     );
   }
 
-  Widget _buildDayCell(int? dayNumber) {
-    final isToday = dayNumber != null &&
+  Widget _buildDayHeader(String day) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Text(
+          day,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 12,
+            fontFamily: 'Plus Jakarta Sans',
+            fontWeight: FontWeight.w600,
+            color: Colors.grey[600],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCalendarRow(int startDay, int endDay, DateTime currentMonth, int firstDayOffset, {int nextMonthDays = 0}) {
+    final List<int?> dayNumbers = [];
+
+    // Add days from current month
+    for (int day = startDay; day <= endDay && day <= DateTime(currentMonth.year, currentMonth.month + 1, 0).day; day++) {
+      dayNumbers.add(day);
+    }
+
+    // Add next month days if needed
+    if (dayNumbers.length < 7) {
+      int nextDay = 1;
+      for (int i = dayNumbers.length; i < 7; i++) {
+        dayNumbers.add(nextDay);
+        nextDay++;
+      }
+    }
+
+    return Row(
+      children: dayNumbers.map((day) => Expanded(
+        child: _buildDayCell(day, currentMonth),
+      )).toList(),
+    );
+  }
+
+  Widget _buildDayCell(int? dayNumber, DateTime currentMonth) {
+    final bool isCurrentMonth = dayNumber != null && dayNumber <= DateTime(currentMonth.year, currentMonth.month + 1, 0).day;
+    final bool isSelectedFrom = isCurrentMonth &&
+        _selectedFromDate != null &&
+        dayNumber == _selectedFromDate!.day &&
+        currentMonth.year == _selectedFromDate!.year &&
+        currentMonth.month == _selectedFromDate!.month;
+
+    final bool isSelectedTo = isCurrentMonth &&
+        _selectedToDate != null &&
+        dayNumber == _selectedToDate!.day &&
+        currentMonth.year == _selectedToDate!.year &&
+        currentMonth.month == _selectedToDate!.month;
+
+    final bool isInRange = isCurrentMonth &&
+        _selectedFromDate != null &&
+        _selectedToDate != null &&
+        dayNumber != null &&
+        DateTime(currentMonth.year, currentMonth.month, dayNumber).isAfter(_selectedFromDate!.subtract(const Duration(days: 1))) &&
+        DateTime(currentMonth.year, currentMonth.month, dayNumber).isBefore(_selectedToDate!.add(const Duration(days: 1)));
+
+    final bool isToday = isCurrentMonth &&
         dayNumber == DateTime.now().day &&
-        DateTime.now().month == DateTime.now().month;
+        currentMonth.month == DateTime.now().month &&
+        currentMonth.year == DateTime.now().year;
 
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 2),
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      decoration: BoxDecoration(
-        color: isToday ? AppColors.primaryColor.withOpacity(0.1) : Colors.transparent,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Column(
-        children: [
-          // Day number
-          Text(
-            dayNumber != null ? dayNumber.toString() : '',
-            style: TextStyle(
-              fontSize: 14,
-              fontFamily: 'Plus Jakarta Sans',
-              fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-              color: isToday ? AppColors.primaryColor : Colors.black87,
-            ),
+    return GestureDetector(
+      onTap: () {
+        if (isCurrentMonth && dayNumber != null) {
+          final selectedDate = DateTime(currentMonth.year, currentMonth.month, dayNumber);
+
+          setState(() {
+            if (_isSelectingFromDate) {
+              _selectedFromDate = selectedDate;
+              // If To date is before From date, adjust To date
+              if (_selectedToDate != null && _selectedToDate!.isBefore(selectedDate)) {
+                _selectedToDate = selectedDate;
+              }
+            } else {
+              _selectedToDate = selectedDate;
+              // If From date is after To date, adjust From date
+              if (_selectedFromDate != null && _selectedFromDate!.isAfter(selectedDate)) {
+                _selectedFromDate = selectedDate;
+              }
+            }
+          });
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelectedFrom || isSelectedTo
+              ? AppColors.primaryColor
+              : isInRange
+              ? AppColors.primaryColor.withOpacity(0.1)
+              : isToday
+              ? AppColors.primaryColor.withOpacity(0.05)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(
+            color: isSelectedFrom || isSelectedTo
+                ? AppColors.primaryColor
+                : Colors.transparent,
+            width: 2,
           ),
-
-          // Optional: Add indicators for tasks
-          if (dayNumber != null && _hasTasksOnDate(dayNumber))
-            Container(
-              margin: const EdgeInsets.only(top: 2),
-              width: 4,
-              height: 4,
-              decoration: const BoxDecoration(
-                color: AppColors.primaryColor,
-                shape: BoxShape.circle,
+        ),
+        child: Column(
+          children: [
+            // Day number
+            Text(
+              dayNumber != null ? dayNumber.toString() : '',
+              style: TextStyle(
+                fontSize: 14,
+                fontFamily: 'Plus Jakarta Sans',
+                fontWeight: isSelectedFrom || isSelectedTo ? FontWeight.bold : FontWeight.normal,
+                color: isCurrentMonth
+                    ? (isSelectedFrom || isSelectedTo ? Colors.white : Colors.black87)
+                    : Colors.grey[400],
               ),
             ),
-        ],
+          ],
+        ),
       ),
     );
-  }
-
-  bool _hasTasksOnDate(int day) {
-    // Mock: Show dots on specific days
-    final taskDays = [1, 5, 10, 15, 20, 25, 30];
-    return taskDays.contains(day);
   }
 
   Widget _buildTaskList() {
