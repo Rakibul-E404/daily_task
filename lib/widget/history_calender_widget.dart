@@ -1,38 +1,39 @@
-import 'package:askfemi/individual_user/features/home/task_details/model/sub_task_model.dart';
-import 'package:askfemi/individual_user/features/home/task_details/model/task_model.dart';
 import 'package:askfemi/utils/app_colors.dart';
-import 'package:askfemi/widget/build_task_card.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class StatusScreen extends StatefulWidget {
-  final TaskStatus? filterStatus;
+class HistoryCalendarWidget extends StatefulWidget {
+  final DateTime? initialFromDate;
+  final DateTime? initialToDate;
+  final Function(DateTime fromDate, DateTime toDate) onDateSelected;
+  final VoidCallback onClose;
 
-  const StatusScreen({super.key, this.filterStatus});
+  const HistoryCalendarWidget({
+    super.key,
+    this.initialFromDate,
+    this.initialToDate,
+    required this.onDateSelected,
+    required this.onClose,
+  });
 
   @override
-  State<StatusScreen> createState() => _StatusScreenState();
+  State<HistoryCalendarWidget> createState() => _HistoryCalendarWidgetState();
 }
 
-class _StatusScreenState extends State<StatusScreen> {
-  late TaskStatus? selectedStatus;
-  DateTime? _selectedFromDate;
-  DateTime? _selectedToDate;
-  bool _showCalendar = false;
+class _HistoryCalendarWidgetState extends State<HistoryCalendarWidget> {
+  late DateTime? _selectedFromDate;
+  late DateTime? _selectedToDate;
   bool _isSelectingFromDate = true;
-  late DateTime _currentDisplayMonth; // Change this line
+  late DateTime _currentDisplayMonth;
 
   @override
   void initState() {
     super.initState();
-    selectedStatus = widget.filterStatus;
+    _selectedFromDate = widget.initialFromDate;
+    _selectedToDate = widget.initialToDate;
 
-    // Set default dates to current month
     final now = DateTime.now();
-    _currentDisplayMonth = DateTime(now.year, now.month); // Initialize here
-    _selectedFromDate = DateTime(now.year, now.month, 1);
-    _selectedToDate = DateTime(now.year, now.month + 1, 0);
+    _currentDisplayMonth = DateTime(now.year, now.month);
   }
 
   void _goToPreviousMonth() {
@@ -53,87 +54,17 @@ class _StatusScreenState extends State<StatusScreen> {
     });
   }
 
+  void _handleSubmit() {
+    if (_selectedFromDate != null && _selectedToDate != null) {
+      widget.onDateSelected(_selectedFromDate!, _selectedToDate!);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
-      appBar: AppBar(
-        backgroundColor: AppColors.backgroundColor,
-        elevation: 0,
-        surfaceTintColor: Colors.white,
-        automaticallyImplyLeading: false,
-        title: const Text(
-          'Task History',
-          style: TextStyle(
-            fontSize: 30,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Plus Jakarta Sans',
-            color: Colors.black87,
-          ),
-        ),
-        actions: [
-          IconButton(
-            onPressed: () {
-              setState(() {
-                _showCalendar = !_showCalendar;
-                // Reset to current month when opening calendar
-                if (_showCalendar) {
-                  _currentDisplayMonth = DateTime(
-                    DateTime.now().year,
-                    DateTime.now().month,
-                  );
-                }
-              });
-            },
-            icon: const Icon(CupertinoIcons.calendar_today),
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Show selected date range
-            if (_selectedFromDate != null && _selectedToDate != null && !_showCalendar)
-              _buildDateRangeIndicator(),
-
-            const SizedBox(height: 16),
-
-            // Show calendar if toggled
-            if (_showCalendar)
-              _buildCalendar(),
-
-            // Task list (hidden when calendar is shown)
-            if (!_showCalendar)
-              Expanded(child: _buildTaskList()),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDateRangeIndicator() {
-    final format = DateFormat('dd MMM');
-    return Row(
-      children: [
-        Text(
-          '${format.format(_selectedFromDate!)} - ${format.format(_selectedToDate!)}',
-          style: TextStyle(
-            fontSize: 14,
-            fontFamily: 'Plus Jakarta Sans',
-            color: Colors.grey[600],
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCalendar() {
     return Column(
       children: [
-        // Header
+        // Calendar container
         Container(
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
@@ -165,11 +96,7 @@ class _StatusScreenState extends State<StatusScreen> {
                       ),
                     ),
                     IconButton(
-                      onPressed: () {
-                        setState(() {
-                          _showCalendar = false;
-                        });
-                      },
+                      onPressed: widget.onClose,
                       icon: const Icon(Icons.close, size: 20),
                     ),
                   ],
@@ -191,7 +118,8 @@ class _StatusScreenState extends State<StatusScreen> {
                           });
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
                             border: Border.all(
                               color: _isSelectingFromDate
@@ -216,7 +144,8 @@ class _StatusScreenState extends State<StatusScreen> {
                               const SizedBox(height: 4),
                               Text(
                                 _selectedFromDate != null
-                                    ? DateFormat('dd/MM/yyyy').format(_selectedFromDate!)
+                                    ? DateFormat('dd/MM/yyyy')
+                                    .format(_selectedFromDate!)
                                     : '--/--/----',
                                 style: const TextStyle(
                                   fontSize: 14,
@@ -242,7 +171,8 @@ class _StatusScreenState extends State<StatusScreen> {
                           });
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
                             border: Border.all(
                               color: !_isSelectingFromDate
@@ -267,7 +197,8 @@ class _StatusScreenState extends State<StatusScreen> {
                               const SizedBox(height: 4),
                               Text(
                                 _selectedToDate != null
-                                    ? DateFormat('dd/MM/yyyy').format(_selectedToDate!)
+                                    ? DateFormat('dd/MM/yyyy')
+                                    .format(_selectedToDate!)
                                     : '--/--/----',
                                 style: const TextStyle(
                                   fontSize: 14,
@@ -337,11 +268,7 @@ class _StatusScreenState extends State<StatusScreen> {
         // Submit button
         const SizedBox(height: 16),
         ElevatedButton(
-          onPressed: () {
-            setState(() {
-              _showCalendar = false;
-            });
-          },
+          onPressed: _handleSubmit,
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primaryColor,
             foregroundColor: Colors.white,
@@ -365,9 +292,10 @@ class _StatusScreenState extends State<StatusScreen> {
   }
 
   Widget _buildCalendarGrid(DateTime currentMonth) {
-    final daysInMonth = DateTime(currentMonth.year, currentMonth.month + 1, 0).day;
+    final daysInMonth =
+        DateTime(currentMonth.year, currentMonth.month + 1, 0).day;
     final firstDayOfMonth = DateTime(currentMonth.year, currentMonth.month, 1);
-    final startingWeekday = firstDayOfMonth.weekday; // 1=Monday, 7=Sunday
+    final startingWeekday = firstDayOfMonth.weekday;
 
     // Adjust for Sunday as first day
     final adjustedWeekday = startingWeekday % 7;
@@ -399,7 +327,9 @@ class _StatusScreenState extends State<StatusScreen> {
           const SizedBox(height: 4),
           _buildCalendarRow(22, 28, currentMonth, adjustedWeekday),
           const SizedBox(height: 4),
-          _buildCalendarRow(29, daysInMonth, currentMonth, adjustedWeekday, nextMonthDays: 4),
+          // Only show 5th row if needed
+          if (daysInMonth > 28)
+            _buildCalendarRow(29, daysInMonth, currentMonth, adjustedWeekday),
         ],
       ),
     );
@@ -423,73 +353,78 @@ class _StatusScreenState extends State<StatusScreen> {
     );
   }
 
-  Widget _buildCalendarRow(int startDay, int endDay, DateTime currentMonth, int firstDayOffset, {int nextMonthDays = 0}) {
-    final List<int?> dayNumbers = [];
+  Widget _buildCalendarRow(int startDay, int endDay, DateTime currentMonth,
+      int firstDayOffset) {
+    final List<int?> dayNumbers = List.generate(7, (index) => null);
 
-    // Add days from current month
-    for (int day = startDay; day <= endDay && day <= DateTime(currentMonth.year, currentMonth.month + 1, 0).day; day++) {
-      dayNumbers.add(day);
-    }
+    // Calculate first day position
+    final firstDayPosition = startDay == 1 ? firstDayOffset : 0;
 
-    // Add next month days if needed
-    if (dayNumbers.length < 7) {
-      int nextDay = 1;
-      for (int i = dayNumbers.length; i < 7; i++) {
-        dayNumbers.add(nextDay);
-        nextDay++;
-      }
+    // Fill in days for current month
+    int day = startDay;
+    for (int i = firstDayPosition;
+    i < 7 && day <= endDay && day <= DateTime(currentMonth.year, currentMonth.month + 1, 0).day;
+    i++) {
+      dayNumbers[i] = day;
+      day++;
     }
 
     return Row(
-      children: dayNumbers.map((day) => Expanded(
-        child: _buildDayCell(day, currentMonth),
-      )).toList(),
+      children:
+      dayNumbers.map((day) => Expanded(child: _buildDayCell(day, currentMonth))).toList(),
     );
   }
 
   Widget _buildDayCell(int? dayNumber, DateTime currentMonth) {
-    final bool isCurrentMonth = dayNumber != null && dayNumber <= DateTime(currentMonth.year, currentMonth.month + 1, 0).day;
-    final bool isSelectedFrom = isCurrentMonth &&
+    final bool isCurrentMonth = dayNumber != null;
+    final DateTime? cellDate = isCurrentMonth
+        ? DateTime(currentMonth.year, currentMonth.month, dayNumber!)
+        : null;
+
+    final bool isSelectedFrom = cellDate != null &&
         _selectedFromDate != null &&
-        dayNumber == _selectedFromDate!.day &&
-        currentMonth.year == _selectedFromDate!.year &&
-        currentMonth.month == _selectedFromDate!.month;
+        cellDate.year == _selectedFromDate!.year &&
+        cellDate.month == _selectedFromDate!.month &&
+        cellDate.day == _selectedFromDate!.day;
 
-    final bool isSelectedTo = isCurrentMonth &&
+    final bool isSelectedTo = cellDate != null &&
         _selectedToDate != null &&
-        dayNumber == _selectedToDate!.day &&
-        currentMonth.year == _selectedToDate!.year &&
-        currentMonth.month == _selectedToDate!.month;
+        cellDate.year == _selectedToDate!.year &&
+        cellDate.month == _selectedToDate!.month &&
+        cellDate.day == _selectedToDate!.day;
 
-    final bool isInRange = isCurrentMonth &&
+    // Only show range between dates, not including the endpoints
+    final bool isInRange = cellDate != null &&
         _selectedFromDate != null &&
         _selectedToDate != null &&
-        dayNumber != null &&
-        DateTime(currentMonth.year, currentMonth.month, dayNumber).isAfter(_selectedFromDate!.subtract(const Duration(days: 1))) &&
-        DateTime(currentMonth.year, currentMonth.month, dayNumber).isBefore(_selectedToDate!.add(const Duration(days: 1)));
+        cellDate.isAfter(_selectedFromDate!) &&
+        cellDate.isBefore(_selectedToDate!);
 
-    final bool isToday = isCurrentMonth &&
-        dayNumber == DateTime.now().day &&
-        currentMonth.month == DateTime.now().month &&
-        currentMonth.year == DateTime.now().year;
+    final bool isToday = cellDate != null &&
+        cellDate.year == DateTime.now().year &&
+        cellDate.month == DateTime.now().month &&
+        cellDate.day == DateTime.now().day;
 
     return GestureDetector(
       onTap: () {
         if (isCurrentMonth && dayNumber != null) {
-          final selectedDate = DateTime(currentMonth.year, currentMonth.month, dayNumber);
+          final selectedDate =
+          DateTime(currentMonth.year, currentMonth.month, dayNumber);
 
           setState(() {
             if (_isSelectingFromDate) {
               _selectedFromDate = selectedDate;
-              // If To date is before From date, adjust To date
-              if (_selectedToDate != null && _selectedToDate!.isBefore(selectedDate)) {
-                _selectedToDate = selectedDate;
+              // If selecting From date that's after To date, clear To date
+              if (_selectedToDate != null &&
+                  _selectedFromDate!.isAfter(_selectedToDate!)) {
+                _selectedToDate = null;
               }
             } else {
               _selectedToDate = selectedDate;
-              // If From date is after To date, adjust From date
-              if (_selectedFromDate != null && _selectedFromDate!.isAfter(selectedDate)) {
-                _selectedFromDate = selectedDate;
+              // If selecting To date that's before From date, clear From date
+              if (_selectedFromDate != null &&
+                  _selectedToDate!.isBefore(_selectedFromDate!)) {
+                _selectedFromDate = null;
               }
             }
           });
@@ -522,7 +457,8 @@ class _StatusScreenState extends State<StatusScreen> {
               style: TextStyle(
                 fontSize: 14,
                 fontFamily: 'Plus Jakarta Sans',
-                fontWeight: isSelectedFrom || isSelectedTo ? FontWeight.bold : FontWeight.normal,
+                fontWeight:
+                isSelectedFrom || isSelectedTo ? FontWeight.bold : FontWeight.normal,
                 color: isCurrentMonth
                     ? (isSelectedFrom || isSelectedTo ? Colors.white : Colors.black87)
                     : Colors.grey[400],
@@ -532,135 +468,5 @@ class _StatusScreenState extends State<StatusScreen> {
         ),
       ),
     );
-  }
-
-  Widget _buildTaskList() {
-    final tasks = _getFilteredTasks();
-
-    if (tasks.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.task_alt, size: 64, color: Colors.grey[300]),
-            const SizedBox(height: 16),
-            Text(
-              'No tasks found',
-              style: TextStyle(
-                fontSize: 16,
-                fontFamily: 'Plus Jakarta Sans',
-                color: Colors.grey[600],
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return ListView.separated(
-      physics: const BouncingScrollPhysics(),
-      itemCount: tasks.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 16),
-      itemBuilder: (context, index) {
-        return buildTaskCard(context: context, task: tasks[index]);
-      },
-    );
-  }
-
-  List<Task> _getFilteredTasks() {
-    final allTasks = _getAllTasks();
-
-    if (selectedStatus == null) {
-      return allTasks;
-    }
-
-    return allTasks.where((task) => task.status == selectedStatus).toList();
-  }
-
-  // Mock data - Replace with your actual data source
-  List<Task> _getAllTasks() {
-    return [
-      Task(
-        title: 'Complete Math Homework',
-        description: 'Solve algebra, geometry and calculus problems.',
-        time: '10:30 AM',
-        status: TaskStatus.completed,
-        createdAt: DateTime(2026, 1, 30, 9, 50),
-        startTime: DateTime(2026, 1, 30, 10, 30),
-        completedTime: DateTime(2026, 1, 30, 12, 45),
-        totalSubtasks: 5,
-        completedSubtasks: 5,
-        subtasks: [
-          SubTask(
-            title: 'Solve algebra problems',
-            isCompleted: true,
-            duration: null,
-          ),
-          SubTask(
-            title: 'Complete geometry worksheet',
-            isCompleted: true,
-            duration: '30 min',
-          ),
-          SubTask(
-            title: 'Study calculus',
-            isCompleted: true,
-            duration: '45 min',
-          ),
-          SubTask(
-            title: 'Review all solutions',
-            isCompleted: true,
-            duration: '20 min',
-          ),
-          SubTask(title: 'Submit homework', isCompleted: true, duration: null),
-        ],
-      ),
-      Task(
-        title: 'Prepare Presentation',
-        description: 'Create slides for tomorrow\'s meeting.',
-        time: '2:00 PM',
-        status: TaskStatus.completed,
-        createdAt: DateTime(2026, 1, 30, 8, 0),
-        startTime: DateTime(2026, 1, 30, 14, 0),
-        totalSubtasks: 6,
-        completedSubtasks: 3,
-      ),
-      Task(
-        title: 'Team Meeting',
-        description: 'Discuss project updates and next steps.',
-        time: '3:30 PM',
-        status: TaskStatus.completed,
-        createdAt: DateTime(2026, 1, 30, 7, 30),
-        startTime: DateTime(2026, 1, 30, 15, 30),
-      ),
-      Task(
-        title: 'Code Review',
-        description: 'Review pull requests from team members.',
-        time: '11:00 AM',
-        status: TaskStatus.completed,
-        createdAt: DateTime(2026, 1, 29, 10, 0),
-        startTime: DateTime(2026, 1, 29, 11, 0),
-        completedTime: DateTime(2026, 1, 29, 12, 30),
-        totalSubtasks: 3,
-        completedSubtasks: 3,
-      ),
-      Task(
-        title: 'Write Documentation',
-        description: 'Update API documentation for new features.',
-        time: '4:00 PM',
-        status: TaskStatus.completed,
-        createdAt: DateTime(2026, 1, 30, 9, 0),
-        startTime: DateTime(2026, 1, 30, 16, 0),
-        totalSubtasks: 4,
-        completedSubtasks: 1,
-      ),
-      Task(
-        title: 'Client Call',
-        description: 'Discuss requirements for new project.',
-        time: '1:00 PM',
-        status: TaskStatus.completed,
-        createdAt: DateTime(2026, 1, 30, 8, 30),
-        startTime: DateTime(2026, 1, 30, 13, 0),
-      ),
-    ];
   }
 }

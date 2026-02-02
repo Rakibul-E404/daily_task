@@ -42,7 +42,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     },
     {
       'title': 'Team Update',
-      'message': 'John updated the status of team task',
+      'message': 'John updated the history of team task',
       'time': DateTime.now().subtract(const Duration(days: 2)),
       'read': true,
     },

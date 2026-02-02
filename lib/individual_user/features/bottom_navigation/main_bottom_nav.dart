@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../utils/app_colors.dart';
 import '../add_task/add_screen.dart';
+import '../history/history_screen.dart';
 import '../home/home_screen.dart';
 import '../profile/profile_screen.dart';
-import '../status/ststus_screen.dart';
 
 class MainBottomNav extends StatefulWidget {
   const MainBottomNav({super.key});
@@ -20,7 +20,7 @@ class _MainBottomNavState extends State<MainBottomNav> {
   final List<Widget> _screens = [
     const HomeScreen(),
     const AddTaskScreen(),
-    const StatusScreen(),
+    const HistoryScreen(),
     const ProfileScreen(),
   ];
 
@@ -37,9 +37,9 @@ class _MainBottomNavState extends State<MainBottomNav> {
       'label': 'Add',
     },
     {
-      'icon': 'assets/icons/status_inactive.svg',
-      'activeIcon': 'assets/icons/status_active.svg',
-      'label': 'Status',
+      'icon': 'assets/icons/history.svg',
+      'activeIcon': 'assets/icons/history.svg',
+      'label': 'History',
     },
     {
       'icon': 'assets/icons/profile_inactive.svg',

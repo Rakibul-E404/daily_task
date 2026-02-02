@@ -242,7 +242,6 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
       body: SingleChildScrollView(
         physics: BouncingScrollPhysics(),
         child: SizedBox(
-          height: MediaQuery.of(context).size.height,
           child: Padding(
             padding: const EdgeInsets.all(20.0),
             child: Column(
@@ -411,10 +410,10 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
                 ),
 
                 const SizedBox(height: 20),
-                if (!isCompleted) // Use the isCompleted variable
+                // if (!isCompleted) // Use the isCompleted variable
                   subTaskProgress(widget.task),
                 const SizedBox(height: 20),
-                if (!isCompleted) // Use the isCompleted variable
+                // if (!isCompleted) // Use the isCompleted variable
                   subTaskList(widget.task),
 
                 /// 🔹 Add Subtask Input
@@ -530,7 +529,7 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
   Widget _buildStatusBadge(TaskStatus status) {
     final label = status.name.capitalize();
 
-    // You can customize colors based on status
+    // You can customize colors based on history
     Color backgroundColor;
     Color textColor;
 
