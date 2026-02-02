@@ -10,6 +10,7 @@ class AppColors{
   static const Color iconLiteColor = Color(0xffe6e6e6);
   static const Color textColorBlue = Color(0xff60a5fa);
   static const Color textColorGreen = Color(0xff22c55e);
+  static const Color green = Color(0xff22c55e);
   static const Color subscriptionPriceTextColor = Color(0xff455e7e);
   static const Color mainBottomNavColor = Color(0xffe0ecfb);
   static const Color lightBlueColor = Color(0xffe0ecfb);
@@ -17,6 +18,7 @@ class AppColors{
   static const Color black = Colors.black;
   static const Color white = Colors.white;
   static const Color grey = Colors.grey;
+  static const Color golden = Color(0xFFFFB74D);
   static const Color transparent = Colors.transparent;
   static const Color pendingStatusColor = Color(0xffe6e6e6);
   static const Color inProgressStatusColor = Color(0xffe2edf9);
