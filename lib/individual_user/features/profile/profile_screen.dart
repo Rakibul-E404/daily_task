@@ -1,5 +1,8 @@
+import 'package:askfemi/individual_user/features/profile/personal_information/personal_information_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
 import '../../../utils/app_colors.dart';
 import '../../../utils/app_texts.dart';
 
@@ -23,9 +26,7 @@ class ProfileScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      border: Border.all(
-                        color: AppColors.lightGrey,
-                      ),
+                      border: Border.all(color: AppColors.lightGrey),
                       color: AppColors.backgroundColor,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
@@ -45,7 +46,9 @@ class ProfileScreen extends StatelessWidget {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             image: const DecorationImage(
-                              image: AssetImage("assets/images/dummy_user_image.png"),
+                              image: AssetImage(
+                                "assets/images/dummy_user_image.png",
+                              ),
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -55,16 +58,13 @@ class ProfileScreen extends StatelessWidget {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Rakibul',
-                              style: AppTextStyles.largeHeading
-                            ),
+                            Text('Rakibul', style: AppTextStyles.largeHeading),
                             SizedBox(height: 4),
                             Text(
                               'R@gmail.com',
                               style: AppTextStyles.smallText.copyWith(
-                                color: AppColors.black
-                              )
+                                color: AppColors.black,
+                              ),
                             ),
                           ],
                         ),
@@ -77,9 +77,7 @@ class ProfileScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      border: Border.all(
-                        color: AppColors.lightGrey
-                      ),
+                      border: Border.all(color: AppColors.lightGrey),
                       color: AppColors.backgroundColor,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
@@ -133,10 +131,7 @@ class ProfileScreen extends StatelessWidget {
                           ),
                           decoration: BoxDecoration(
                             color: AppColors.backgroundColor,
-                            border: Border.all(
-                              color: AppColors.grey,
-                              width: 1,
-                            ),
+                            border: Border.all(color: AppColors.grey, width: 1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
@@ -166,7 +161,7 @@ class ProfileScreen extends StatelessWidget {
                   // Menu Items Card
                   Container(
                     decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.lightGrey,),
+                      border: Border.all(color: AppColors.lightGrey),
                       color: AppColors.backgroundColor,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
@@ -190,7 +185,7 @@ class ProfileScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(12),
                               color: AppColors.backgroundColor,
                             ),
-                            child: buildSubscriptionCard()
+                            child: buildSubscriptionCard(),
                           ),
                         ),
 
@@ -200,7 +195,9 @@ class ProfileScreen extends StatelessWidget {
                           icon: CupertinoIcons.person_crop_circle,
                           iconColor: const Color(0xFF666666),
                           title: 'Personal information',
-                          onTap: () {},
+                          onTap: () {
+                            Get.to(() => PersonalInformationScreen());
+                          },
                         ),
                         _buildDivider(),
                         // Support Mode
@@ -266,11 +263,7 @@ class ProfileScreen extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(
-              icon,
-              color: iconColor,
-              size: 24,
-            ),
+            Icon(icon, color: iconColor, size: 24),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -350,20 +343,13 @@ class ProfileScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.backgroundColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.lightGrey,
-          width: 1,
-        ),
+        border: Border.all(color: AppColors.lightGrey, width: 1),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Diamond Icon
-          Icon(
-            Icons.diamond_outlined,
-            color: Color(0xFFFFB74D),
-            size: 30,
-          ),
+          Icon(Icons.diamond_outlined, color: Color(0xFFFFB74D), size: 30),
 
           const SizedBox(width: 12),
 
@@ -390,24 +376,22 @@ class ProfileScreen extends StatelessWidget {
                   children: [
                     const Text(
                       'Renewal date: 10/06/25',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF8E8E8E),
-                      ),
+                      style: TextStyle(fontSize: 12, color: Color(0xFF8E8E8E)),
                     ),
                     // Active Tag
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
-                        color:  AppColors.green,
+                        color: AppColors.green,
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Active',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                        style: AppTextStyles.smallText.copyWith(
+                          color: AppColors.white,
                         ),
                       ),
                     ),
@@ -420,5 +404,4 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
   }
-
 }
