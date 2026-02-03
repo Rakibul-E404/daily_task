@@ -1,16 +1,16 @@
-import 'package:askfemi/individual_user/features/bottom_navigation/main_bottom_nav.dart';
 import 'package:askfemi/utils/app_colors.dart';
 import 'package:askfemi/utils/app_texts.dart';
 import 'package:askfemi/widget/dotted_border_container.dart';
 import 'package:flutter/material.dart';
-import 'package:askfemi/individual_user/features/home/task_details/model/task_model.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:intl/intl.dart';
-import '../../../../widget/sub_task_list.dart';
-import '../../../../widget/sub_task_progress.dart';
+import '../../../../../widget/sub_task_list.dart';
+import '../../../../../widget/sub_task_progress.dart';
+import '../../bottom_navigation/main_bottom_nav.dart';
 import 'edit_task_screen.dart';
+import 'model/task_model.dart';
 
 class TaskDetailsScreen extends StatefulWidget {
   // Changed to StatefulWidget

@@ -1,12 +1,12 @@
-import 'package:askfemi/individual_user/features/home/task_details/model/sub_task_model.dart';
-import 'package:askfemi/individual_user/features/home/task_details/model/task_model.dart';
 import 'package:askfemi/utils/app_colors.dart';
 import 'package:askfemi/widget/build_task_card.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../../widget/history_calender_widget.dart';
+import '../../../../widget/history_calender_widget.dart';
+import '../home/task_details/model/sub_task_model.dart';
+import '../home/task_details/model/task_model.dart';
 
 class HistoryScreen extends StatefulWidget {
   final TaskStatus? filterStatus;
@@ -352,7 +352,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       ),
       Task(
         title: 'Write Documentation',
-        description: 'Update API documentation for new features.',
+        description: 'Update API documentation for new view.',
         time: '4:00 PM',
         status: TaskStatus.completed,
         createdAt: DateTime(2026, 1, 30, 9, 0),

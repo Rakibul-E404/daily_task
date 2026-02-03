@@ -1,10 +1,11 @@
-import 'package:askfemi/individual_user/features/profile/personal_information/personal_information_screen.dart';
+import 'package:askfemi/features/individual_user/view/profile/personal_information/personal_profile_info_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
-import '../../../utils/app_colors.dart';
-import '../../../utils/app_texts.dart';
+import '../../../../utils/app_colors.dart';
+import '../../../../utils/app_texts.dart';
+import '../choose_support_mode/choose_support_mode_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -200,12 +201,16 @@ class ProfileScreen extends StatelessWidget {
                           },
                         ),
                         _buildDivider(),
-                        // Support Mode
+                        ///----------------
+                        /// Support Mode
+                        /// ---------------
                         _buildMenuItem(
                           icon: Icons.lightbulb_outline,
                           iconColor: const Color(0xFF666666),
                           title: 'Support Mode',
-                          onTap: () {},
+                          onTap: () {
+                            Get.to(()=> ChooseSupportModeScreen( fromProfile: true,));
+                          },
                         ),
                         _buildDivider(),
                         // Notification Style

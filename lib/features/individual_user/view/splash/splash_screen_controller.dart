@@ -1,4 +1,4 @@
-// features/splash/splash_screen_controller.dart
+// view/splash/splash_screen_controller.dart
 import 'dart:async';
 import 'package:get/get.dart';
 import '../get_started/get_started_screen.dart';

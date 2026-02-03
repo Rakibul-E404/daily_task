@@ -1,10 +1,10 @@
-import 'package:askfemi/individual_user/features/choose_support_mode/choose_support_mode_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
-import '../../../utils/app_colors.dart';
-import 'package:askfemi/individual_user/features/bottom_navigation/main_bottom_nav.dart';
+
+import '../../../../utils/app_colors.dart';
+import '../choose_support_mode/choose_support_mode_screen.dart';
 
 class SubscriptionPage extends StatelessWidget {
   const SubscriptionPage({super.key});

@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import '../../../utils/app_colors.dart';
-import '../../../utils/app_texts.dart';
+import '../../../../utils/app_colors.dart';
+import '../../../../utils/app_texts.dart';
 import '../home/task_details/model/sub_task_model.dart';
 
 class AddTaskScreen extends StatefulWidget {

@@ -1,8 +1,8 @@
 import 'package:askfemi/utils/app_texts.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import '../individual_user/features/home/task_details/model/sub_task_model.dart';
-import '../individual_user/features/home/task_details/model/task_model.dart';
+import '../features/individual_user/view/home/task_details/model/sub_task_model.dart';
+import '../features/individual_user/view/home/task_details/model/task_model.dart';
 import '../utils/app_colors.dart';
 
 // Make this a StatefulWidget to handle tap state

@@ -4,8 +4,8 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:askfemi/utils/app_colors.dart';
 import 'package:askfemi/utils/app_texts.dart';
-import 'package:askfemi/individual_user/features/home/task_details/model/task_model.dart';
 import 'model/sub_task_model.dart';
+import 'model/task_model.dart';
 
 class EditTaskScreen extends StatefulWidget {
   final Task originalTask;

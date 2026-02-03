@@ -1,12 +1,9 @@
-import 'package:askfemi/auth/forgot_password/forgot_password_screen.dart';
-import 'package:askfemi/individual_user/features/bottom_navigation/main_bottom_nav.dart';
-import 'package:askfemi/individual_user/features/profile/profile_screen.dart';
-import 'package:askfemi/user_type.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 
-import 'individual_user/features/splash/splash_screen.dart';
+import 'features/individual_user/view/bottom_navigation/main_bottom_nav.dart';
+import 'features/individual_user/view/splash/splash_screen.dart';
 
 void main() async {
   runApp(const TaskManagement());
