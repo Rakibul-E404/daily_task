@@ -1,9 +1,10 @@
+import 'package:askfemi/features/settings/change_password_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 
-import 'features/individual_user/view/bottom_navigation/main_bottom_nav.dart';
-import 'features/individual_user/view/splash/splash_screen.dart';
+import 'features/individual_user/views/bottom_navigation/main_bottom_nav.dart';
+
 
 void main() async {
   runApp(const TaskManagement());
