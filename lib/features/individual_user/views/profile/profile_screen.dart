@@ -7,8 +7,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
-import '../../../../utils/app_colors.dart';
-import '../../../../utils/app_texts_style.dart';
+import '../../utils/app_colors.dart';
+import '../../utils/app_texts_style.dart';
 import '../choose_support_mode/choose_support_mode_screen.dart';
 import '../settings/settings_screen.dart';
 

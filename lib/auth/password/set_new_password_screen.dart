@@ -1,7 +1,8 @@
-import 'package:askfemi/utils/app_colors.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import '../../features/individual_user/utils/app_colors.dart';
 import '../../features/individual_user/views/home/app_open_home_screen.dart';
 
 class SetNewPasswordScreen extends StatelessWidget {

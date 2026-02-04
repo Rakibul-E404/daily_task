@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:askfemi/user_type.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:askfemi/utils/app_colors.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:askfemi/auth/sign_up/sign_up_screen.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:askfemi/auth/forgot_password/forgot_password_screen.dart';
+
+import '../../features/individual_user/utils/app_colors.dart';
 
 class SignInScreen extends StatelessWidget {
   SignInScreen({super.key}) {

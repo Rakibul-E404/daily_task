@@ -1,9 +1,9 @@
-import 'package:askfemi/utils/app_texts_style.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import '../features/individual_user/views/home/task_details/model/sub_task_model.dart';
-import '../features/individual_user/views/home/task_details/model/task_model.dart';
 import '../utils/app_colors.dart';
+import '../utils/app_texts_style.dart';
+import '../views/home/task_details/model/sub_task_model.dart';
+import '../views/home/task_details/model/task_model.dart';
 
 // Make this a StatefulWidget to handle tap state
 class SubTaskListWidget extends StatefulWidget {

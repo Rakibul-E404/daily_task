@@ -1,10 +1,12 @@
-import 'package:askfemi/utils/app_colors.dart';
-import 'package:askfemi/utils/app_texts_style.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:intl/intl.dart';
+
+import '../../utils/app_colors.dart';
+import '../../utils/app_texts_style.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});

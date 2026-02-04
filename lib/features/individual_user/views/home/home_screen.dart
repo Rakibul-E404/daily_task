@@ -1,14 +1,13 @@
 import 'package:askfemi/features/individual_user/views/home/task_details/model/sub_task_model.dart';
 import 'package:askfemi/features/individual_user/views/home/task_details/model/task_model.dart';
-import 'package:askfemi/utils/app_colors.dart';
-import 'package:askfemi/utils/app_texts_style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:get/get_navigation/src/routes/transitions_type.dart';
-
-import '../../../../widget/build_task_card.dart';
+import '../../utils/app_colors.dart';
+import '../../utils/app_texts_style.dart';
+import '../../widget/build_task_card.dart';
 import '../notification/notification_screen.dart';
 
 class HomeScreen extends StatelessWidget {

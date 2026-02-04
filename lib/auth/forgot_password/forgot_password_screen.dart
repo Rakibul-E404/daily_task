@@ -1,10 +1,11 @@
 import 'package:askfemi/auth/model/auth_flow_model.dart';
 import 'package:askfemi/auth/verify/verify_email_screen.dart';
-import 'package:askfemi/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
+
+import '../../features/individual_user/utils/app_colors.dart';
 
 class ForgotPasswordScreen extends StatelessWidget {
   ForgotPasswordScreen({super.key}) {

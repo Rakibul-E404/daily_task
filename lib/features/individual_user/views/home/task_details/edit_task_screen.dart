@@ -2,8 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:askfemi/utils/app_colors.dart';
-import 'package:askfemi/utils/app_texts_style.dart';
+import '../../../utils/app_colors.dart';
+import '../../../utils/app_texts_style.dart';
 import 'model/sub_task_model.dart';
 import 'model/task_model.dart';
 

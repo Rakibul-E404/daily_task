@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:askfemi/utils/app_colors.dart';
-import 'package:askfemi/utils/app_texts_style.dart';
+import '../../utils/app_colors.dart';
+import '../../utils/app_texts_style.dart';
 
 class AboutUsPrivacyPolicyTermsConditionScreen extends StatelessWidget {
   const AboutUsPrivacyPolicyTermsConditionScreen({

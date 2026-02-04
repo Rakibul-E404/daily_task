@@ -1,7 +1,8 @@
-import 'package:askfemi/utils/app_colors.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../utils/app_colors.dart';
 import '../onboarding/onboarding_screen.dart';
 
 

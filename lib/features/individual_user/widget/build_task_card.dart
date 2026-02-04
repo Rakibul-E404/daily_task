@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../features/individual_user/views/home/task_details/model/task_model.dart';
-import '../features/individual_user/views/home/task_details/task_details_screen.dart';
 import '../utils/app_colors.dart';
+import '../views/home/task_details/model/task_model.dart';
+import '../views/home/task_details/task_details_screen.dart';
 import 'dotted_line_widget.dart';
 
 Widget buildTaskCard({

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
-
-import 'features/individual_user/views/bottom_navigation/main_bottom_nav.dart';
 import 'features/individual_user/views/splash/splash_screen.dart';
 
 

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:askfemi/utils/app_colors.dart';
-
-import '../auth/sign_in/singn_in_screen.dart';
+import '../../../auth/sign_in/singn_in_screen.dart';
+import 'app_colors.dart';
 
 class CongratulationsScreen extends StatefulWidget {
   const CongratulationsScreen({super.key});

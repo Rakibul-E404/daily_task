@@ -1,6 +1,5 @@
 import 'package:askfemi/auth/sign_in/singn_in_screen.dart';
 import 'package:askfemi/auth/verify/verify_email_screen.dart';
-import 'package:askfemi/utils/app_colors.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +7,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 
-import '../../widget/date_input_field.dart';
+import '../../features/individual_user/utils/app_colors.dart';
+import '../../features/individual_user/widget/date_input_field.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
