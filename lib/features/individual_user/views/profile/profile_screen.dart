@@ -2,7 +2,7 @@ import 'package:askfemi/auth/sign_in/singn_in_screen.dart';
 import 'package:askfemi/features/individual_user/views/notification/notification_style_screen.dart';
 import 'package:askfemi/features/individual_user/views/profile/personal_information/personal_profile_info_screen.dart';
 import 'package:askfemi/features/individual_user/views/subscription/subscription_screen.dart';
-import 'package:askfemi/features/settings/settings_screen.dart';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -10,6 +10,7 @@ import 'package:get/get_navigation/src/extension_navigation.dart';
 import '../../../../utils/app_colors.dart';
 import '../../../../utils/app_texts_style.dart';
 import '../choose_support_mode/choose_support_mode_screen.dart';
+import '../settings/settings_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});

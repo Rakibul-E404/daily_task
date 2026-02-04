@@ -494,15 +494,15 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        // // TODO: Handle completion logic
-                        // SupportAlertCards.show(
-                        //   context,
-                        //   type: SupportAlertType.clam,
-                        //   onButtonTap: () {
-                        //     Get.to(() => MainBottomNav());
-                        //   }
-                        // );
-                        Get.to(() => MainBottomNav());
+                        // TODO: Handle completion logic
+                        SupportAlertCards.show(
+                          context,
+                          type: SupportAlertType.clam,
+                          onButtonTap: () {
+                            Get.to(() => MainBottomNav());
+                          }
+                        );
+                        // Get.to(() => MainBottomNav());
 
                       },
                       style: ElevatedButton.styleFrom(

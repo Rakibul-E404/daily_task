@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import '../../../utils/app_colors.dart';
 import '../../../utils/app_texts_style.dart';
 import 'features/individual_user/views/home/app_open_home_screen.dart';
