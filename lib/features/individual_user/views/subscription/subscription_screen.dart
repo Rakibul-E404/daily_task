@@ -182,7 +182,7 @@ class SubscriptionPage extends StatelessWidget {
                             backgroundColor: fromProfile
                                 ? AppColors.liteRedColor
                                 : AppColors.primaryColor,
-                            foregroundColor: AppColors.red,
+                            foregroundColor: fromProfile ? AppColors.red : AppColors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),

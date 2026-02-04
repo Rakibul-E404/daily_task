@@ -291,9 +291,7 @@ class ProfileScreen extends StatelessWidget {
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(8))// Logout button color
                                       ),
                                       onPressed: () {
-                                        Get.offAll(()=>SignInScreen()); // Close the dialog first
-                                        // TODO: Add your logout logic here, e.g.:
-                                        // AuthService.logout();
+                                        Get.offAll(()=>SignInScreen());
                                         ScaffoldMessenger.of(context).showSnackBar(
                                           const SnackBar(content: Text("Logged out successfully")),
                                         );

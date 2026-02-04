@@ -536,6 +536,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
         appBar: AppBar(
           toolbarHeight: 70,
           backgroundColor: AppColors.backgroundColor,
+          surfaceTintColor: AppColors.transparent,
           title: Row(
             children: [
               Column(
@@ -782,7 +783,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryColor,
-                      foregroundColor: Colors.white,
+                      foregroundColor: AppColors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),

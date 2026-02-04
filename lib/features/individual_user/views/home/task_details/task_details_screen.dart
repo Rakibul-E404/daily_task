@@ -1,3 +1,4 @@
+import 'package:askfemi/features/individual_user/views/home/home_screen.dart';
 import 'package:askfemi/utils/app_colors.dart';
 import 'package:askfemi/utils/app_texts_style.dart';
 import 'package:askfemi/widget/dotted_border_container.dart';
@@ -9,6 +10,7 @@ import 'package:intl/intl.dart';
 import '../../../../../widget/sub_task_list.dart';
 import '../../../../../widget/sub_task_progress.dart';
 import '../../bottom_navigation/main_bottom_nav.dart';
+import '../../choose_support_mode/support_alert_cards.dart';
 import 'edit_task_screen.dart';
 import 'model/task_model.dart';
 
@@ -492,11 +494,20 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        // TODO: Handle completion logic
+                        // // TODO: Handle completion logic
+                        // SupportAlertCards.show(
+                        //   context,
+                        //   type: SupportAlertType.clam,
+                        //   onButtonTap: () {
+                        //     Get.to(() => MainBottomNav());
+                        //   }
+                        // );
+                        Get.to(() => MainBottomNav());
+
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
+                        backgroundColor: AppColors.primaryColor,
+                        foregroundColor: AppColors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),

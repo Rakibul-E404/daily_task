@@ -50,7 +50,7 @@ class HomeScreen extends StatelessWidget {
   Widget _buildSliverAppBar() {
     return SliverAppBar(
       expandedHeight: 80,
-       floating: false,
+      floating: false,
       pinned: true,
       stretch: true,
       surfaceTintColor: Colors.transparent,
@@ -82,10 +82,10 @@ class HomeScreen extends StatelessWidget {
                       'Welcome back!',
                       style: AppTextStyles.smallText,
                     ),
-                     Text(
+                    Text(
                       'Rakibul',
                       style: AppTextStyles.defaultTextStyle.copyWith(
-                        fontWeight: FontWeight.bold
+                          fontWeight: FontWeight.bold
                       ),
                     ),
                   ],
@@ -228,6 +228,36 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildTasksList(BuildContext context) {
     final tasks = _getTasks();
+
+    // If no tasks, show empty state
+    if (tasks.isEmpty) {
+      return SliverFillRemaining(
+        hasScrollBody: false,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SvgPicture.asset(
+                'assets/images/empty_task.svg',
+                height: 200,
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'No tasks yet',
+                style: AppTextStyles.defaultTextStyle.copyWith(
+                  fontSize: 30
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Create your task to get started!',
+                style: AppTextStyles.defaultTextStyle,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 16),

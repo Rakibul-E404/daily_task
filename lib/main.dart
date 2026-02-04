@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 
 import 'features/individual_user/views/bottom_navigation/main_bottom_nav.dart';
+import 'features/individual_user/views/splash/splash_screen.dart';
 
 
 void main() async {
@@ -23,8 +24,8 @@ class TaskManagement extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: 'Task Management',
-      // home:  const  SplashScreen(),
-      home: MainBottomNav(),
+      home:  const  SplashScreen(),
+      // home: MainBottomNav(),
       debugShowCheckedModeBanner: false,
     );
   }

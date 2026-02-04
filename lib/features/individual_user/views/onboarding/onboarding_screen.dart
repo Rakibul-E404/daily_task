@@ -1,5 +1,6 @@
 import 'package:askfemi/utils/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 
@@ -118,7 +119,7 @@ class OnboardingScreen extends StatelessWidget {
                               child: Column(
                                 children: [
                                   _buildInfoRow(
-                                    icon: '🎯',
+                                    icon:  SvgPicture.asset("assets/images/daily_focus.svg"),
                                     title: 'Daily Focus',
                                     subtitle: '3–5 tasks max per day',
                                   ),
@@ -129,7 +130,7 @@ class OnboardingScreen extends StatelessWidget {
                                     dashSpacing: 4,
                                   ),
                                   _buildInfoRow(
-                                    icon: '🧠',
+                                    icon:  SvgPicture.asset("assets/images/mental_clarity.svg"),
                                     title: 'Mental Clarity',
                                     subtitle: 'Calm interface, zero clutter',
                                   ),
@@ -140,7 +141,7 @@ class OnboardingScreen extends StatelessWidget {
                                     dashSpacing: 4,
                                   ),
                                   _buildInfoRow(
-                                    icon: '🌱',
+                                    icon:  SvgPicture.asset("assets/images/adaptive_support.svg",),
                                     title: 'Adaptive Support',
                                     subtitle: 'Learns your rhythm and adapts',
                                   ),
@@ -195,7 +196,7 @@ class OnboardingScreen extends StatelessWidget {
   }
 
   Widget _buildInfoRow({
-    required String icon,
+    required Widget icon,
     required String title,
     required String subtitle,
   }) {
@@ -203,7 +204,11 @@ class OnboardingScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         children: [
-          Text(icon, style: const TextStyle(fontSize: 28)),
+          SizedBox(
+            width: 28,
+            height: 28,
+            child: Center(child: icon),
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -231,4 +236,6 @@ class OnboardingScreen extends StatelessWidget {
       ),
     );
   }
+
+
 }
