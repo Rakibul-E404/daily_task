@@ -441,51 +441,53 @@ class UgcAddTaskScreen extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Track and analyze task performance across your team',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: 16,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Track and analyze task performance across your team',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 16,
+                ),
               ),
-            ),
-            SizedBox(height: 24),
-            // Single Assignment - Filled Button
-            TaskCard(
-              title: 'Single Assignment',
-              subtitle: 'Assign task to one family member',
-              buttonText: 'Create Task',
-              icon: CupertinoIcons.person_crop_circle,
-              iconBackgroundColor: Colors.blue.shade50,
-              isOutlined: false,
-            ),
-            SizedBox(height: 16),
-            // Collaborative Task - Outlined Button
-            TaskCard(
-              title: 'Collaborative Task',
-              subtitle: 'Assign to multiple members',
-              buttonText: 'Create Task',
-              icon: CupertinoIcons.group,
-              iconBackgroundColor: Colors.blue.shade50,
-              isOutlined: true,
-            ),
-            SizedBox(height: 16),
-            // Personal Task - Outlined Button
-            TaskCard(
-              title: 'Personal Task',
-              subtitle: 'Create task for yourself',
-              buttonText: 'Create Task',
-              icon: CupertinoIcons.rectangle_stack_person_crop,
-              iconBackgroundColor: Colors.blue.shade50,
-              isOutlined: true,
-            ),
-            SizedBox(height: 24),
-          ],
+              SizedBox(height: 24),
+              // Single Assignment - Filled Button
+              TaskCard(
+                title: 'Single Assignment',
+                subtitle: 'Assign task to one family member',
+                buttonText: 'Create Task',
+                icon: CupertinoIcons.person_crop_circle,
+                iconBackgroundColor: Colors.blue.shade50,
+                isOutlined: false,
+              ),
+              SizedBox(height: 16),
+              // Collaborative Task - Outlined Button
+              TaskCard(
+                title: 'Collaborative Task',
+                subtitle: 'Assign to multiple members',
+                buttonText: 'Create Task',
+                icon: CupertinoIcons.group,
+                iconBackgroundColor: Colors.blue.shade50,
+                isOutlined: true,
+              ),
+              SizedBox(height: 16),
+              // Personal Task - Outlined Button
+              TaskCard(
+                title: 'Personal Task',
+                subtitle: 'Create task for yourself',
+                buttonText: 'Create Task',
+                icon: CupertinoIcons.rectangle_stack_person_crop,
+                iconBackgroundColor: Colors.blue.shade50,
+                isOutlined: true,
+              ),
+              SizedBox(height: 24),
+            ],
+          ),
         ),
       ),
     );
@@ -498,7 +500,7 @@ class TaskCard extends StatelessWidget {
   final String buttonText;
   final IconData icon;
   final Color iconBackgroundColor;
-  final bool isOutlined; // New property
+  final bool isOutlined;
 
   TaskCard({
     required this.title,
@@ -538,26 +540,28 @@ class TaskCard extends StatelessWidget {
                   ),
                 ),
                 SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
+                      SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
