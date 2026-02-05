@@ -1,14 +1,14 @@
+import 'package:askfemi/features/group_user/visions/ugc_home/ugc_task_details/ugc_task_model/ugc_sub_task_model.dart';
+import 'package:askfemi/features/group_user/visions/ugc_home/ugc_task_details/ugc_task_model/ugc_task_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../../../../utils/app_colors.dart';
 import '../../../../../utils/app_texts_style.dart';
-import 'model/sub_task_model.dart';
-import 'model/task_model.dart';
 
 class EditTaskScreen extends StatefulWidget {
-  final Task originalTask;
+  final UgcTask originalTask;
 
   const EditTaskScreen({super.key, required this.originalTask});
 
@@ -19,7 +19,7 @@ class EditTaskScreen extends StatefulWidget {
 class _EditTaskScreenState extends State<EditTaskScreen> {
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
-  late List<SubTask> _editableSubTasks;
+  late List<UgcSubTask> _editableSubTasks;
   late List<TextEditingController> _subtaskControllers;
   late List<FocusNode> _subtaskFocusNodes;
   late DateTime _selectedDateTime; // Add this for date time selection
@@ -37,7 +37,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     _selectedDateTime = widget.originalTask.createdAt ?? DateTime.now();
 
     _editableSubTasks = widget.originalTask.subtasks
-        .map((sub) => SubTask(title: sub.title, isCompleted: sub.isCompleted))
+        .map((sub) => UgcSubTask(title: sub.title, isCompleted: sub.isCompleted))
         .toList();
 
     _subtaskControllers = _editableSubTasks
@@ -214,7 +214,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
 
   void _addNewSubtask() {
     setState(() {
-      _editableSubTasks.add(SubTask(title: '', isCompleted: false));
+      _editableSubTasks.add(UgcSubTask(title: '', isCompleted: false));
       _subtaskControllers.add(TextEditingController());
       _subtaskFocusNodes.add(FocusNode());
     });
@@ -230,7 +230,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
   }
 
   void _saveSubtask(int index) {
-    _editableSubTasks[index] = SubTask(
+    _editableSubTasks[index] = UgcSubTask(
       title: _subtaskControllers[index].text.trim(),
       isCompleted: _editableSubTasks[index].isCompleted,
     );
@@ -248,13 +248,13 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
 
   void _saveTask() {
     for (int i = 0; i < _editableSubTasks.length; i++) {
-      _editableSubTasks[i] = SubTask(
+      _editableSubTasks[i] = UgcSubTask(
         title: _subtaskControllers[i].text.trim(),
         isCompleted: _editableSubTasks[i].isCompleted,
       );
     }
 
-    final updatedTask = Task(
+    final updatedTask = UgcTask(
       title: _titleController.text.trim(),
       description: _descriptionController.text.trim(),
       status: widget.originalTask.status,

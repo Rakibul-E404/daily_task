@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../utils/app_colors.dart';
+import '../../../utils/app_colors.dart';
 import '../views/home/task_details/model/task_model.dart';
 import '../views/home/task_details/task_details_screen.dart';
 import 'dotted_line_widget.dart';
@@ -106,12 +106,12 @@ Widget buildTaskCard({
               /// Time + Progress
               Row(
                 children: [
-                  Icon(Icons.access_time, size: 14, color: Colors.grey[500]),
-                  const SizedBox(width: 4),
+                  Icon(Icons.access_time, size: 12, color: Colors.grey[500]),
+                  // const SizedBox(width: 4),
                   Text(
                     task.time,
                     style: timeTextStyle ??
-                        TextStyle(fontSize: 14, color: Colors.grey[600]),
+                        TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
                   const SizedBox(width: 12),
                   if (task.totalSubtasks != null &&
@@ -120,12 +120,12 @@ Widget buildTaskCard({
                     Row(
                       children: [
                         Icon(Icons.assignment_outlined,
-                            size: 14, color: Colors.grey[500]),
-                        const SizedBox(width: 4),
+                            size: 12, color: Colors.grey[500]),
+                        // const SizedBox(width: 4),
                         Text(
                           '${task.completedSubtasks} / ${task.totalSubtasks} subtasks',
                           style: subtaskTextStyle ??
-                              TextStyle(fontSize: 14, color: Colors.grey[600]),
+                              TextStyle(fontSize: 12, color: Colors.grey[600]),
                         ),
                         const SizedBox(width: 8),
                         Container(

@@ -5,8 +5,8 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:get/get_navigation/src/routes/transitions_type.dart';
-import '../../utils/app_colors.dart';
-import '../../utils/app_texts_style.dart';
+import '../../../../utils/app_colors.dart';
+import '../../../../utils/app_texts_style.dart';
 import '../../widget/build_task_card.dart';
 import '../notification/notification_screen.dart';
 

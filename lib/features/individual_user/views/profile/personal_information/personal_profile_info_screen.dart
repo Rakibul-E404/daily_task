@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
-import '../../../utils/app_colors.dart';
-import '../../../utils/app_texts_style.dart';
+import '../../../../../utils/app_colors.dart';
+import '../../../../../utils/app_texts_style.dart';
 import '../../../widget/edit_update_button.dart';
 import 'edit_personal_profile_info_screen.dart';
 

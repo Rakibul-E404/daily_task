@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import '../utils/app_colors.dart';
+import '../../../utils/app_colors.dart';
+import '../../../utils/app_texts_style.dart';
 
 class CurvedTopBorder extends CustomPainter {
   @override

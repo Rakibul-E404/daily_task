@@ -1,0 +1,2 @@
+# todo:: need to set screen lock for the
+# todo:: app open home screen + home screen = 1 single screen

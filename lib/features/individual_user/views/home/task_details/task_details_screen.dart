@@ -4,13 +4,13 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:intl/intl.dart';
-import '../../../utils/app_colors.dart';
-import '../../../utils/app_texts_style.dart';
+import '../../../../../utils/app_colors.dart';
+import '../../../../../utils/app_texts_style.dart';
 import '../../../widget/dotted_border_container.dart';
 import '../../../widget/sub_task_list.dart';
 import '../../../widget/sub_task_progress.dart';
 import '../../bottom_navigation/main_bottom_nav.dart';
-import '../../choose_support_mode/support_alert_cards.dart';
+import '../../../widget/support_alert_cards.dart';
 import 'edit_task_screen.dart';
 import 'model/task_model.dart';
 

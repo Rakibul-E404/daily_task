@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../utils/app_colors.dart';
-import '../utils/app_texts_style.dart';
+import '../../../utils/app_colors.dart';
+import '../../../utils/app_texts_style.dart';
 import '../views/home/task_details/model/task_model.dart';
 
 Widget subTaskProgress(Task task)

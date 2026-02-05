@@ -6,6 +6,7 @@ class AppColors{
   static const Color primaryColor = Color(0xff60a5fa);
   static const Color secondaryColor = Color(0xFFa8ccf9);
   static const Color backgroundColor = Color(0xfff1f5f9);
+  static const Color batchColor = Color(0xff1f3551);
   static const Color iconColor = Color(0xff606060);
   static const Color iconLiteColor = Color(0xffe6e6e6);
   static const Color textColorBlue = Color(0xff60a5fa);

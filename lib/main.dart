@@ -1,7 +1,8 @@
+import 'package:askfemi/features/group_user/visions/bottom_navigation/ugc_bottom_nav.dart';
+import 'package:askfemi/screens/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
-import 'features/individual_user/views/splash/splash_screen.dart';
 
 
 void main() async {
@@ -21,8 +22,9 @@ class TaskManagement extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: 'Task Management',
-      home:  const  SplashScreen(),
+      // home:  const  SplashScreen(),
       // home: MainBottomNav(),
+      home: UgcMainBottomNav(),
       debugShowCheckedModeBanner: false,
     );
   }

@@ -1,9 +1,4 @@
 
-///=====================
-///task_model.dart
-///=====================
-
-
 import 'package:askfemi/features/individual_user/views/home/task_details/model/sub_task_model.dart';
 enum TaskStatus { pending, inProgress, completed }
 class Task {

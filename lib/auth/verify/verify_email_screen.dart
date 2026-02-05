@@ -7,9 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:pinput/pinput.dart';
-
-import '../../features/individual_user/utils/app_colors.dart';
-import '../../features/individual_user/utils/congratulations_screen.dart';
+import '../../utils/app_colors.dart';
+import '../../utils/congratulations_screen.dart';
 
 class VerifyEmailScreen extends StatefulWidget {
   const VerifyEmailScreen({super.key});

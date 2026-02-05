@@ -1,6 +1,7 @@
+import 'package:askfemi/utils/app_colors.dart';
+import 'package:askfemi/utils/app_texts_style.dart';
 import 'package:flutter/material.dart';
-import 'features/individual_user/utils/app_colors.dart';
-import 'features/individual_user/utils/app_texts_style.dart';
+import 'features/group_user/visions/bottom_navigation/ugc_bottom_nav.dart';
 import 'features/individual_user/views/home/app_open_home_screen.dart';
 
 class UserTypeSelection extends StatelessWidget {
@@ -151,6 +152,12 @@ class UserTypeSelection extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: () {
                        /// todo::
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const UgcMainBottomNav(),
+                          ),
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,

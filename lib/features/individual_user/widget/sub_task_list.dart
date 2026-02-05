@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import '../utils/app_colors.dart';
-import '../utils/app_texts_style.dart';
+import '../../../utils/app_colors.dart';
+import '../../../utils/app_texts_style.dart';
 import '../views/home/task_details/model/sub_task_model.dart';
 import '../views/home/task_details/model/task_model.dart';
 

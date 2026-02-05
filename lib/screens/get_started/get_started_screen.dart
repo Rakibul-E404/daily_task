@@ -2,8 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../screens/onboarding/onboarding_screen.dart';
 import '../../utils/app_colors.dart';
-import '../onboarding/onboarding_screen.dart';
+
 
 
 class GetStartedScreen extends StatelessWidget {

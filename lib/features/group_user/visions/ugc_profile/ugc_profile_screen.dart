@@ -2,20 +2,19 @@ import 'package:askfemi/auth/sign_in/singn_in_screen.dart';
 import 'package:askfemi/features/individual_user/views/notification/notification_style_screen.dart';
 import 'package:askfemi/features/individual_user/views/profile/personal_information/personal_profile_info_screen.dart';
 import 'package:askfemi/features/individual_user/views/subscription/subscription_screen.dart';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import '../../../../screens/settings/settings_screen.dart';
 import '../../../../utils/app_colors.dart';
 import '../../../../utils/app_texts_style.dart';
-import '../../../../utils/static_text.dart';
-import '../choose_support_mode/choose_support_mode_screen.dart';
+import '../../../individual_user/views/choose_support_mode/choose_support_mode_screen.dart';
 
 
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+class UgcProfileScreen extends StatelessWidget {
+  const UgcProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -47,20 +46,54 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
+                        // // Profile Image
+                        // Container(
+                        //   width: 80,
+                        //   height: 80,
+                        //   decoration: BoxDecoration(
+                        //     shape: BoxShape.circle,
+                        //     image: const DecorationImage(
+                        //       image: AssetImage(
+                        //         "assets/images/dummy_user_image.png",
+                        //       ),
+                        //       fit: BoxFit.cover,
+                        //     ),
+                        //   ),
+                        // ),
+
                         // Profile Image
-                        Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            image: const DecorationImage(
-                              image: AssetImage(
-                                "assets/images/dummy_user_image.png",
+                        Stack(
+                          children: [
+                            Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                image: const DecorationImage(
+                                  image: AssetImage(
+                                    "assets/images/dummy_user_image.png",
+                                  ),
+                                  fit: BoxFit.cover,
+                                ),
                               ),
-                              fit: BoxFit.cover,
                             ),
-                          ),
+                            // Crown Icon
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: Container(
+                                width: 24,
+                                height: 24,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.amber,
+                                ),
+                                child: SvgPicture.asset("assets/images/task_manager_permission.svg")
+                              ),
+                            ),
+                          ],
                         ),
+                        
                         const SizedBox(width: 16),
                         // Name and Email
                         Column(
@@ -72,6 +105,21 @@ class ProfileScreen extends StatelessWidget {
                               'R@gmail.com',
                               style: AppTextStyles.smallText.copyWith(
                                 color: AppColors.black,
+                                fontSize: 16
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadiusGeometry.circular(4),
+                              color: AppColors.batchColor,
+                              ),
+                              padding: EdgeInsetsGeometry.all(4),
+                              child: Text(
+                                'Task Manager',
+                                style: AppTextStyles.smallText.copyWith(
+                                  color: AppColors.white,
+                                ),
                               ),
                             ),
                           ],
@@ -182,20 +230,6 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     child: Column(
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: AppColors.grey,
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                              color: AppColors.backgroundColor,
-                            ),
-                            child: buildSubscriptionCard(fromProfile: true,),
-                          ),
-                        ),
 
                         _buildDivider(),
                         // Personal Information
@@ -290,8 +324,8 @@ class ProfileScreen extends StatelessWidget {
                                     ),
                                     ElevatedButton(
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppColors.liteRedColor,
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(8))// Logout button color
+                                          backgroundColor: AppColors.liteRedColor,
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(8))// Logout button color
                                       ),
                                       onPressed: () {
                                         Get.offAll(()=>SignInScreen());
@@ -300,8 +334,8 @@ class ProfileScreen extends StatelessWidget {
                                         );
                                       },
                                       child:  Text("Logout",style: AppTextStyles.defaultTextStyle.copyWith(
-                                        color: AppColors.red,
-                                        fontWeight: FontWeight.bold
+                                          color: AppColors.red,
+                                          fontWeight: FontWeight.bold
                                       ),),
                                     ),
                                   ],

@@ -1,7 +1,6 @@
-// views/splash/splash_screen_controller.dart
 import 'dart:async';
 import 'package:get/get.dart';
-import '../get_started/get_started_screen.dart';
+import '../../screens/get_started/get_started_screen.dart';
 
 class SplashScreenController {
   final int splashDuration;

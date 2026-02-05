@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
-import '../../utils/app_colors.dart';
-import '../../utils/app_texts_style.dart';
+import '../../../../utils/app_colors.dart';
+import '../../../../utils/app_texts_style.dart';
 
 class NotificationStyleScreen extends StatefulWidget {
   const NotificationStyleScreen({super.key});

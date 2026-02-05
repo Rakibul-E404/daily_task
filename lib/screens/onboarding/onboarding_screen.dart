@@ -6,7 +6,8 @@ import 'package:get/get_navigation/src/extension_navigation.dart';
 
 import '../../../../auth/sign_in/singn_in_screen.dart';
 import '../../utils/app_colors.dart';
-import '../../widget/dotted_line_widget.dart';
+import '../../features/individual_user/widget/dotted_line_widget.dart';
+
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});

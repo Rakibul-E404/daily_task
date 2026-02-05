@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-
-import '../utils/app_colors.dart';
+import '../../../utils/app_colors.dart';
+import '../../../utils/app_texts_style.dart';
 
 class DottedLine extends StatelessWidget {
   final double height;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../utils/app_colors.dart';
-import '../../utils/app_texts_style.dart';
+import '../../../../utils/app_colors.dart';
+import '../../../../utils/app_texts_style.dart';
+import '../../../../utils/static_text.dart';
 
 class AboutUsPrivacyPolicyTermsConditionScreen extends StatelessWidget {
   const AboutUsPrivacyPolicyTermsConditionScreen({
