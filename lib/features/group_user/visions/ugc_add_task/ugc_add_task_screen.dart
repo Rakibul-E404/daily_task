@@ -419,6 +419,7 @@
 import 'package:askfemi/utils/app_colors.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 class UgcAddTaskScreen extends StatelessWidget {
   const UgcAddTaskScreen({super.key});
@@ -429,7 +430,8 @@ class UgcAddTaskScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.white,
+        surfaceTintColor: AppColors.transparent,
         elevation: 0,
         title: Text(
           'Create Task',
@@ -457,32 +459,32 @@ class UgcAddTaskScreen extends StatelessWidget {
               ),
               SizedBox(height: 24),
               // Single Assignment - Filled Button
-              TaskCard(
+              CreateTaskCard(
                 title: 'Single Assignment',
                 subtitle: 'Assign task to one family member',
                 buttonText: 'Create Task',
-                icon: CupertinoIcons.person_crop_circle,
+                svgIcon: SvgPicture.asset('assets/icons/single_assignment_icon.svg',),
                 iconBackgroundColor: Colors.blue.shade50,
                 isOutlined: false,
               ),
               SizedBox(height: 16),
               // Collaborative Task - Outlined Button
-              TaskCard(
+              CreateTaskCard(
                 title: 'Collaborative Task',
                 subtitle: 'Assign to multiple members',
                 buttonText: 'Create Task',
-                icon: CupertinoIcons.group,
+                svgIcon: SvgPicture.asset('assets/icons/collaborative_task_icon.svg',),
                 iconBackgroundColor: Colors.blue.shade50,
                 isOutlined: true,
               ),
               SizedBox(height: 16),
               // Personal Task - Outlined Button
-              TaskCard(
+              CreateTaskCard(
                 title: 'Personal Task',
                 subtitle: 'Create task for yourself',
                 buttonText: 'Create Task',
-                icon: CupertinoIcons.rectangle_stack_person_crop,
                 iconBackgroundColor: Colors.blue.shade50,
+                svgIcon: SvgPicture.asset('assets/icons/personal_task.svg',),
                 isOutlined: true,
               ),
               SizedBox(height: 24),
@@ -494,22 +496,39 @@ class UgcAddTaskScreen extends StatelessWidget {
   }
 }
 
-class TaskCard extends StatelessWidget {
+
+class CreateTaskCard extends StatelessWidget {
   final String title;
   final String subtitle;
   final String buttonText;
-  final IconData icon;
   final Color iconBackgroundColor;
   final bool isOutlined;
 
-  TaskCard({
+  // Icon-related properties
+  final IconData? iconData;
+  final SvgPicture? svgIcon;
+  final String? svgAssetPath;
+  final double iconSize;
+  final Color? iconColor;
+
+  const CreateTaskCard({
+    super.key,
     required this.title,
     required this.subtitle,
     required this.buttonText,
-    required this.icon,
     required this.iconBackgroundColor,
     this.isOutlined = false,
-  });
+    this.iconData,
+    this.svgIcon,
+    this.svgAssetPath,
+    this.iconSize = 35,
+    this.iconColor,
+  }) : assert(
+  (iconData != null && svgIcon == null && svgAssetPath == null) ||
+      (iconData == null && svgIcon != null && svgAssetPath == null) ||
+      (iconData == null && svgIcon == null && svgAssetPath != null),
+  'Provide either iconData, svgIcon, or svgAssetPath, but not multiple',
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -524,48 +543,42 @@ class TaskCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: iconBackgroundColor,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    icon,
-                    size: 24,
-                    color: Colors.blue,
-                  ),
-                ),
-                SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+            // Icon container
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: iconBackgroundColor,
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                // child: _buildIcon(),
+                child: svgIcon,
+              ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 16),
+
+            // Title and subtitle
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Button
             SizedBox(
               width: double.infinity,
               child: isOutlined
@@ -576,11 +589,11 @@ class TaskCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   side: BorderSide(color: Colors.blue),
-                  padding: EdgeInsets.symmetric(vertical: 14),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
                 child: Text(
                   buttonText,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 16,
                     color: Colors.blue,
                     fontWeight: FontWeight.w500,
@@ -594,13 +607,13 @@ class TaskCard extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  padding: EdgeInsets.symmetric(vertical: 14),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
                 child: Text(
                   buttonText,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 16,
-                    color: AppColors.white,
+                    color: Colors.white,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
