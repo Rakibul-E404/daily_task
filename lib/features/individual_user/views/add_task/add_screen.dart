@@ -163,7 +163,9 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 /// Task Title
-                Text('Task Title', style: AppTextStyles.smallHeading),
+                Text('Task Title', style: AppTextStyles.smallHeading.copyWith(
+                  fontSize: 16
+                )),
                 const SizedBox(height: 12),
                 TextField(
                   controller: _titleController,
@@ -192,7 +194,9 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                 const SizedBox(height: 24),
 
                 // Task Description
-                Text('Task Description', style: AppTextStyles.smallHeading),
+                Text('Task Description', style: AppTextStyles.smallHeading.copyWith(
+                    fontSize: 16
+                )),
                 const SizedBox(height: 12),
                 TextField(
                   controller: _descriptionController,
@@ -220,7 +224,9 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                 const SizedBox(height: 24),
 
                 // Task Date & Time
-                Text('Task Date & Time', style: AppTextStyles.smallHeading),
+                Text('Task Date & Time', style: AppTextStyles.smallHeading.copyWith(
+                    fontSize: 16
+                )),
                 const SizedBox(height: 12),
                 TextField(
                   controller: _dateTimeController,
