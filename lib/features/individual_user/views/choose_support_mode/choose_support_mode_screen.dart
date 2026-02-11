@@ -27,7 +27,8 @@ class _ChooseSupportModeScreenState extends State<ChooseSupportModeScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF5F7FA),
+        backgroundColor: AppColors.backgroundColor,
+        surfaceTintColor: AppColors.transparent,
         elevation: 0,
         title: widget.fromProfile ?
          Text("Support Mode",style: AppTextStyles.largeHeading,) : null,
@@ -38,146 +39,144 @@ class _ChooseSupportModeScreenState extends State<ChooseSupportModeScreen> {
           },
         ) : null,
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            children: [
-              if (!widget.fromProfile) const SizedBox(height: 60),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: Column(
+          children: [
+            if (!widget.fromProfile) const SizedBox(height: 60),
 
-              // Title
-              if (!widget.fromProfile)
-              const Text(
-                'Choose Your Support Style',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                  fontFamily: 'Plus Jakarta Sans',
-                ),
-                textAlign: TextAlign.center,
+            // Title
+            if (!widget.fromProfile)
+            const Text(
+              'Choose Your Support Style',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+                fontFamily: 'Plus Jakarta Sans',
               ),
+              textAlign: TextAlign.center,
+            ),
 
-              const SizedBox(height: 12),
+            const SizedBox(height: 12),
 
-              // Subtitle
-              if (!widget.fromProfile)
-              Text(
-                'How would you like Clarity to communicate with you?',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[600],
-                  fontFamily: 'Plus Jakarta Sans',
-                  height: 1.4,
-                ),
-                textAlign: TextAlign.center,
+            // Subtitle
+            if (!widget.fromProfile)
+            Text(
+              'How would you like Clarity to communicate with you?',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[600],
+                fontFamily: 'Plus Jakarta Sans',
+                height: 1.4,
               ),
+              textAlign: TextAlign.center,
+            ),
 
-              const SizedBox(height: 40),
+            const SizedBox(height: 40),
 
-              // Support Style Cards
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      // _buildSupportCard(
-                      //   mode: 'calm',
-                      //   emoji: '😌',
-                      //   title: 'Calm',
-                      //   description:
-                      //   'Gentle guidance with peaceful reminders and soothing encouragement.',
-                      //   quote: '"Take your time. Each small step matters."',
-                      //   isSelected: selectedMode == 'calm',
-                      // ),
+            // Support Style Cards
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    // _buildSupportCard(
+                    //   mode: 'calm',
+                    //   emoji: '😌',
+                    //   title: 'Calm',
+                    //   description:
+                    //   'Gentle guidance with peaceful reminders and soothing encouragement.',
+                    //   quote: '"Take your time. Each small step matters."',
+                    //   isSelected: selectedMode == 'calm',
+                    // ),
 
-                      _buildSupportCard(
-                        mode: 'calm',
-                        icon:
-                        SvgPicture.asset(
-                          'assets/images/clam.svg',
-                          width: 35,
-                          height: 35,
-                        ),
-                        title: 'Calm',
-                        description:
-                        'Gentle guidance with peaceful reminders and soothing encouragement.',
-                        quote: '"Take your time. Each small step matters."',
-                        isSelected: selectedMode == 'calm',
+                    _buildSupportCard(
+                      mode: 'calm',
+                      icon:
+                      SvgPicture.asset(
+                        'assets/images/clam.svg',
+                        width: 35,
+                        height: 35,
                       ),
+                      title: 'Calm',
+                      description:
+                      'Gentle guidance with peaceful reminders and soothing encouragement.',
+                      quote: '"Take your time. Each small step matters."',
+                      isSelected: selectedMode == 'calm',
+                    ),
 
 
-                      const SizedBox(height: 16),
-                      _buildSupportCard(
-                        mode: 'encouraging',
-                        icon: SvgPicture.asset(
-                          'assets/images/encouraging.svg',
-                          width: 35,
-                          height: 35,
-                        ),
-                        title: 'Encouraging',
-                        description:
-                        'Positive energy with motivational reminders and uplifting support.',
-                        quote: '"You\'re doing great! Keep up the momentum!"',
-                        isSelected: selectedMode == 'encouraging',
+                    const SizedBox(height: 16),
+                    _buildSupportCard(
+                      mode: 'encouraging',
+                      icon: SvgPicture.asset(
+                        'assets/images/encouraging.svg',
+                        width: 35,
+                        height: 35,
                       ),
-                      const SizedBox(height: 16),
-                      _buildSupportCard(
-                        mode: 'logical',
-                        icon: SvgPicture.asset(
-                          'assets/images/logical.svg',
-                          width: 35,
-                          height: 35,
-                        ),
-                        title: 'Logical',
-                        description:
-                        'Gentle guidance with peaceful reminders and soothing encouragement.',
-                        quote: null,
-                        isSelected: selectedMode == 'logical',
+                      title: 'Encouraging',
+                      description:
+                      'Positive energy with motivational reminders and uplifting support.',
+                      quote: '"You\'re doing great! Keep up the momentum!"',
+                      isSelected: selectedMode == 'encouraging',
+                    ),
+                    const SizedBox(height: 16),
+                    _buildSupportCard(
+                      mode: 'logical',
+                      icon: SvgPicture.asset(
+                        'assets/images/logical.svg',
+                        width: 35,
+                        height: 35,
                       ),
-                      const SizedBox(height: 24),
-                    ],
-                  ),
+                      title: 'Logical',
+                      description:
+                      'Gentle guidance with peaceful reminders and soothing encouragement.',
+                      quote: null,
+                      isSelected: selectedMode == 'logical',
+                    ),
+                    const SizedBox(height: 24),
+                  ],
                 ),
               ),
+            ),
 
-              // Button based on navigation source
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: selectedMode != null
-                      ? () {
-                    debugPrint('Selected mode: $selectedMode');
+            // Button based on navigation source
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: selectedMode != null
+                    ? () {
+                  debugPrint('Selected mode: $selectedMode');
 
-                    if (widget.fromProfile) {
-                      // If coming from profile, just go back
-                      Navigator.pop(context);
-                      // You might want to save the preference here
-                    } else {
-                      // If coming from initial setup, go to main app
-                      Get.offAll(const MainBottomNav());
-                    }
+                  if (widget.fromProfile) {
+                    // If coming from profile, just go back
+                    Navigator.pop(context);
+                    // You might want to save the preference here
+                  } else {
+                    // If coming from initial setup, go to main app
+                    Get.offAll(const MainBottomNav());
                   }
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryColor,
-                    disabledBackgroundColor: AppColors.grey,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    elevation: 0,
+                }
+                    : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryColor,
+                  disabledBackgroundColor: AppColors.grey,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Text(
-                    widget.fromProfile ? 'Save Changes' : 'Get Started',
-                    style: AppTextStyles.smallHeading.copyWith(
-                      color: selectedMode != null ? AppColors.white : AppColors.lightGrey,
-                    ),
+                  elevation: 0,
+                ),
+                child: Text(
+                  widget.fromProfile ? 'Save Changes' : 'Get Started',
+                  style: AppTextStyles.smallHeading.copyWith(
+                    color: selectedMode != null ? AppColors.white : AppColors.lightGrey,
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
-            ],
-          ),
+            ),
+            const SizedBox(height: 24),
+          ],
         ),
       ),
     );
@@ -297,13 +296,13 @@ class _ChooseSupportModeScreenState extends State<ChooseSupportModeScreen> {
   Color _getEmojiBackgroundColor(String mode) {
     switch (mode) {
       case 'calm':
-        return const Color(0xFFD4E9FF);
+        return  AppColors.calmColor;
       case 'encouraging':
-        return const Color(0xFFFFE5E5);
+        return AppColors.encouragingColor;
       case 'logical':
-        return const Color(0xFFFFF4D4);
+        return AppColors.logicalColor;
       default:
-        return Colors.grey[200]!;
+        return AppColors.grey;
     }
   }
 }

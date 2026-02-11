@@ -13,6 +13,9 @@ class AppColors{
   static const Color textColorGreen = Color(0xff22c55e);
   static const Color cardBackgroundColor = Color(0xfff4f7f9);
   static const Color green = Color(0xff22c55e);
+  static const Color calmColor = Color(0xFFD4E9FF);
+  static const Color encouragingColor = Color(0xFFFFE5E5);
+  static const Color logicalColor = Color(0xFFFFF4D4);
   static const Color subscriptionPriceTextColor = Color(0xff455e7e);
   static const Color mainBottomNavColor = Color(0xffe0ecfb);
   static const Color selectionFillColor = Color(0xffe0ecfb);

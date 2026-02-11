@@ -12,8 +12,7 @@ class NotificationStyleScreen extends StatefulWidget {
 }
 
 class _NotificationStyleScreenState extends State<NotificationStyleScreen> {
-  String?
-  _selectedOption; // null = none selected; values: 'gentle', 'firm', 'xyz'
+  String? _selectedOption; // null = none selected; values: 'gentle', 'firm', 'xyz'
 
   void _selectOption(String option) {
     setState(() {
@@ -35,12 +34,10 @@ class _NotificationStyleScreenState extends State<NotificationStyleScreen> {
         title: Text('Notification Style', style: AppTextStyles.smallHeading),
         centerTitle: false,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.45
-          ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.all(16.0),
           child: Card(
             color: AppColors.cardBackgroundColor,
             shape: RoundedRectangleBorder(
@@ -50,6 +47,7 @@ class _NotificationStyleScreenState extends State<NotificationStyleScreen> {
               padding: const EdgeInsets.all(20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Row(
                     children: [
@@ -59,22 +57,24 @@ class _NotificationStyleScreenState extends State<NotificationStyleScreen> {
                         width: 40,
                       ),
                       const SizedBox(width: 16),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Notification Style',
-                            style: AppTextStyles.defaultTextStyle.copyWith(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Notification Style',
+                              style: AppTextStyles.defaultTextStyle.copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'How reminders should feel',
-                            style: AppTextStyles.defaultTextStyle,
-                          ),
-                        ],
+                            const SizedBox(height: 4),
+                            Text(
+                              'How reminders should feel',
+                              style: AppTextStyles.defaultTextStyle,
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -127,9 +127,7 @@ class _NotificationStyleScreenState extends State<NotificationStyleScreen> {
             width: isSelected ? 1.5 : 1.0,
           ),
           borderRadius: BorderRadius.circular(12.0),
-          color: isSelected
-              ?  AppColors.lightBlueColor
-              : null, // subtle blue bg when active
+          color: isSelected ? AppColors.lightBlueColor : null,
         ),
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         child: Row(
@@ -149,13 +147,14 @@ class _NotificationStyleScreenState extends State<NotificationStyleScreen> {
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.grey[600],
+                    ),
                   ),
                 ],
               ),
             ),
+            const SizedBox(width: 12),
             // Custom swappable toggle indicator (not a Switch — just visual)
             Container(
               width: 40,
