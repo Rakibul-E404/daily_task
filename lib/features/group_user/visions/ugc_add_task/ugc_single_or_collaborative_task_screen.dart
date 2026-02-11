@@ -23,7 +23,7 @@ class _UgcSingleOrCollaborativeTaskScreenState
 
   // List of members
   List<Map<String, dynamic>> members = [
-    {'id': '1', 'name': 'Alex', 'role': 'Secondary'},
+    {'id': '1', 'name': 'Alexa', 'role': 'Secondary'},
     {'id': '2', 'name': 'John Doe', 'role': 'Primary'},
     {'id': '3', 'name': 'Jane', 'role': 'Secondary'},
     {'id': '4', 'name': 'Mike', 'role': 'Secondary'},
@@ -74,20 +74,21 @@ class _UgcSingleOrCollaborativeTaskScreenState
     });
   }
 
-  // Show Add Member Dialog
-  void _showAddMemberDialog() {
-    showDialog(
+  // Show Add Member Dialog - FIXED VERSION
+  Future<void> _showAddMemberDialog() async {
+    final List<Map<String, dynamic>>? selectedMembers = await showDialog(
       context: context,
       builder: (BuildContext context) {
         return AddMemberDialog(
           availableMembers: availableMembers,
-          onMembersAdded: (selectedMembers) {
-            // This callback will be called when members are added
-            _handleMembersAdded(selectedMembers);
-          },
         );
       },
     );
+
+    // Handle the result after dialog is closed
+    if (selectedMembers != null && selectedMembers.isNotEmpty && mounted) {
+      _handleMembersAdded(selectedMembers);
+    }
   }
 
   // Handle members added from dialog
@@ -693,15 +694,13 @@ class __MemberChipInternalState extends State<_MemberChipInternal> {
   }
 }
 
-// Separate Dialog Widget
+// Separate Dialog Widget - FIXED VERSION
 class AddMemberDialog extends StatefulWidget {
   final List<Map<String, dynamic>> availableMembers;
-  final Function(List<Map<String, dynamic>>) onMembersAdded;
 
   const AddMemberDialog({
     super.key,
     required this.availableMembers,
-    required this.onMembersAdded,
   });
 
   @override
@@ -714,7 +713,7 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      actionsPadding: EdgeInsetsGeometry.only(right: 4, top: 0),
+      actionsPadding: const EdgeInsets.only(right: 16, bottom: 16, left: 16),
       backgroundColor: AppColors.backgroundColor,
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -727,7 +726,7 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
               color: Colors.blueAccent,
             ),
           ),
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           Text(
             'Team Members (${widget.availableMembers.length})',
             style: TextStyle(
@@ -738,13 +737,13 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
         ],
       ),
       content: SizedBox(
-        width: double.infinity,
+        width: double.maxFinite,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // Search Bar
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: Colors.grey[100],
                 borderRadius: BorderRadius.circular(8),
@@ -753,7 +752,7 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
               child: Row(
                 children: [
                   Icon(Icons.search, size: 20, color: Colors.grey[600]),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: TextField(
                       decoration: InputDecoration(
@@ -761,17 +760,17 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
                         border: InputBorder.none,
                         hintStyle: TextStyle(color: Colors.grey[500]),
                       ),
-                      style: TextStyle(fontSize: 14),
+                      style: const TextStyle(fontSize: 14),
                     ),
                   ),
                 ],
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
 
             // Divider
             Divider(color: Colors.grey[300]),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
 
             // Available Members List
             SizedBox(
@@ -789,11 +788,11 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
                         leading: CircleAvatar(
                           radius: 20,
                           backgroundColor: Colors.blue[100],
-                          foregroundImage: AssetImage("assets/images/dummy_child_user_image.png"),
+                          foregroundImage: const AssetImage("assets/images/dummy_child_user_image.png"),
                         ),
                         title: Text(
                           member['name'],
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                           ),
@@ -848,16 +847,14 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
         ElevatedButton(
           onPressed: () {
             if (selectedMembers.isNotEmpty) {
-              Navigator.of(context).pop(); // Close dialog first
-              // Call the callback to add members
-              widget.onMembersAdded(selectedMembers);
+              Navigator.of(context).pop(selectedMembers);
             } else {
               // Show warning if no members selected
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Please select at least one member'),
+                  content: const Text('Please select at least one member'),
                   backgroundColor: Colors.orange,
-                  duration: Duration(seconds: 2),
+                  duration: const Duration(seconds: 2),
                 ),
               );
             }
@@ -869,8 +866,8 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
             ),
           ),
           child: Text(
-            'ADD',
-            style: TextStyle(
+            'ADD (${selectedMembers.length})',
+            style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w500,
             ),
@@ -883,3 +880,5 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
     );
   }
 }
+
+
