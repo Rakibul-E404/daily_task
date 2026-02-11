@@ -25,7 +25,7 @@ class _UgcSingleOrCollaborativeTaskScreenState
   List<Map<String, dynamic>> members = [
     {'id': '1', 'name': 'Alex', 'role': 'Secondary'},
     {'id': '2', 'name': 'John Doe', 'role': 'Primary'},
-    {'id': '3', 'name': 'Jane', 'role': 'Secondary'},
+    {'id': '3', 'name': 'Janex', 'role': 'Secondary'},
     {'id': '4', 'name': 'Mike', 'role': 'Secondary'},
   ];
 
