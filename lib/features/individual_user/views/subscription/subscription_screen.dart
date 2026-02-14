@@ -101,15 +101,14 @@ class SubscriptionPage extends StatelessWidget {
                       const SizedBox(height: 16),
 
                       // Price
-                      const Row(
+                       Row(
                         children: [
                           Text(
                             '\$10.99',
-                            style: TextStyle(
-                              fontFamily: "Plus Jakarta Sans",
-                              fontSize: 28,
+                            style: AppTextStyles.defaultTextStyle.copyWith(
                               fontWeight: FontWeight.bold,
-                              color: AppColors.subscriptionPriceTextColor,
+                              fontSize: 30,
+                              color: AppColors.subscriptionPriceTextColor
                             ),
                           ),
                           SizedBox(width: 8),

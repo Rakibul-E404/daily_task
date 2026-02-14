@@ -125,7 +125,7 @@ class UgcHomeScreen extends StatelessWidget {
     final progress = totalTasks > 0 ? completedTasks / totalTasks : 0;
 
     return Card(
-      color: AppColors.white,
+      color: AppColors.backgroundColor,
       elevation: 1,
       child: Container(
         width: double.infinity,
@@ -170,8 +170,8 @@ class UgcHomeScreen extends StatelessWidget {
               children: [
                 Expanded(
                   child: LinearProgressIndicator(
-                    value: 1 / 8,
-                    backgroundColor: Colors.grey[200],
+                    value: 1 / 4,
+                    backgroundColor: AppColors.grey.withValues(alpha: 0.3),
                     valueColor: const AlwaysStoppedAnimation<Color>(
                       AppColors.primaryColor,
                     ),
@@ -187,7 +187,7 @@ class UgcHomeScreen extends StatelessWidget {
               '${totalTasks - completedTasks} tasks remaining. You\'ve got this!',
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey[600],
+                color: AppColors.grey,
                 fontFamily: 'Plus Jakarta Sans',
               ),
             ),
@@ -330,7 +330,7 @@ class UgcHomeScreen extends StatelessWidget {
         task.groupMembers != null && task.groupMembers!.isNotEmpty;
 
     return Card(
-      color: AppColors.white,
+      color: AppColors.backgroundColor,
       elevation: 0.5,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),

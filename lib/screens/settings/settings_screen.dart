@@ -95,7 +95,11 @@ class SettingsScreen extends StatelessWidget {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       leading: icon,
-      title: Text(title, style: AppTextStyles.defaultTextStyle),
+      title: Text(title, style: AppTextStyles.defaultTextStyle.copyWith(
+        fontSize: 12,
+        height: 1,
+
+      )),
       trailing: trailing,
       onTap: onTap, // 👈 Now uses passed callback
     );

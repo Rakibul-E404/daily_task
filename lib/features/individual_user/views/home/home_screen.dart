@@ -110,7 +110,7 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildDailyProgress() {
     return Card(
-      color: AppColors.white,
+      color: AppColors.backgroundColor,
       elevation: 1,
       child: Container(
         width: double.infinity,
@@ -156,7 +156,7 @@ class HomeScreen extends StatelessWidget {
                 Expanded(
                   child: LinearProgressIndicator(
                     value: 1 / 3,
-                    backgroundColor: Colors.grey[200],
+                    backgroundColor: AppColors.grey.withValues(alpha: 0.3),
                     valueColor: const AlwaysStoppedAnimation<Color>(
                       AppColors.primaryColor,
                     ),

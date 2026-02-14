@@ -16,7 +16,7 @@ class AppColors{
   static const Color calmColor = Color(0xFFD4E9FF);
   static const Color encouragingColor = Color(0xFFFFE5E5);
   static const Color logicalColor = Color(0xFFFFF4D4);
-  static const Color subscriptionPriceTextColor = Color(0xff455e7e);
+  static const Color subscriptionPriceTextColor = Color(0xff284569);
   static const Color mainBottomNavColor = Color(0xffe0ecfb);
   static const Color selectionFillColor = Color(0xffe0ecfb);
   static const Color lightBlueColor = Color(0xffe0ecfb);

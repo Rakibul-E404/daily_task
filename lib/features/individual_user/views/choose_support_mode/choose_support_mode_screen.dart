@@ -65,10 +65,9 @@ class _ChooseSupportModeScreenState extends State<ChooseSupportModeScreen> {
             Text(
               'How would you like Clarity to communicate with you?',
               style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
+                fontSize: 14,
+                color: AppColors.grey,
                 fontFamily: 'Plus Jakarta Sans',
-                height: 1.4,
               ),
               textAlign: TextAlign.center,
             ),
@@ -80,16 +79,6 @@ class _ChooseSupportModeScreenState extends State<ChooseSupportModeScreen> {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    // _buildSupportCard(
-                    //   mode: 'calm',
-                    //   emoji: '😌',
-                    //   title: 'Calm',
-                    //   description:
-                    //   'Gentle guidance with peaceful reminders and soothing encouragement.',
-                    //   quote: '"Take your time. Each small step matters."',
-                    //   isSelected: selectedMode == 'calm',
-                    // ),
-
                     _buildSupportCard(
                       mode: 'calm',
                       icon:

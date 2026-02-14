@@ -10,7 +10,6 @@ import 'package:get/get_navigation/src/extension_navigation.dart';
 import '../../../../screens/settings/settings_screen.dart';
 import '../../../../utils/app_colors.dart';
 import '../../../../utils/app_texts_style.dart';
-import '../../../../utils/static_text.dart';
 import '../choose_support_mode/choose_support_mode_screen.dart';
 
 
@@ -155,7 +154,7 @@ class ProfileScreen extends StatelessWidget {
                               ),
                               Icon(
                                 Icons.access_time_outlined,
-                                color: Color(0xFF999999),
+                                color: AppColors.iconColor,
                                 size: 20,
                               ),
                             ],
@@ -400,8 +399,8 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             const Icon(
-              Icons.arrow_forward_ios,
-              color: Color(0xFFCCCCCC),
+              Icons.arrow_forward,
+              color: AppColors.iconColor,
               size: 16,
             ),
           ],

@@ -139,8 +139,8 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   Text(
                     'Add New Task',
                     style: AppTextStyles.largeHeading.copyWith(
-                      fontSize: 30,
-                      fontWeight: FontWeight.normal,
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -200,7 +200,8 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                 const SizedBox(height: 12),
                 TextField(
                   controller: _descriptionController,
-                  maxLines: 4,
+                  maxLength: 5000,
+                  maxLines: 6,
                   cursorColor: AppColors.primaryColor,
                   decoration: InputDecoration(
                     hintText: 'What needs your attention?',
@@ -296,6 +297,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                             children: [
                               Expanded(
                                 child: TextField(
+                                  maxLength: 30,
                                   controller: _subtaskControllers[index],
                                   focusNode: _subtaskFocusNodes[index],
                                   maxLines: null,
@@ -338,6 +340,8 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   );
                 }),
 
+                const SizedBox(height: 20),
+
                 // Add Sub Task Button
                 GestureDetector(
                   onTap: _addNewSubTask,
@@ -364,7 +368,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 20),
 
                 // Create Task Button
                 SizedBox(

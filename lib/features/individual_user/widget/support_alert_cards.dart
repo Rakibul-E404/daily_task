@@ -90,10 +90,10 @@ class _SupportAlertDialog extends StatelessWidget {
               config.message,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
-                height: 1.4,
+                height: 1.2,
               ),
             ),
 

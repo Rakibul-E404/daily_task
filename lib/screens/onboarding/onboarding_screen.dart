@@ -86,7 +86,7 @@ class OnboardingScreen extends StatelessWidget {
                                     color: AppColors.primaryColor,
                                     fontSize: 15,
                                     fontFamily: 'Plus Jakarta Sans',
-                                    fontWeight: FontWeight.normal,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 TextSpan(
