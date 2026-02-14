@@ -12,7 +12,7 @@ class NotificationStyleScreen extends StatefulWidget {
 }
 
 class _NotificationStyleScreenState extends State<NotificationStyleScreen> {
-  String? _selectedOption; // null = none selected; values: 'gentle', 'firm', 'xyz'
+  String? _selectedOption; // null = none selected; values: 'gentle', 'firm', 'silent'
 
   void _selectOption(String option) {
     setState(() {
@@ -96,11 +96,11 @@ class _NotificationStyleScreenState extends State<NotificationStyleScreen> {
                   ),
                   const SizedBox(height: 16),
                   _buildOptionTile(
-                    key: 'xyz',
-                    title: 'XYZ',
-                    subtitle: 'Soft and non - intrusive',
-                    isSelected: _selectedOption == 'xyz',
-                    onTap: () => _selectOption('xyz'),
+                    key: 'silent',
+                    title: 'Silent',
+                    subtitle: 'Notification will not be provided',
+                    isSelected: _selectedOption == 'silent',
+                    onTap: () => _selectOption('silent'),
                   ),
                 ],
               ),
