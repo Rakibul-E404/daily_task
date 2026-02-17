@@ -47,7 +47,7 @@ class _NotificationStyleScreenState extends State<NotificationStyleScreen> {
         setState(() {
           _isPlaying = false;
         });
-        debugPrint('✅ Sound finished playing');
+        debugPrint('✅ Sound finished playing...');
       }
     });
   }
