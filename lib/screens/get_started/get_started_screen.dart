@@ -1,117 +1,127 @@
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import '../../../../screens/onboarding/onboarding_screen.dart';
 import '../../utils/app_colors.dart';
-
-
+import 'package:askfemi/utils/app_texts_style.dart';
 
 class GetStartedScreen extends StatelessWidget {
   const GetStartedScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.sizeOf(context).height;
+
     return Scaffold(
       backgroundColor: AppColors.white,
       body: Column(
         children: [
+          /// Image
           Flexible(
             child: SizedBox(
               width: double.infinity,
               child: Image.asset(
                 "assets/images/get_started.png",
-                fit: BoxFit.cover, // fit goes inside Image.asset
+                fit: BoxFit.cover,
+                cacheWidth: 1080,
               ),
             ),
           ),
-          SizedBox(
-            height:
-                MediaQuery.of(context).size.height *
-                0.03, // 3% of screen height
-          ),
+
+          SizedBox(height: screenHeight * 0.03),
+
+          /// Welcome Text (same alignment & structure)
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 20.0),
-                child: Column(
-                  children: [
-                    RichText(
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
-                            text: "Welcome\nto ",
-                            style: TextStyle(
-                              fontFamily: 'Plus Jakarta Sans',
-                              fontSize: 60,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.black,
-                              height: 1.0,
-                            ),
-                          ),
-                          TextSpan(
-                            text: "Z3ns!",
-                            style: TextStyle(
-                              fontFamily: 'Plus Jakarta Sans',
-                              fontSize: 60,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textColorBlue,
-                              height: 1.1,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+              const Padding(
+                padding: EdgeInsets.only(left: 20),
+                child: _WelcomeText(),
               ),
             ],
           ),
-          SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-          Padding(
-            padding: const EdgeInsets.only(left: 20.0),
-            child: Expanded(
-              child: Text(
-                "A mindful space for your daily tasks. We believe in doing less, but better.",
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: 16,
-                  fontWeight: FontWeight.normal,
-                  color: AppColors.black,
-                  height: 1.1,
+
+          SizedBox(height: screenHeight * 0.03),
+
+          /// Description
+          const Padding(
+            padding: EdgeInsets.only(left: 20),
+            child: _DescriptionText(),
+          ),
+
+          SizedBox(height: screenHeight * 0.03),
+
+          /// Button
+          SizedBox(
+            width: double.infinity,
+            height: screenHeight * 0.09,
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: ElevatedButton(
+                onPressed: () => Get.to(() => const OnboardingScreen()),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryColor,
+                  foregroundColor: AppColors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  "Continue",
+                  style: AppTextStyles.smallText.copyWith(
+                    fontSize: 18,
+                    color: AppColors.white,
+                  ),
                 ),
               ),
             ),
           ),
-          SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-          SizedBox(
-            width: double.infinity,
-            height: MediaQuery.of(context).size.height * 0.09,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: ElevatedButton(
-                onPressed: () {
-                  Get.to(OnboardingScreen());
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.textColorBlue,
-                  foregroundColor: AppColors.white,
-                  textStyle: const TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontSize: 16,
-                    fontWeight: FontWeight.normal,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12), // Optional rounded corners
-                  ),
-                  elevation: 0, // Remove shadow if needed
-                ),
-                child: const Text("Continue"),
-              ),
-            ),
-          )
         ],
+      ),
+    );
+  }
+}
+
+/// Same UI, just removed unnecessary Column wrapper
+class _WelcomeText extends StatelessWidget {
+  const _WelcomeText();
+
+  @override
+  Widget build(BuildContext context) {
+    return RichText(
+      text: TextSpan(
+        style: AppTextStyles.defaultTextStyle.copyWith(
+          fontSize: 60,
+          fontWeight: FontWeight.bold,
+          height: 1,
+        ),
+        children: [
+          TextSpan(
+            text: "Welcome\nto ",
+            style: TextStyle(color: AppColors.black),
+          ),
+          TextSpan(
+            text: "Z3ns!",
+            style: TextStyle(color: AppColors.primaryColor),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DescriptionText extends StatelessWidget {
+  const _DescriptionText();
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      "A mindful space for your daily tasks. We believe in doing less, but better.",
+      style: AppTextStyles.defaultTextStyle.copyWith(
+        fontSize: 16,
+        fontWeight: FontWeight.normal,
+        color: AppColors.black,
+        height: 1,
       ),
     );
   }

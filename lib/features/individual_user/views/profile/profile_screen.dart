@@ -239,24 +239,6 @@ class ProfileScreen extends StatelessWidget {
                           },
                         ),
                         _buildDivider(),
-                        // // Logout
-                        // _buildMenuItem(
-                        //   icon: Icons.logout,
-                        //   iconColor: AppColors.iconColor,
-                        //   title: 'Logout',
-                        //   onTap: () {
-                        //     AlertDialog(
-                        //       title: Text("Sure for Logout?"),
-                        //       backgroundColor: AppColors.backgroundColor,
-                        //       icon: Icon(Icons.logout_outlined),
-                        //       actions: [
-                        //
-                        //       ],
-                        //     );
-                        //   },
-                        //   isLast: true,
-                        // ),
-
                         _buildMenuItem(
                           icon: Icons.logout,
                           iconColor: AppColors.iconColor,
@@ -413,7 +395,7 @@ class ProfileScreen extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(left: 60),
       height: 1,
-      color: AppColors.white,
+      color: AppColors.grey.withValues(alpha: 0.3),
     );
   }
 
@@ -483,3 +465,6 @@ class ProfileScreen extends StatelessWidget {
 
 
 }
+
+
+

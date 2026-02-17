@@ -210,7 +210,6 @@ class UgcProfileScreen extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      _buildDivider(),
                       // Personal Information
                       _buildMenuItem(
                         icon: CupertinoIcons.person_crop_circle,
@@ -415,7 +414,7 @@ class UgcProfileScreen extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             const Icon(
-              Icons.arrow_forward_ios,
+              Icons.arrow_forward,
               color: Color(0xFFCCCCCC),
               size: 16,
             ),
@@ -429,7 +428,7 @@ class UgcProfileScreen extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(left: 60),
       height: 1,
-      color: AppColors.white,
+      color: AppColors.grey.withValues(alpha: 0.3),
     );
   }
 
