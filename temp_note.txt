@@ -1,2 +1,2 @@
-# todo:: need to set screen lock for the
-# todo:: app open home screen + home screen = 1 single screen
+# todo:: avatar_stack 3.0.0 for the screen --->
+         ugc_home and ugc_addTask
