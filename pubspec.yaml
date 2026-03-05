@@ -43,6 +43,7 @@ dependencies:
   intl: ^0.20.2
   dashed_line: ^0.1.0+3
   audioplayers: ^6.5.1
+  avatar_stack: ^3.0.0
 
 dev_dependencies:
   flutter_test:
