@@ -1,14 +1,13 @@
 import 'package:askfemi/features/individual_user/views/home/task_details/model/sub_task_model.dart';
 import 'package:askfemi/features/individual_user/views/home/task_details/model/task_model.dart';
-import 'package:askfemi/utils/app_colors.dart';
-import 'package:askfemi/utils/app_texts_style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:get/get_navigation/src/routes/transitions_type.dart';
-
-import '../../../../widget/build_task_card.dart';
+import '../../../../utils/app_colors.dart';
+import '../../../../utils/app_texts_style.dart';
+import '../../widget/build_task_card.dart';
 import '../notification/notification_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -50,7 +49,7 @@ class HomeScreen extends StatelessWidget {
   Widget _buildSliverAppBar() {
     return SliverAppBar(
       expandedHeight: 80,
-       floating: false,
+      floating: false,
       pinned: true,
       stretch: true,
       surfaceTintColor: Colors.transparent,
@@ -82,10 +81,10 @@ class HomeScreen extends StatelessWidget {
                       'Welcome back!',
                       style: AppTextStyles.smallText,
                     ),
-                     Text(
+                    Text(
                       'Rakibul',
                       style: AppTextStyles.defaultTextStyle.copyWith(
-                        fontWeight: FontWeight.bold
+                          fontWeight: FontWeight.bold
                       ),
                     ),
                   ],
@@ -111,7 +110,7 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildDailyProgress() {
     return Card(
-      color: AppColors.white,
+      color: AppColors.backgroundColor,
       elevation: 1,
       child: Container(
         width: double.infinity,
@@ -157,7 +156,7 @@ class HomeScreen extends StatelessWidget {
                 Expanded(
                   child: LinearProgressIndicator(
                     value: 1 / 3,
-                    backgroundColor: Colors.grey[200],
+                    backgroundColor: AppColors.grey.withValues(alpha: 0.3),
                     valueColor: const AlwaysStoppedAnimation<Color>(
                       AppColors.primaryColor,
                     ),
@@ -228,6 +227,36 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildTasksList(BuildContext context) {
     final tasks = _getTasks();
+
+    // If no tasks, show empty state
+    if (tasks.isEmpty) {
+      return SliverFillRemaining(
+        hasScrollBody: false,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SvgPicture.asset(
+                'assets/images/empty_task.svg',
+                height: 200,
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'No tasks yet',
+                style: AppTextStyles.defaultTextStyle.copyWith(
+                  fontSize: 30
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Create your task to get started!',
+                style: AppTextStyles.defaultTextStyle,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 16),

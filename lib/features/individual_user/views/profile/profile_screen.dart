@@ -2,14 +2,16 @@ import 'package:askfemi/auth/sign_in/singn_in_screen.dart';
 import 'package:askfemi/features/individual_user/views/notification/notification_style_screen.dart';
 import 'package:askfemi/features/individual_user/views/profile/personal_information/personal_profile_info_screen.dart';
 import 'package:askfemi/features/individual_user/views/subscription/subscription_screen.dart';
-import 'package:askfemi/features/settings/settings_screen.dart';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
+import '../../../../screens/settings/settings_screen.dart';
 import '../../../../utils/app_colors.dart';
 import '../../../../utils/app_texts_style.dart';
 import '../choose_support_mode/choose_support_mode_screen.dart';
+
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -152,7 +154,7 @@ class ProfileScreen extends StatelessWidget {
                               ),
                               Icon(
                                 Icons.access_time_outlined,
-                                color: Color(0xFF999999),
+                                color: AppColors.iconColor,
                                 size: 20,
                               ),
                             ],
@@ -237,24 +239,6 @@ class ProfileScreen extends StatelessWidget {
                           },
                         ),
                         _buildDivider(),
-                        // // Logout
-                        // _buildMenuItem(
-                        //   icon: Icons.logout,
-                        //   iconColor: AppColors.iconColor,
-                        //   title: 'Logout',
-                        //   onTap: () {
-                        //     AlertDialog(
-                        //       title: Text("Sure for Logout?"),
-                        //       backgroundColor: AppColors.backgroundColor,
-                        //       icon: Icon(Icons.logout_outlined),
-                        //       actions: [
-                        //
-                        //       ],
-                        //     );
-                        //   },
-                        //   isLast: true,
-                        // ),
-
                         _buildMenuItem(
                           icon: Icons.logout,
                           iconColor: AppColors.iconColor,
@@ -291,9 +275,7 @@ class ProfileScreen extends StatelessWidget {
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(8))// Logout button color
                                       ),
                                       onPressed: () {
-                                        Get.offAll(()=>SignInScreen()); // Close the dialog first
-                                        // TODO: Add your logout logic here, e.g.:
-                                        // AuthService.logout();
+                                        Get.offAll(()=>SignInScreen());
                                         ScaffoldMessenger.of(context).showSnackBar(
                                           const SnackBar(content: Text("Logged out successfully")),
                                         );
@@ -399,8 +381,8 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             const Icon(
-              Icons.arrow_forward_ios,
-              color: Color(0xFFCCCCCC),
+              Icons.arrow_forward,
+              color: AppColors.iconColor,
               size: 16,
             ),
           ],
@@ -413,7 +395,7 @@ class ProfileScreen extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(left: 60),
       height: 1,
-      color: AppColors.white,
+      color: AppColors.grey.withValues(alpha: 0.3),
     );
   }
 
@@ -483,3 +465,6 @@ class ProfileScreen extends StatelessWidget {
 
 
 }
+
+
+

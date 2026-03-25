@@ -1,9 +1,9 @@
-import 'package:askfemi/features/settings/change_password_screen.dart';
+import 'package:askfemi/features/group_user/visions/bottom_navigation/ugc_bottom_nav.dart';
+import 'package:askfemi/features/group_user/visions/ugc_task_status/ugc_task_status_screen.dart';
+import 'package:askfemi/screens/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
-
-import 'features/individual_user/views/bottom_navigation/main_bottom_nav.dart';
 
 
 void main() async {
@@ -24,7 +24,8 @@ class TaskManagement extends StatelessWidget {
     return GetMaterialApp(
       title: 'Task Management',
       // home:  const  SplashScreen(),
-      home: MainBottomNav(),
+      // home: UgcTaskStatusScreen(),
+      home: UgcMainBottomNav(),
       debugShowCheckedModeBanner: false,
     );
   }

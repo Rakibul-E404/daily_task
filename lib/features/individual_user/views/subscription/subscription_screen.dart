@@ -1,9 +1,9 @@
-import 'package:askfemi/utils/app_texts_style.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import '../../../../utils/app_colors.dart';
+import '../../../../utils/app_texts_style.dart';
 import '../choose_support_mode/choose_support_mode_screen.dart';
 
 class SubscriptionPage extends StatelessWidget {
@@ -101,15 +101,14 @@ class SubscriptionPage extends StatelessWidget {
                       const SizedBox(height: 16),
 
                       // Price
-                      const Row(
+                       Row(
                         children: [
                           Text(
                             '\$10.99',
-                            style: TextStyle(
-                              fontFamily: "Plus Jakarta Sans",
-                              fontSize: 28,
+                            style: AppTextStyles.defaultTextStyle.copyWith(
                               fontWeight: FontWeight.bold,
-                              color: AppColors.subscriptionPriceTextColor,
+                              fontSize: 30,
+                              color: AppColors.subscriptionPriceTextColor
                             ),
                           ),
                           SizedBox(width: 8),
@@ -182,7 +181,7 @@ class SubscriptionPage extends StatelessWidget {
                             backgroundColor: fromProfile
                                 ? AppColors.liteRedColor
                                 : AppColors.primaryColor,
-                            foregroundColor: AppColors.red,
+                            foregroundColor: fromProfile ? AppColors.red : AppColors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
