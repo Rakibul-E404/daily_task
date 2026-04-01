@@ -1,11 +1,9 @@
-import 'package:askfemi/features/individual_user/views/profile/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import '../../utils/app_colors.dart';
 import '../forgot_password/forgot_password_screen.dart';
 import '../sign_up/sign_up_screen.dart';
-import '../../user_type.dart';
 import 'google_signin_screen_controller.dart';
 import 'manual_signin_screen_controller.dart';
 
@@ -217,72 +215,6 @@ class SignInScreen extends StatelessWidget {
                     ///=======================
                     /// sign in button
                     /// ========================
-                    // GetBuilder<ManualSignInScreenController>(
-                    //   builder: (controller) {
-                    //     return SizedBox(
-                    //       width: double.infinity,
-                    //       height: 50,
-                    //       child: ElevatedButton(
-                    //         style: ElevatedButton.styleFrom(
-                    //           backgroundColor: AppColors.primaryColor,
-                    //           shape: RoundedRectangleBorder(
-                    //             borderRadius: BorderRadius.circular(12),
-                    //           ),
-                    //         ),
-                    //         onPressed: controller.isLoading
-                    //             ? null
-                    //             : () async {
-                    //
-                    //           /// ✅ Validation
-                    //           if (emailController.text.trim().isEmpty ||
-                    //               passwordController.text.trim().isEmpty) {
-                    //             Get.snackbar("Error", "Please fill all fields");
-                    //             return;
-                    //           }
-                    //
-                    //           /// ✅ API CALL
-                    //           bool success = await controller.signIn(
-                    //             email: emailController.text.trim(),
-                    //             password: passwordController.text.trim(),
-                    //           );
-                    //
-                    //           /// ✅ Navigation
-                    //           if (success) {
-                    //
-                    //             ///--------
-                    //             ///todo----
-                    //             ///--------
-                    //             Get.offAll(ProfileScreen());
-                    //           }
-                    //         },
-                    //
-                    //         /// ✅ KEEP DESIGN + ADD LOADING
-                    //         child: controller.isLoading
-                    //             ? const SizedBox(
-                    //           height: 22,
-                    //           width: 22,
-                    //           child: CircularProgressIndicator(
-                    //             strokeWidth: 2,
-                    //             color: Colors.white,
-                    //           ),
-                    //         )
-                    //             : const Text(
-                    //           'Sign in',
-                    //           style: TextStyle(
-                    //             fontFamily: 'Plus Jakarta Sans',
-                    //             color: AppColors.white,
-                    //             fontSize: 16,
-                    //             fontWeight: FontWeight.bold,
-                    //           ),
-                    //         ),
-                    //       ),
-                    //     );
-                    //   },
-                    // ),
-
-
-
-
                     GetBuilder<ManualSignInScreenController>(
                       builder: (controller) {
                         return SizedBox(
