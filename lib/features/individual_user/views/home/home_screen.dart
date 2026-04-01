@@ -271,6 +271,9 @@ class HomeScreen extends StatelessWidget {
                 AnimatedOpacity(
                   opacity: 1.0,
                   duration: Duration(milliseconds: 300 + (taskIndex * 100)),
+                  ///----------------------
+                  ///- Task Card
+                  ///----------------------
                   child: buildTaskCard(
                     context: context,
                     task: tasks[taskIndex],
