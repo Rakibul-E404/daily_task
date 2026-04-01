@@ -216,6 +216,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         showSearchBox: false,
                         fit: FlexFit.loose,
                         menuProps: MenuProps(
+                          backgroundColor: Colors.white,
                           borderRadius: BorderRadius.circular(10),
                           elevation: 4,
                         ),

@@ -1,3 +1,4 @@
+import 'package:askfemi/features/individual_user/views/profile/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -5,6 +6,8 @@ import '../../utils/app_colors.dart';
 import '../forgot_password/forgot_password_screen.dart';
 import '../sign_up/sign_up_screen.dart';
 import '../../user_type.dart';
+import 'google_signin_screen_controller.dart';
+import 'manual_signin_screen_controller.dart';
 
 class SignInScreen extends StatelessWidget {
   SignInScreen({super.key}) {
@@ -13,9 +16,22 @@ class SignInScreen extends StatelessWidget {
 
   late final ValueNotifier<bool> _obscurePassword;
 
+  final ManualSignInScreenController _manualController =
+  Get.put(ManualSignInScreenController());
+
+  final GoogleSignInScreenController _googleController =
+  Get.put(GoogleSignInScreenController());
+
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  // late final ValueNotifier<bool> _obscurePassword;
+
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
+
+
 
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
@@ -79,6 +95,7 @@ class SignInScreen extends StatelessWidget {
                     ///========= E-mail ===========
                     ///===============================
                     TextField(
+                      controller: emailController,
                       decoration: InputDecoration(
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -121,6 +138,7 @@ class SignInScreen extends StatelessWidget {
                       valueListenable: _obscurePassword,
                       builder: (context, isObscured, child) {
                         return TextField(
+                          controller: passwordController,
                           obscureText: isObscured,
                           decoration: InputDecoration(
                             focusedBorder: OutlineInputBorder(
@@ -180,7 +198,6 @@ class SignInScreen extends StatelessWidget {
                       children: [
                         TextButton(
                           onPressed: () {
-                            ///todo:: need to modify this
                             Get.to(()=> ForgotPasswordScreen());
                           },
                           child: Text(
@@ -200,32 +217,129 @@ class SignInScreen extends StatelessWidget {
                     ///=======================
                     /// sign in button
                     /// ========================
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primaryColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                    // GetBuilder<ManualSignInScreenController>(
+                    //   builder: (controller) {
+                    //     return SizedBox(
+                    //       width: double.infinity,
+                    //       height: 50,
+                    //       child: ElevatedButton(
+                    //         style: ElevatedButton.styleFrom(
+                    //           backgroundColor: AppColors.primaryColor,
+                    //           shape: RoundedRectangleBorder(
+                    //             borderRadius: BorderRadius.circular(12),
+                    //           ),
+                    //         ),
+                    //         onPressed: controller.isLoading
+                    //             ? null
+                    //             : () async {
+                    //
+                    //           /// ✅ Validation
+                    //           if (emailController.text.trim().isEmpty ||
+                    //               passwordController.text.trim().isEmpty) {
+                    //             Get.snackbar("Error", "Please fill all fields");
+                    //             return;
+                    //           }
+                    //
+                    //           /// ✅ API CALL
+                    //           bool success = await controller.signIn(
+                    //             email: emailController.text.trim(),
+                    //             password: passwordController.text.trim(),
+                    //           );
+                    //
+                    //           /// ✅ Navigation
+                    //           if (success) {
+                    //
+                    //             ///--------
+                    //             ///todo----
+                    //             ///--------
+                    //             Get.offAll(ProfileScreen());
+                    //           }
+                    //         },
+                    //
+                    //         /// ✅ KEEP DESIGN + ADD LOADING
+                    //         child: controller.isLoading
+                    //             ? const SizedBox(
+                    //           height: 22,
+                    //           width: 22,
+                    //           child: CircularProgressIndicator(
+                    //             strokeWidth: 2,
+                    //             color: Colors.white,
+                    //           ),
+                    //         )
+                    //             : const Text(
+                    //           'Sign in',
+                    //           style: TextStyle(
+                    //             fontFamily: 'Plus Jakarta Sans',
+                    //             color: AppColors.white,
+                    //             fontSize: 16,
+                    //             fontWeight: FontWeight.bold,
+                    //           ),
+                    //         ),
+                    //       ),
+                    //     );
+                    //   },
+                    // ),
+
+
+
+
+                    GetBuilder<ManualSignInScreenController>(
+                      builder: (controller) {
+                        return SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primaryColor,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: controller.isLoading
+                                ? null
+                                : () async {
+                              /// Validation
+                              if (emailController.text.trim().isEmpty ||
+                                  passwordController.text.trim().isEmpty) {
+                                Get.snackbar("Error", "Please fill all fields");
+                                return;
+                              }
+
+                              /// API Call
+                              bool success = await controller.signIn(
+                                email: emailController.text.trim(),
+                                password: passwordController.text.trim(),
+                              );
+
+                              /// Navigate based on role
+                              if (success) {
+                                controller.navigateByRole();
+                              }
+                            },
+                            child: controller.isLoading
+                                ? const SizedBox(
+                              height: 22,
+                              width: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                                : const Text(
+                              'Sign in',
+                              style: TextStyle(
+                                fontFamily: 'Plus Jakarta Sans',
+                                color: AppColors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                        ),
-                        onPressed: () {
-                          // Get.offAll(AppOpenHomeScreen());
-                          ///todo:: this will be removed after api
-                          Get.offAll(UserTypeSelection());
-                        },
-                        child: const Text(
-                          'Sign in',
-                          style: TextStyle(
-                            fontFamily: 'Plus Jakarta Sans',
-                            color: AppColors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+                        );
+                      },
                     ),
+
+
                     const SizedBox(height: 24),
 
                     /// ================= SIGN UP =================
