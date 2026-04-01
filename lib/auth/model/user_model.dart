@@ -24,4 +24,14 @@ class UserModel {
           : null,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      '_id': id,
+      'name': name,
+      'email': email,
+      'role': role,
+      'profileImage': profileImageUrl != null ? {'imageUrl': profileImageUrl} : null,
+    };
+  }
 }

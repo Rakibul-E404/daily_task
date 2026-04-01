@@ -243,10 +243,6 @@ class SignInScreen extends StatelessWidget {
                                 password: passwordController.text.trim(),
                               );
 
-                              /// Navigate based on role
-                              if (success) {
-                                controller.navigateByRole();
-                              }
                             },
                             child: controller.isLoading
                                 ? const SizedBox(

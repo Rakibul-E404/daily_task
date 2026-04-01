@@ -1,11 +1,12 @@
 import 'package:get/get.dart';
-import '../model/user_model.dart';
+import '../../screens/get_started/get_started_screen.dart';
 import '../../utils/network/app_url.dart';
 import '../../utils/network/network_caller_dio.dart';
 import '../../utils/network/network_response_dio.dart';
 import '../../utils/network/secure_storage_service.dart';
-import 'package:askfemi/features/group_user/visions/bottom_navigation/ugc_bottom_nav.dart';
-import 'package:askfemi/features/individual_user/views/bottom_navigation/main_bottom_nav.dart';
+import '../model/user_model.dart';
+import '../../features/group_user/visions/bottom_navigation/ugc_bottom_nav.dart';
+import '../../features/individual_user/views/bottom_navigation/main_bottom_nav.dart';
 
 class ManualSignInScreenController extends GetxController {
   final NetworkCallerDio _networkCaller = NetworkCallerDio();
@@ -15,6 +16,7 @@ class ManualSignInScreenController extends GetxController {
 
   UserModel? loggedInUser;
 
+  /// ================= LOGIN =================
   Future<bool> signIn({
     required String email,
     required String password,
@@ -38,31 +40,38 @@ class ManualSignInScreenController extends GetxController {
 
     if (response.isSuccess) {
       try {
-        /// 🔑 Extract tokens
-        final accessToken = response.jsonResponse?['data']
-        ?['attributes']
-        ?['tokens']
-        ?['accessToken'];
-        final refreshToken = response.jsonResponse?['data']
-        ?['attributes']
-        ?['tokens']
-        ?['refreshToken'];
+        final data = response.jsonResponse?['data']?['attributes'];
+
+        // Parse user
+        final userJson = data?['user'];
+        if (userJson == null) {
+          Get.snackbar("Error", "User data not found");
+          return false;
+        }
+
+        loggedInUser = UserModel.fromJson(userJson);
+
+        // Extract tokens
+        final tokens = data?['tokens'];
+        final accessToken = tokens?['accessToken'];
+        final refreshToken = tokens?['refreshToken'];
 
         if (accessToken == null) {
           Get.snackbar("Error", "Access token not found");
           return false;
         }
 
-        /// Save tokens
+        // Save tokens
         await SecureStorageService.saveAccessToken(accessToken);
         if (refreshToken != null) {
           await SecureStorageService.saveRefreshToken(refreshToken);
         }
 
-        /// 🔹 Extract user info
-        final userJson = response.jsonResponse?['data']
-        ?['attributes']?['user'];
-        loggedInUser = UserModel.fromJson(userJson);
+        // Save user data
+        await SecureStorageService.saveUserData(loggedInUser!.toJson());
+
+        // ✅ Navigate by role
+        _navigateByRole();
 
         return true;
       } catch (e) {
@@ -78,16 +87,16 @@ class ManualSignInScreenController extends GetxController {
     }
   }
 
-  /// ✅ Navigate based on role
-  void navigateByRole() {
+  /// ================= ROLE NAVIGATION =================
+  void _navigateByRole() {
     if (loggedInUser == null) return;
 
     if (loggedInUser!.role == 'individual') {
-      Get.offAll(MainBottomNav());
+      Get.offAll(() => MainBottomNav());
     } else if (loggedInUser!.role == 'child') {
-      Get.offAll(UgcMainBottomNav());
+      Get.offAll(() => UgcMainBottomNav());
     } else {
-      Get.snackbar("Error", "Unknown user role");
+      Get.offAll(() => GetStartedScreen());
     }
   }
 }
