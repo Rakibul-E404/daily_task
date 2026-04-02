@@ -8,4 +8,5 @@ class AppUrl {
   ///--- UGC -----------
   ///-------------------
   static const String getUgcDailyProgress = '$baseUrl/tasks/daily-progress/v2';
+  static const String getUgcHomeScreenTask = '$baseUrl/tasks?page=1&limit=10';
 }

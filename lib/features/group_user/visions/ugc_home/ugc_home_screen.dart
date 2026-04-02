@@ -1,5 +1,3 @@
-/**
-import 'package:askfemi/features/group_user/visions/ugc_home/ugc_task_details/ugc_task_model/ugc_sub_task_model.dart';
 import 'package:askfemi/features/group_user/visions/ugc_home/ugc_task_details/ugc_task_model/ugc_task_model.dart';
 import 'package:askfemi/features/individual_user/widget/dotted_line_widget.dart';
 import 'package:flutter/material.dart';
@@ -9,876 +7,7 @@ import '../../../../utils/app_colors.dart';
 import '../../../../utils/app_texts_style.dart';
 import '../../../individual_user/views/notification/notification_screen.dart';
 import '../../widget/ugc_home_widget/ugc_daily_progress_widget.dart';
-
-class UgcHomeScreen extends StatelessWidget {
-  final VoidCallback onAddTaskPressed;
-
-  const UgcHomeScreen({super.key, required this.onAddTaskPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    final tasks = _getTasks();
-    final isEmptyState = tasks.isEmpty;
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-
-    return Scaffold(
-      backgroundColor: isEmptyState ? Colors.white : AppColors.backgroundColor,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          /// Collapsible App Bar (with dynamic background for empty state)
-          _buildSliverAppBar(context, isEmptyState),
-
-          /// Daily Progress Section (only shown when tasks exist)
-          if (!isEmptyState)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(
-                  screenWidth * 0.04,
-                  screenWidth * 0.04,
-                  screenWidth * 0.04,
-                  0,
-                ),
-                child: ugcBuildDailyProgress(tasks, screenWidth),
-              ),
-            ),
-
-          /// Pinned Tasks Header (only shown when tasks exist)
-          if (!isEmptyState) _buildPinnedTasksHeader(tasks, screenWidth),
-
-          /// Empty State Content OR Tasks List
-          _buildTasksContent(context, tasks, isEmptyState, screenWidth, screenHeight),
-
-          /// Bottom Padding
-          SliverToBoxAdapter(child: SizedBox(height: screenWidth * 0.04)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSliverAppBar(BuildContext context, bool isEmptyState) {
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    return SliverAppBar(
-      expandedHeight: screenWidth * 0.20, // 80px equivalent
-      floating: false,
-      pinned: true,
-      stretch: true,
-      surfaceTintColor: Colors.transparent,
-      backgroundColor: isEmptyState ? Colors.white : AppColors.backgroundColor,
-      elevation: 0,
-      automaticallyImplyLeading: false,
-      flexibleSpace: FlexibleSpaceBar(
-        titlePadding: EdgeInsets.only(
-          left: screenWidth * 0.04,
-          bottom: screenWidth * 0.04,
-        ),
-        background: Container(
-          color: isEmptyState ? Colors.white : AppColors.backgroundColor,
-        ),
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: screenWidth * 0.05, // 20px equivalent
-                  foregroundImage: const AssetImage(
-                    "assets/images/dummy_user_image.png",
-                  ),
-                ),
-                SizedBox(width: screenWidth * 0.03),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Welcome back!',
-                      style: AppTextStyles.smallText.copyWith(
-                        color: isEmptyState ? Colors.grey[600] : null,
-                        fontSize: screenWidth * 0.035,
-                      ),
-                    ),
-                    Text(
-                      'Rakibul',
-                      style: AppTextStyles.defaultTextStyle.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: isEmptyState ? Colors.black87 : null,
-                        fontSize: screenWidth * 0.045,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            Padding(
-              padding: EdgeInsets.only(
-                right: screenWidth * 0.025,
-                bottom: screenWidth * 0.02,
-              ),
-              child: InkWell(
-                onTap: () => Get.to(
-                      () => const NotificationScreen(),
-                  transition: Transition.fadeIn,
-                ),
-                child: SvgPicture.asset(
-                  "assets/icons/notification_rounded.svg",
-                  fit: BoxFit.fitHeight,
-                  height: screenWidth * 0.07, // 28px equivalent
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Widget _buildDailyProgress(List<UgcTask> tasks, double screenWidth) {
-  //   // Calculate progress from tasks
-  //   final totalTasks = tasks.length;
-  //   final completedTasks = tasks
-  //       .where((task) => task.status == TaskStatus.completed)
-  //       .length;
-  //   final progress = totalTasks > 0 ? completedTasks / totalTasks : 0;
-  //
-  //   return Card(
-  //     color: AppColors.backgroundColor,
-  //     elevation: 1,
-  //     child: Container(
-  //       width: double.infinity,
-  //       padding: EdgeInsets.all(screenWidth * 0.05), // 20px equivalent
-  //       decoration: BoxDecoration(
-  //         borderRadius: BorderRadius.circular(screenWidth * 0.04),
-  //       ),
-  //       child: Column(
-  //         crossAxisAlignment: CrossAxisAlignment.start,
-  //         children: [
-  //           Row(
-  //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //             children: [
-  //               Text(
-  //                 'Daily Progress',
-  //                 style: TextStyle(
-  //                   fontSize: screenWidth * 0.05, // 20px equivalent
-  //                   fontWeight: FontWeight.bold,
-  //                   color: Colors.black87,
-  //                   fontFamily: 'Plus Jakarta Sans',
-  //                 ),
-  //               ),
-  //               Chip(
-  //                 padding: EdgeInsets.symmetric(
-  //                   horizontal: screenWidth * 0.012,
-  //                   vertical: 0,
-  //                 ),
-  //                 label: Text(
-  //                   '$completedTasks / $totalTasks',
-  //                   style: TextStyle(
-  //                     color: AppColors.black,
-  //                     fontSize: screenWidth * 0.03, // 12px equivalent
-  //                     fontFamily: 'Plus Jakarta Sans',
-  //                     fontWeight: FontWeight.bold,
-  //                   ),
-  //                 ),
-  //                 backgroundColor: AppColors.mainBottomNavColor,
-  //                 shape: RoundedRectangleBorder(
-  //                   borderRadius: BorderRadius.circular(screenWidth * 0.01),
-  //                 ),
-  //                 side: const BorderSide(width: 0, color: Colors.transparent),
-  //               ),
-  //             ],
-  //           ),
-  //           SizedBox(height: screenWidth * 0.03),
-  //           Row(
-  //             children: [
-  //               Expanded(
-  //                 child: LinearProgressIndicator(
-  //                   value: 1 / 4,
-  //                   backgroundColor: AppColors.grey.withValues(alpha: 0.3),
-  //                   valueColor: const AlwaysStoppedAnimation<Color>(
-  //                     AppColors.primaryColor,
-  //                   ),
-  //                   borderRadius: BorderRadius.circular(screenWidth * 0.005),
-  //                   minHeight: screenWidth * 0.03, // 12px equivalent
-  //                 ),
-  //               ),
-  //               SizedBox(width: screenWidth * 0.03),
-  //             ],
-  //           ),
-  //           SizedBox(height: screenWidth * 0.02),
-  //           Text(
-  //             '${totalTasks - completedTasks} tasks remaining. You\'ve got this!',
-  //             style: TextStyle(
-  //               fontSize: screenWidth * 0.035, // 14px equivalent
-  //               color: AppColors.grey,
-  //               fontFamily: 'Plus Jakarta Sans',
-  //             ),
-  //           ),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
-
-  Widget _buildPinnedTasksHeader(List<UgcTask> tasks, double screenWidth) {
-    // Calculate active tasks
-    final activeTasks = tasks
-        .where((task) => task.status != TaskStatus.completed)
-        .length;
-
-    return SliverPersistentHeader(
-      pinned: true,
-      delegate: _TasksHeaderDelegate(
-        minHeight: screenWidth * 0.175, // 70px equivalent
-        maxHeight: screenWidth * 0.175,
-        child: Container(
-          color: AppColors.backgroundColor,
-          padding: EdgeInsets.fromLTRB(
-            screenWidth * 0.04,
-            screenWidth * 0.04,
-            screenWidth * 0.04,
-            screenWidth * 0.02,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Your Tasks',
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontSize: screenWidth * 0.06, // 24px equivalent
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              Text(
-                '$activeTasks/${tasks.length} active',
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                  fontSize: screenWidth * 0.035, // 14px equivalent
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTasksContent(
-      BuildContext context,
-      List<UgcTask> tasks,
-      bool isEmptyState,
-      double screenWidth,
-      double screenHeight,
-      ) {
-    if (isEmptyState) {
-      return SliverFillRemaining(
-        hasScrollBody: false,
-        child: Padding(
-          padding: EdgeInsets.all(screenWidth * 0.05),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Illustration Image
-              Center(
-                child: Column(
-                  children: [
-                    SvgPicture.asset(
-                      "assets/images/empty_task.svg",
-                      height: screenWidth * 0.375, // 150px equivalent
-                      fit: BoxFit.contain,
-                    ),
-                    SizedBox(height: screenWidth * 0.025),
-                    Text(
-                      "You don't have any current tasks here.\nWe will update you.",
-                      style: AppTextStyles.defaultTextStyle.copyWith(
-                        fontSize: screenWidth * 0.04,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: screenWidth * 0.1),
-
-              /// -----------------------------
-              /// Add Task Button -> switch tab
-              /// -----------------------------
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: onAddTaskPressed,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryColor,
-                    foregroundColor: AppColors.white,
-                    padding: EdgeInsets.symmetric(vertical: screenWidth * 0.04),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(screenWidth * 0.03),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.add, size: screenWidth * 0.05),
-                      SizedBox(width: screenWidth * 0.02),
-                      Text(
-                        'Add Task',
-                        style: TextStyle(fontSize: screenWidth * 0.04),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return SliverPadding(
-      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
-      sliver: SliverList(
-        delegate: SliverChildBuilderDelegate((context, index) {
-          return Padding(
-            padding: EdgeInsets.only(bottom: screenWidth * 0.04),
-            child: AnimatedOpacity(
-              opacity: 1.0,
-              duration: Duration(milliseconds: 300 + (index * 100)),
-              child: _buildTaskCard(context, tasks[index], screenWidth),
-            ),
-          );
-        }, childCount: tasks.length),
-      ),
-    );
-  }
-
-  Widget _buildTaskCard(BuildContext context, UgcTask task, double screenWidth) {
-    // Calculate progress percentage
-    final progress = task.totalSubtasks != null && task.totalSubtasks! > 0
-        ? (task.completedSubtasks ?? 0) / task.totalSubtasks!
-        : 0.0;
-
-    final isSelfTask = task.assignedBy == null;
-    final hasGroupMembers =
-        task.groupMembers != null && task.groupMembers!.isNotEmpty;
-
-    return Card(
-      color: AppColors.backgroundColor,
-      elevation: 0.5,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(screenWidth * 0.04),
-        side: BorderSide(color: Colors.grey.shade200, width: 1),
-      ),
-      child: InkWell(
-        onTap: () {
-          // Navigate to task details
-          // Get.to(() => UgcTaskDetailsScreen(task: task));
-        },
-        borderRadius: BorderRadius.circular(screenWidth * 0.04),
-        child: Padding(
-          padding: EdgeInsets.only(
-            left: screenWidth * 0.04,
-            bottom: screenWidth * 0.04,
-            right: screenWidth * 0.04,
-            top: screenWidth * 0.04,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Top Row: Status Badge (right aligned)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  // Status Badge
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: screenWidth * 0.03,
-                      vertical: screenWidth * 0.015,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _getStatusBackgroundColor(task.status),
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(screenWidth * 0.025),
-                        bottomRight: Radius.circular(screenWidth * 0.025),
-                      ),
-                    ),
-                    child: Text(
-                      _getStatusText(task.status),
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.03,
-                        fontWeight: FontWeight.w600,
-                        color: _getStatusTextColor(task.status),
-                        fontFamily: 'Plus Jakarta Sans',
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: screenWidth * 0.03),
-
-              // Task Title
-              Text(
-                task.title,
-                style: AppTextStyles.smallHeading.copyWith(
-                  fontSize: screenWidth * 0.045,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              SizedBox(height: screenWidth * 0.04),
-
-              // Time and Subtasks Row
-              Row(
-                children: [
-                  // Time
-                  Icon(
-                    Icons.access_time,
-                    size: screenWidth * 0.035,
-                    color: Colors.grey.shade600,
-                  ),
-                  SizedBox(width: screenWidth * 0.008),
-                  Expanded(
-                    flex: 2,
-                    child: Text(
-                      task.time,
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.03,
-                        color: Colors.grey.shade700,
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ),
-
-                  // Subtasks
-                  if (task.totalSubtasks != null && task.totalSubtasks! > 0) ...[
-                    SizedBox(width: screenWidth * 0.02),
-                    Icon(
-                      Icons.description_outlined,
-                      size: screenWidth * 0.035,
-                      color: Colors.grey.shade600,
-                    ),
-                    Expanded(
-                      flex: 3,
-                      child: Text(
-                        task.status == TaskStatus.inProgress
-                            ? '${task.completedSubtasks ?? 0}/${task.totalSubtasks} subtasks'
-                            : '${task.totalSubtasks} subtasks',
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.03,
-                          color: Colors.grey.shade700,
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontWeight: FontWeight.w400,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-
-                  const Spacer(),
-
-                  // Progress Percentage (right aligned)
-                  if (task.totalSubtasks != null)
-                    Padding(
-                      padding: EdgeInsets.only(right: screenWidth * 0.01),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: screenWidth * 0.075, // 30px equivalent
-                            height: screenWidth * 0.015, // 6px equivalent
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade200,
-                              borderRadius: BorderRadius.circular(screenWidth * 0.004),
-                            ),
-                            child: FractionallySizedBox(
-                              alignment: Alignment.centerLeft,
-                              widthFactor: progress,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: AppColors.primaryColor,
-                                  borderRadius: BorderRadius.circular(screenWidth * 0.004),
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: screenWidth * 0.005),
-                          Text(
-                            '${(progress * 100).toInt()}%',
-                            style: AppTextStyles.smallText.copyWith(
-                              fontSize: screenWidth * 0.03,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-
-              SizedBox(height: screenWidth * 0.04),
-
-              const DottedLine(),
-
-              SizedBox(height: screenWidth * 0.04),
-
-              /// Bottom Section: Task Type and Actions
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  /// Left side: Task type info (avatars + label or self task badge)
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (isSelfTask)
-                        // Self Task badge
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: screenWidth * 0.025,
-                              vertical: screenWidth * 0.015,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.blue.shade50,
-                              borderRadius: BorderRadius.circular(screenWidth * 0.015),
-                              border: Border.all(
-                                color: Colors.blue.shade200,
-                                width: 1,
-                              ),
-                            ),
-                            child: Text(
-                              'Self Task',
-                              style: AppTextStyles.smallText.copyWith(
-                                color: AppColors.primaryColor,
-                                fontSize: screenWidth * 0.03,
-                              ),
-                            ),
-                          )
-                        else if (hasGroupMembers)
-                        // Group Task with avatars and label
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Group member avatars
-                              SizedBox(
-                                width: screenWidth * 0.20, // 80px equivalent
-                                height: screenWidth * 0.0875, // 35px equivalent
-                                child: Stack(
-                                  children: [
-                                    for (int i = 0;
-                                    i < (task.groupMembers!.length > 3
-                                        ? 3
-                                        : task.groupMembers!.length);
-                                    i++)
-                                      Positioned(
-                                        left: i * screenWidth * 0.05,
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            border: Border.all(
-                                              color: Colors.white,
-                                              width: screenWidth * 0.005,
-                                            ),
-                                          ),
-                                          child: CircleAvatar(
-                                            radius: screenWidth * 0.04, // 16px equivalent
-                                            backgroundImage: AssetImage(
-                                              task.groupMembers![i],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    // Show +X if more than 3 members
-                                    if (task.groupMembers!.length > 3)
-                                      Positioned(
-                                        left: screenWidth * 0.15,
-                                        child: Container(
-                                          width: screenWidth * 0.08,
-                                          height: screenWidth * 0.08,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.grey.shade300,
-                                            border: Border.all(
-                                              color: Colors.white,
-                                              width: screenWidth * 0.005,
-                                            ),
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              '+${task.groupMembers!.length - 3}',
-                                              style: TextStyle(
-                                                fontSize: screenWidth * 0.0275,
-                                                fontWeight: FontWeight.w600,
-                                                color: Colors.grey.shade700,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                              SizedBox(height: screenWidth * 0.01),
-                              Text(
-                                'Group Task',
-                                style: AppTextStyles.smallText.copyWith(
-                                  color: AppColors.black,
-                                  fontSize: screenWidth * 0.035,
-                                ),
-                              ),
-                            ],
-                          )
-                        else
-                        // Regular assigned task (no group members)
-                          Row(
-                            children: [
-                              CircleAvatar(
-                                radius: screenWidth * 0.04,
-                                backgroundImage: const AssetImage(
-                                  "assets/images/dummy_user_image.png",
-                                ),
-                              ),
-                              SizedBox(width: screenWidth * 0.02),
-                              Expanded(
-                                child: Text(
-                                  'Assigned by ${task.assignedBy ?? "Mr. Tom Alax"}',
-                                  style: TextStyle(
-                                    fontSize: screenWidth * 0.0325,
-                                    color: Colors.grey.shade700,
-                                    fontFamily: 'Plus Jakarta Sans',
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-
-                        // Show assigner info for group tasks (below avatars)
-                        if (hasGroupMembers && task.assignedBy != null)
-                          Padding(
-                            padding: EdgeInsets.only(top: screenWidth * 0.02),
-                            child: Row(
-                              children: [
-                                CircleAvatar(
-                                  radius: screenWidth * 0.035,
-                                  backgroundImage: const AssetImage(
-                                    "assets/images/dummy_user_image.png",
-                                  ),
-                                ),
-                                SizedBox(width: screenWidth * 0.015),
-                                Expanded(
-                                  child: Text(
-                                    'Assigned by ${task.assignedBy!}',
-                                    style: TextStyle(
-                                      fontSize: screenWidth * 0.03,
-                                      color: Colors.grey.shade600,
-                                      fontFamily: 'Plus Jakarta Sans',
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-
-                  /// Right side: Start Button
-                  if (task.status == TaskStatus.pending)
-                    Padding(
-                      padding: EdgeInsets.only(top: screenWidth * 0.005),
-                      child: ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primaryColor,
-                          foregroundColor: AppColors.white,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: screenWidth * 0.04,
-                            vertical: screenWidth * 0.01,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(screenWidth * 0.02),
-                          ),
-                          elevation: 0,
-                          visualDensity: VisualDensity.compact,
-                        ),
-                        child: Text(
-                          'Start',
-                          style: AppTextStyles.smallText.copyWith(
-                            color: AppColors.white,
-                            fontSize: screenWidth * 0.03,
-                          ),
-                        ),
-                      ),
-                    )
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Color _getStatusBackgroundColor(TaskStatus status) {
-    switch (status) {
-      case TaskStatus.pending:
-        return Colors.grey.shade100;
-      case TaskStatus.inProgress:
-        return Colors.blue.shade50;
-      case TaskStatus.completed:
-        return Colors.green.shade50;
-    }
-  }
-
-  Color _getStatusTextColor(TaskStatus status) {
-    switch (status) {
-      case TaskStatus.pending:
-        return Colors.grey.shade700;
-      case TaskStatus.inProgress:
-        return Colors.blue.shade700;
-      case TaskStatus.completed:
-        return Colors.green.shade700;
-    }
-  }
-
-  String _getStatusText(TaskStatus status) {
-    switch (status) {
-      case TaskStatus.pending:
-        return 'Pending';
-      case TaskStatus.inProgress:
-        return 'In Progress';
-      case TaskStatus.completed:
-        return 'Completed';
-    }
-  }
-
-  List<UgcTask> _getTasks() {
-    return [
-      UgcTask(
-        totalSubtasks: 5,
-        completedSubtasks: 0,
-        title: 'Complete Math Homework',
-        description: 'Solve algebra, geometry and calculus problems.',
-        time: '10.30 AM',
-        status: TaskStatus.pending,
-        createdAt: DateTime(2026, 1, 5, 9, 50),
-        startTime: DateTime(2026, 1, 5, 10, 30),
-        assignedBy: null,
-        subtasks: [
-          UgcSubTask(title: 'Algebra problems', isCompleted: false),
-          UgcSubTask(title: 'Geometry exercises', isCompleted: false),
-          UgcSubTask(title: 'Calculus problems', isCompleted: false),
-        ],
-      ),
-      UgcTask(
-        totalSubtasks: 5,
-        completedSubtasks: 0,
-        title: 'UX/UI Design',
-        description: 'Design user interface mockups.',
-        time: '10.30 AM',
-        status: TaskStatus.pending,
-        createdAt: DateTime(2026, 1, 5, 9, 50),
-        startTime: DateTime(2026, 1, 5, 10, 30),
-        assignedBy: 'Mr. Tom Alax',
-      ),
-      UgcTask(
-        totalSubtasks: 3,
-        completedSubtasks: 1,
-        title: 'Complete Math Homework',
-        description: 'Solve algebra, geometry and calculus problems.',
-        time: '10.30 AM',
-        status: TaskStatus.inProgress,
-        createdAt: DateTime(2026, 1, 5, 9, 50),
-        startTime: DateTime(2026, 1, 5, 10, 30),
-        assignedBy: 'Mr. Tom Alax',
-        groupMembers: [
-          "assets/images/dummy_user_image.png",
-          "assets/images/dummy_user_image.png",
-          "assets/images/dummy_user_image.png",
-        ],
-        subtasks: [
-          UgcSubTask(title: 'Algebra problems', isCompleted: true),
-          UgcSubTask(title: 'Geometry exercises', isCompleted: true),
-          UgcSubTask(title: 'Calculus problems', isCompleted: false),
-        ],
-      ),
-      UgcTask(
-        totalSubtasks: 4,
-        completedSubtasks: 4,
-        title: 'History Chapter Summary',
-        description: 'Read chapter 5 and prepare summary notes.',
-        time: '4:30 PM',
-        status: TaskStatus.completed,
-        createdAt: DateTime(2026, 1, 5, 9, 50),
-        startTime: DateTime(2026, 1, 5, 16, 30),
-        completedTime: DateTime(2026, 1, 5, 18, 0),
-      ),
-    ];
-  }
-}
-
-/// Custom Sliver Persistent Header Delegate for pinned Tasks header
-class _TasksHeaderDelegate extends SliverPersistentHeaderDelegate {
-  final double minHeight;
-  final double maxHeight;
-  final Widget child;
-
-  _TasksHeaderDelegate({
-    required this.minHeight,
-    required this.maxHeight,
-    required this.child,
-  });
-
-  @override
-  double get minExtent => minHeight;
-
-  @override
-  double get maxExtent => maxHeight;
-
-  @override
-  Widget build(
-      BuildContext context,
-      double shrinkOffset,
-      bool overlapsContent,
-      ) {
-    return SizedBox.expand(child: child);
-  }
-
-  @override
-  bool shouldRebuild(_TasksHeaderDelegate oldDelegate) {
-    return maxHeight != oldDelegate.maxHeight ||
-        minHeight != oldDelegate.minHeight ||
-        child != oldDelegate.child;
-  }
-}*/
-
-
-
-
-
-
-
-
-
-
-
-import 'package:askfemi/features/group_user/visions/ugc_home/ugc_task_details/ugc_task_model/ugc_sub_task_model.dart';
-import 'package:askfemi/features/group_user/visions/ugc_home/ugc_task_details/ugc_task_model/ugc_task_model.dart';
-import 'package:askfemi/features/individual_user/widget/dotted_line_widget.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
-import '../../../../utils/app_colors.dart';
-import '../../../../utils/app_texts_style.dart';
-import '../../../individual_user/views/notification/notification_screen.dart';
-import '../../widget/ugc_home_widget/ugc_daily_progress_widget.dart';
+import 'controller/ugc_home_screen_controller.dart';
 
 class UgcHomeScreen extends StatefulWidget {
   final VoidCallback onAddTaskPressed;
@@ -890,93 +19,118 @@ class UgcHomeScreen extends StatefulWidget {
 }
 
 class _UgcHomeScreenState extends State<UgcHomeScreen> {
-  final DailyProgressService _progressService = DailyProgressService();
-  DailyProgressData? _dailyProgressData;
-  bool _isLoadingProgress = true;
+  late final UgcHomeController controller;
 
   @override
   void initState() {
     super.initState();
-    _fetchDailyProgress();
+    controller = Get.put(UgcHomeController());
   }
 
-  Future<void> _fetchDailyProgress() async {
-    setState(() {
-      _isLoadingProgress = true;
-    });
-
-    final progressData = await _progressService.getDailyProgress();
-
-    setState(() {
-      _dailyProgressData = progressData;
-      _isLoadingProgress = false;
-    });
+  @override
+  void dispose() {
+    Get.delete<UgcHomeController>();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final tasks = _getTasks();
-    final isEmptyState = tasks.isEmpty;
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // Determine if we should show daily progress
-    final bool showDailyProgress = !isEmptyState &&
-        !_isLoadingProgress &&
-        _dailyProgressData != null &&
-        _dailyProgressData!.total > 0;
+    return Obx(() {
+      final tasks = controller.tasks;
+      final isEmptyState = tasks.isEmpty && !controller.isLoadingTasks.value;
 
-    return Scaffold(
-      backgroundColor: isEmptyState ? Colors.white : AppColors.backgroundColor,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          /// Collapsible App Bar (with dynamic background for empty state)
-          _buildSliverAppBar(context, isEmptyState),
+      // Debug prints to check data
+      print('Tasks length: ${tasks.length}');
+      print('Daily Progress: ${controller.dailyProgress.value}');
+      print('IsLoadingProgress: ${controller.isLoadingProgress.value}');
+      print('Daily Progress total: ${controller.dailyProgress.value?.total}');
 
-          /// Daily Progress Section (only shown when tasks exist and API data is available)
-          if (!isEmptyState && !_isLoadingProgress && _dailyProgressData != null)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(
-                  screenWidth * 0.04,
-                  screenWidth * 0.04,
-                  screenWidth * 0.04,
-                  0,
+      // Show daily progress if:
+      // 1. Not empty state
+      // 2. Not loading progress
+      // 3. Daily progress data exists
+      // 4. Total tasks > 0 (from API)
+      final bool showDailyProgress = !isEmptyState &&
+          !controller.isLoadingProgress.value &&
+          controller.dailyProgress.value != null;
+
+      return Scaffold(
+        backgroundColor: isEmptyState ? Colors.white : AppColors.backgroundColor,
+        body: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          controller: ScrollController()..addListener(() {
+            if (ScrollController().position.pixels >=
+                ScrollController().position.maxScrollExtent - 200) {
+              controller.loadMoreTasks();
+            }
+          }),
+          slivers: [
+            /// Collapsible App Bar
+            _buildSliverAppBar(context, isEmptyState),
+
+            /// Daily Progress Section
+            if (showDailyProgress)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    screenWidth * 0.04,
+                    screenWidth * 0.04,
+                    screenWidth * 0.04,
+                    0,
+                  ),
+                  child: ugcBuildDailyProgress(controller.dailyProgress.value!, screenWidth),
                 ),
-                child: ugcBuildDailyProgress(_dailyProgressData!, screenWidth),
               ),
-            ),
 
-          /// Loading indicator for progress (optional)
-          if (!isEmptyState && _isLoadingProgress)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.all(screenWidth * 0.04),
-                child: const Center(
+            /// Loading indicator for progress
+            if (!isEmptyState && controller.isLoadingProgress.value)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.all(screenWidth * 0.04),
+                  child: const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+              ),
+
+            /// Pinned Tasks Header
+            if (!isEmptyState && !controller.isLoadingTasks.value && tasks.isNotEmpty)
+              _buildPinnedTasksHeader(tasks, screenWidth),
+
+            /// Loading indicator for tasks
+            if (controller.isLoadingTasks.value && tasks.isEmpty)
+              const SliverFillRemaining(
+                child: Center(
                   child: CircularProgressIndicator(),
                 ),
               ),
+
+            /// Empty State Content OR Tasks List
+            _buildTasksContent(
+              context,
+              tasks,
+              isEmptyState,
+              screenWidth,
+              screenHeight,
+              controller.isLoadingTasks.value,
             ),
 
-          /// Pinned Tasks Header (only shown when tasks exist)
-          if (!isEmptyState) _buildPinnedTasksHeader(tasks, screenWidth),
-
-          /// Empty State Content OR Tasks List
-          _buildTasksContent(context, tasks, isEmptyState, screenWidth, screenHeight),
-
-          /// Bottom Padding
-          SliverToBoxAdapter(child: SizedBox(height: screenWidth * 0.04)),
-        ],
-      ),
-    );
+            /// Bottom Padding
+            SliverToBoxAdapter(child: SizedBox(height: screenWidth * 0.04)),
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildSliverAppBar(BuildContext context, bool isEmptyState) {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return SliverAppBar(
-      expandedHeight: screenWidth * 0.20, // 80px equivalent
+      expandedHeight: screenWidth * 0.20,
       floating: false,
       pinned: true,
       stretch: true,
@@ -998,7 +152,7 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
             Row(
               children: [
                 CircleAvatar(
-                  radius: screenWidth * 0.05, // 20px equivalent
+                  radius: screenWidth * 0.05,
                   foregroundImage: const AssetImage(
                     "assets/images/dummy_user_image.png",
                   ),
@@ -1040,7 +194,7 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
                 child: SvgPicture.asset(
                   "assets/icons/notification_rounded.svg",
                   fit: BoxFit.fitHeight,
-                  height: screenWidth * 0.07, // 28px equivalent
+                  height: screenWidth * 0.07,
                 ),
               ),
             ),
@@ -1051,7 +205,6 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
   }
 
   Widget _buildPinnedTasksHeader(List<UgcTask> tasks, double screenWidth) {
-    // Calculate active tasks
     final activeTasks = tasks
         .where((task) => task.status != TaskStatus.completed)
         .length;
@@ -1059,7 +212,7 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
     return SliverPersistentHeader(
       pinned: true,
       delegate: _TasksHeaderDelegate(
-        minHeight: screenWidth * 0.175, // 70px equivalent
+        minHeight: screenWidth * 0.175,
         maxHeight: screenWidth * 0.175,
         child: Container(
           color: AppColors.backgroundColor,
@@ -1076,7 +229,7 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
                 'Your Tasks',
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
-                  fontSize: screenWidth * 0.06, // 24px equivalent
+                  fontSize: screenWidth * 0.06,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
@@ -1085,7 +238,7 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
                 '$activeTasks/${tasks.length} active',
                 style: TextStyle(
                   color: Colors.grey.shade600,
-                  fontSize: screenWidth * 0.035, // 14px equivalent
+                  fontSize: screenWidth * 0.035,
                   fontFamily: 'Plus Jakarta Sans',
                   fontWeight: FontWeight.w500,
                 ),
@@ -1103,6 +256,7 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
       bool isEmptyState,
       double screenWidth,
       double screenHeight,
+      bool isLoadingTasks,
       ) {
     if (isEmptyState) {
       return SliverFillRemaining(
@@ -1112,13 +266,12 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Illustration Image
               Center(
                 child: Column(
                   children: [
                     SvgPicture.asset(
                       "assets/images/empty_task.svg",
-                      height: screenWidth * 0.375, // 150px equivalent
+                      height: screenWidth * 0.375,
                       fit: BoxFit.contain,
                     ),
                     SizedBox(height: screenWidth * 0.025),
@@ -1133,10 +286,6 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
                 ),
               ),
               SizedBox(height: screenWidth * 0.1),
-
-              /// -----------------------------
-              /// Add Task Button -> switch tab
-              /// -----------------------------
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -1172,6 +321,12 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
       padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate((context, index) {
+          if (index == tasks.length - 1 && tasks.isNotEmpty) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              controller.loadMoreTasks();
+            });
+          }
+
           return Padding(
             padding: EdgeInsets.only(bottom: screenWidth * 0.04),
             child: AnimatedOpacity(
@@ -1186,7 +341,6 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
   }
 
   Widget _buildTaskCard(BuildContext context, UgcTask task, double screenWidth) {
-    // Calculate progress percentage
     final progress = task.totalSubtasks != null && task.totalSubtasks! > 0
         ? (task.completedSubtasks ?? 0) / task.totalSubtasks!
         : 0.0;
@@ -1195,361 +349,354 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
     final hasGroupMembers =
         task.groupMembers != null && task.groupMembers!.isNotEmpty;
 
-    return Card(
-      color: AppColors.backgroundColor,
-      elevation: 0.5,
-      shape: RoundedRectangleBorder(
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.backgroundColor,
         borderRadius: BorderRadius.circular(screenWidth * 0.04),
-        side: BorderSide(color: Colors.grey.shade200, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(
+          color: Colors.grey.shade200,
+          width: 1,
+        ),
       ),
       child: InkWell(
         onTap: () {
           // Navigate to task details
-          // Get.to(() => UgcTaskDetailsScreen(task: task));
         },
         borderRadius: BorderRadius.circular(screenWidth * 0.04),
-        child: Padding(
-          padding: EdgeInsets.only(
-            left: screenWidth * 0.04,
-            bottom: screenWidth * 0.04,
-            right: screenWidth * 0.04,
-            top: screenWidth * 0.04,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Top Row: Status Badge (right aligned)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  // Status Badge
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: screenWidth * 0.03,
-                      vertical: screenWidth * 0.015,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _getStatusBackgroundColor(task.status),
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(screenWidth * 0.025),
-                        bottomRight: Radius.circular(screenWidth * 0.025),
-                      ),
-                    ),
-                    child: Text(
-                      _getStatusText(task.status),
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.03,
-                        fontWeight: FontWeight.w600,
-                        color: _getStatusTextColor(task.status),
-                        fontFamily: 'Plus Jakarta Sans',
-                      ),
-                    ),
-                  ),
-                ],
+        child: Stack(
+          children: [
+            // Main content with top padding to accommodate status badge
+            Padding(
+              padding: EdgeInsets.only(
+                left: screenWidth * 0.04,
+                top: screenWidth * 0.06, // Extra space for status badge
+                right: screenWidth * 0.04,
+                bottom: screenWidth * 0.04,
               ),
-              SizedBox(height: screenWidth * 0.03),
-
-              // Task Title
-              Text(
-                task.title,
-                style: AppTextStyles.smallHeading.copyWith(
-                  fontSize: screenWidth * 0.045,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              SizedBox(height: screenWidth * 0.04),
-
-              // Time and Subtasks Row
-              Row(
-                children: [
-                  // Time
-                  Icon(
-                    Icons.access_time,
-                    size: screenWidth * 0.035,
-                    color: Colors.grey.shade600,
-                  ),
-                  SizedBox(width: screenWidth * 0.008),
-                  Expanded(
-                    flex: 2,
-                    child: Text(
-                      task.time,
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.03,
-                        color: Colors.grey.shade700,
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ),
-
-                  // Subtasks
-                  if (task.totalSubtasks != null && task.totalSubtasks! > 0) ...[
-                    SizedBox(width: screenWidth * 0.02),
-                    Icon(
-                      Icons.description_outlined,
-                      size: screenWidth * 0.035,
-                      color: Colors.grey.shade600,
-                    ),
-                    Expanded(
-                      flex: 3,
-                      child: Text(
-                        task.status == TaskStatus.inProgress
-                            ? '${task.completedSubtasks ?? 0}/${task.totalSubtasks} subtasks'
-                            : '${task.totalSubtasks} subtasks',
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.03,
-                          color: Colors.grey.shade700,
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontWeight: FontWeight.w400,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-
-                  const Spacer(),
-
-                  // Progress Percentage (right aligned)
-                  if (task.totalSubtasks != null)
-                    Padding(
-                      padding: EdgeInsets.only(right: screenWidth * 0.01),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: screenWidth * 0.075, // 30px equivalent
-                            height: screenWidth * 0.015, // 6px equivalent
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade200,
-                              borderRadius: BorderRadius.circular(screenWidth * 0.004),
-                            ),
-                            child: FractionallySizedBox(
-                              alignment: Alignment.centerLeft,
-                              widthFactor: progress,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: AppColors.primaryColor,
-                                  borderRadius: BorderRadius.circular(screenWidth * 0.004),
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: screenWidth * 0.005),
-                          Text(
-                            '${(progress * 100).toInt()}%',
-                            style: AppTextStyles.smallText.copyWith(
-                              fontSize: screenWidth * 0.03,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-
-              SizedBox(height: screenWidth * 0.04),
-
-              const DottedLine(),
-
-              SizedBox(height: screenWidth * 0.04),
-
-              /// Bottom Section: Task Type and Actions
-              Row(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  /// Left side: Task type info (avatars + label or self task badge)
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (isSelfTask)
-                        // Self Task badge
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: screenWidth * 0.025,
-                              vertical: screenWidth * 0.015,
+                  // Task Title
+                  Text(
+                    task.title,
+                    style: AppTextStyles.smallHeading.copyWith(
+                      fontSize: screenWidth * 0.045,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: screenWidth * 0.04),
+
+                  // Time and Subtasks Row
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.access_time,
+                        size: screenWidth * 0.035,
+                        color: Colors.grey.shade600,
+                      ),
+                      SizedBox(width: screenWidth * 0.008),
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          task.time,
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.03,
+                            color: Colors.grey.shade700,
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                      if (task.totalSubtasks != null && task.totalSubtasks! > 0) ...[
+                        SizedBox(width: screenWidth * 0.02),
+                        Icon(
+                          Icons.description_outlined,
+                          size: screenWidth * 0.035,
+                          color: Colors.grey.shade600,
+                        ),
+                        Expanded(
+                          flex: 3,
+                          child: Text(
+                            task.status == TaskStatus.inProgress
+                                ? '${task.completedSubtasks ?? 0}/${task.totalSubtasks} subtasks'
+                                : '${task.totalSubtasks} subtasks',
+                            style: TextStyle(
+                              fontSize: screenWidth * 0.03,
+                              color: Colors.grey.shade700,
+                              fontFamily: 'Plus Jakarta Sans',
+                              fontWeight: FontWeight.w400,
                             ),
-                            decoration: BoxDecoration(
-                              color: Colors.blue.shade50,
-                              borderRadius: BorderRadius.circular(screenWidth * 0.015),
-                              border: Border.all(
-                                color: Colors.blue.shade200,
-                                width: 1,
-                              ),
-                            ),
-                            child: Text(
-                              'Self Task',
-                              style: AppTextStyles.smallText.copyWith(
-                                color: AppColors.primaryColor,
-                                fontSize: screenWidth * 0.03,
-                              ),
-                            ),
-                          )
-                        else if (hasGroupMembers)
-                        // Group Task with avatars and label
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                      const Spacer(),
+                      if (task.totalSubtasks != null)
+                        Padding(
+                          padding: EdgeInsets.only(right: screenWidth * 0.01),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              // Group member avatars
-                              SizedBox(
-                                width: screenWidth * 0.20, // 80px equivalent
-                                height: screenWidth * 0.0875, // 35px equivalent
-                                child: Stack(
-                                  children: [
-                                    for (int i = 0;
-                                    i < (task.groupMembers!.length > 3
-                                        ? 3
-                                        : task.groupMembers!.length);
-                                    i++)
-                                      Positioned(
-                                        left: i * screenWidth * 0.05,
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            border: Border.all(
-                                              color: Colors.white,
-                                              width: screenWidth * 0.005,
-                                            ),
-                                          ),
-                                          child: CircleAvatar(
-                                            radius: screenWidth * 0.04, // 16px equivalent
-                                            backgroundImage: AssetImage(
-                                              task.groupMembers![i],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    // Show +X if more than 3 members
-                                    if (task.groupMembers!.length > 3)
-                                      Positioned(
-                                        left: screenWidth * 0.15,
-                                        child: Container(
-                                          width: screenWidth * 0.08,
-                                          height: screenWidth * 0.08,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.grey.shade300,
-                                            border: Border.all(
-                                              color: Colors.white,
-                                              width: screenWidth * 0.005,
-                                            ),
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              '+${task.groupMembers!.length - 3}',
-                                              style: TextStyle(
-                                                fontSize: screenWidth * 0.0275,
-                                                fontWeight: FontWeight.w600,
-                                                color: Colors.grey.shade700,
+                              Container(
+                                width: screenWidth * 0.075,
+                                height: screenWidth * 0.015,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade200,
+                                  borderRadius: BorderRadius.circular(screenWidth * 0.004),
+                                ),
+                                child: FractionallySizedBox(
+                                  alignment: Alignment.centerLeft,
+                                  widthFactor: progress,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primaryColor,
+                                      borderRadius: BorderRadius.circular(screenWidth * 0.004),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: screenWidth * 0.005),
+                              Text(
+                                '${(progress * 100).toInt()}%',
+                                style: AppTextStyles.smallText.copyWith(
+                                  fontSize: screenWidth * 0.03,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                  SizedBox(height: screenWidth * 0.04),
+                  const DottedLine(),
+                  SizedBox(height: screenWidth * 0.04),
+
+                  // Bottom Section: Task Type and Actions
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (isSelfTask)
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: screenWidth * 0.025,
+                                  vertical: screenWidth * 0.015,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.shade50,
+                                  borderRadius: BorderRadius.circular(screenWidth * 0.015),
+                                  border: Border.all(
+                                    color: Colors.blue.shade200,
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Text(
+                                  'Self Task',
+                                  style: AppTextStyles.smallText.copyWith(
+                                    color: AppColors.primaryColor,
+                                    fontSize: screenWidth * 0.03,
+                                  ),
+                                ),
+                              )
+                            else if (hasGroupMembers)
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(
+                                    width: screenWidth * 0.20,
+                                    height: screenWidth * 0.0875,
+                                    child: Stack(
+                                      children: [
+                                        for (int i = 0;
+                                        i < (task.groupMembers!.length > 3
+                                            ? 3
+                                            : task.groupMembers!.length);
+                                        i++)
+                                          Positioned(
+                                            left: i * screenWidth * 0.05,
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                border: Border.all(
+                                                  color: Colors.white,
+                                                  width: screenWidth * 0.005,
+                                                ),
+                                              ),
+                                              child: CircleAvatar(
+                                                radius: screenWidth * 0.04,
+                                                backgroundImage: AssetImage(
+                                                  task.groupMembers![i],
+                                                ),
                                               ),
                                             ),
                                           ),
-                                        ),
+                                        if (task.groupMembers!.length > 3)
+                                          Positioned(
+                                            left: screenWidth * 0.15,
+                                            child: Container(
+                                              width: screenWidth * 0.08,
+                                              height: screenWidth * 0.08,
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: Colors.grey.shade300,
+                                                border: Border.all(
+                                                  color: Colors.white,
+                                                  width: screenWidth * 0.005,
+                                                ),
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  '+${task.groupMembers!.length - 3}',
+                                                  style: TextStyle(
+                                                    fontSize: screenWidth * 0.0275,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: Colors.grey.shade700,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                  SizedBox(height: screenWidth * 0.01),
+                                  Text(
+                                    'Group Task',
+                                    style: AppTextStyles.smallText.copyWith(
+                                      color: AppColors.black,
+                                      fontSize: screenWidth * 0.035,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            else
+                              Row(
+                                children: [
+                                  CircleAvatar(
+                                    radius: screenWidth * 0.04,
+                                    backgroundImage: const AssetImage(
+                                      "assets/images/dummy_user_image.png",
+                                    ),
+                                  ),
+                                  SizedBox(width: screenWidth * 0.02),
+                                  Expanded(
+                                    child: Text(
+                                      'Assigned by ${task.assignedBy ?? "Mr. Tom Alax"}',
+                                      style: TextStyle(
+                                        fontSize: screenWidth * 0.0325,
+                                        color: Colors.grey.shade700,
+                                        fontFamily: 'Plus Jakarta Sans',
+                                        fontWeight: FontWeight.w500,
                                       ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            if (hasGroupMembers && task.assignedBy != null)
+                              Padding(
+                                padding: EdgeInsets.only(top: screenWidth * 0.02),
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: screenWidth * 0.035,
+                                      backgroundImage: const AssetImage(
+                                        "assets/images/dummy_user_image.png",
+                                      ),
+                                    ),
+                                    SizedBox(width: screenWidth * 0.015),
+                                    Expanded(
+                                      child: Text(
+                                        'Assigned by ${task.assignedBy!}',
+                                        style: TextStyle(
+                                          fontSize: screenWidth * 0.03,
+                                          color: Colors.grey.shade600,
+                                          fontFamily: 'Plus Jakarta Sans',
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
-                              SizedBox(height: screenWidth * 0.01),
-                              Text(
-                                'Group Task',
-                                style: AppTextStyles.smallText.copyWith(
-                                  color: AppColors.black,
-                                  fontSize: screenWidth * 0.035,
-                                ),
-                              ),
-                            ],
-                          )
-                        else
-                        // Regular assigned task (no group members)
-                          Row(
-                            children: [
-                              CircleAvatar(
-                                radius: screenWidth * 0.04,
-                                backgroundImage: const AssetImage(
-                                  "assets/images/dummy_user_image.png",
-                                ),
-                              ),
-                              SizedBox(width: screenWidth * 0.02),
-                              Expanded(
-                                child: Text(
-                                  'Assigned by ${task.assignedBy ?? "Mr. Tom Alax"}',
-                                  style: TextStyle(
-                                    fontSize: screenWidth * 0.0325,
-                                    color: Colors.grey.shade700,
-                                    fontFamily: 'Plus Jakarta Sans',
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-
-                        // Show assigner info for group tasks (below avatars)
-                        if (hasGroupMembers && task.assignedBy != null)
-                          Padding(
-                            padding: EdgeInsets.only(top: screenWidth * 0.02),
-                            child: Row(
-                              children: [
-                                CircleAvatar(
-                                  radius: screenWidth * 0.035,
-                                  backgroundImage: const AssetImage(
-                                    "assets/images/dummy_user_image.png",
-                                  ),
-                                ),
-                                SizedBox(width: screenWidth * 0.015),
-                                Expanded(
-                                  child: Text(
-                                    'Assigned by ${task.assignedBy!}',
-                                    style: TextStyle(
-                                      fontSize: screenWidth * 0.03,
-                                      color: Colors.grey.shade600,
-                                      fontFamily: 'Plus Jakarta Sans',
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-
-                  /// Right side: Start Button
-                  if (task.status == TaskStatus.pending)
-                    Padding(
-                      padding: EdgeInsets.only(top: screenWidth * 0.005),
-                      child: ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primaryColor,
-                          foregroundColor: AppColors.white,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: screenWidth * 0.04,
-                            vertical: screenWidth * 0.01,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(screenWidth * 0.02),
-                          ),
-                          elevation: 0,
-                          visualDensity: VisualDensity.compact,
-                        ),
-                        child: Text(
-                          'Start',
-                          style: AppTextStyles.smallText.copyWith(
-                            color: AppColors.white,
-                            fontSize: screenWidth * 0.03,
-                          ),
+                          ],
                         ),
                       ),
-                    )
+                      if (task.status == TaskStatus.pending)
+                        Padding(
+                          padding: EdgeInsets.only(top: screenWidth * 0.005),
+                          child: ElevatedButton(
+                            onPressed: () {},
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primaryColor,
+                              foregroundColor: AppColors.white,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: screenWidth * 0.04,
+                                vertical: screenWidth * 0.01,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(screenWidth * 0.02),
+                              ),
+                              elevation: 0,
+                              visualDensity: VisualDensity.compact,
+                            ),
+                            child: Text(
+                              'Start',
+                              style: AppTextStyles.smallText.copyWith(
+                                color: AppColors.white,
+                                fontSize: screenWidth * 0.03,
+                              ),
+                            ),
+                          ),
+                        )
+                    ],
+                  ),
                 ],
               ),
-            ],
-          ),
+            ),
+
+            // Status Badge - Positioned to touch the top border exactly like the image
+            Positioned(
+              top: 0,
+              right: 0,
+              child: Container(
+                width: screenWidth * 0.25, // Fixed width to ensure proper coverage
+                padding: EdgeInsets.symmetric(
+                  horizontal: screenWidth * 0.03,
+                  vertical: screenWidth * 0.015,
+                ),
+                decoration: BoxDecoration(
+                  color: _getStatusBackgroundColor(task.status),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(screenWidth * 0.04), // Matches card radius
+                    bottomRight: Radius.circular(screenWidth * 0.04),
+                  ),
+                ),
+                child: Text(
+                  _getStatusText(task.status),
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.03,
+                    fontWeight: FontWeight.w600,
+                    color: _getStatusTextColor(task.status),
+                    fontFamily: 'Plus Jakarta Sans',
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -1587,73 +734,8 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
         return 'Completed';
     }
   }
-
-  List<UgcTask> _getTasks() {
-    return [
-      UgcTask(
-        totalSubtasks: 5,
-        completedSubtasks: 0,
-        title: 'Complete Math Homework',
-        description: 'Solve algebra, geometry and calculus problems.',
-        time: '10.30 AM',
-        status: TaskStatus.pending,
-        createdAt: DateTime(2026, 1, 5, 9, 50),
-        startTime: DateTime(2026, 1, 5, 10, 30),
-        assignedBy: null,
-        subtasks: [
-          UgcSubTask(title: 'Algebra problems', isCompleted: false),
-          UgcSubTask(title: 'Geometry exercises', isCompleted: false),
-          UgcSubTask(title: 'Calculus problems', isCompleted: false),
-        ],
-      ),
-      UgcTask(
-        totalSubtasks: 5,
-        completedSubtasks: 0,
-        title: 'UX/UI Design',
-        description: 'Design user interface mockups.',
-        time: '10.30 AM',
-        status: TaskStatus.pending,
-        createdAt: DateTime(2026, 1, 5, 9, 50),
-        startTime: DateTime(2026, 1, 5, 10, 30),
-        assignedBy: 'Mr. Tom Alax',
-      ),
-      UgcTask(
-        totalSubtasks: 3,
-        completedSubtasks: 1,
-        title: 'Complete Math Homework',
-        description: 'Solve algebra, geometry and calculus problems.',
-        time: '10.30 AM',
-        status: TaskStatus.inProgress,
-        createdAt: DateTime(2026, 1, 5, 9, 50),
-        startTime: DateTime(2026, 1, 5, 10, 30),
-        assignedBy: 'Mr. Tom Alax',
-        groupMembers: [
-          "assets/images/dummy_user_image.png",
-          "assets/images/dummy_user_image.png",
-          "assets/images/dummy_user_image.png",
-        ],
-        subtasks: [
-          UgcSubTask(title: 'Algebra problems', isCompleted: true),
-          UgcSubTask(title: 'Geometry exercises', isCompleted: true),
-          UgcSubTask(title: 'Calculus problems', isCompleted: false),
-        ],
-      ),
-      UgcTask(
-        totalSubtasks: 4,
-        completedSubtasks: 4,
-        title: 'History Chapter Summary',
-        description: 'Read chapter 5 and prepare summary notes.',
-        time: '4:30 PM',
-        status: TaskStatus.completed,
-        createdAt: DateTime(2026, 1, 5, 9, 50),
-        startTime: DateTime(2026, 1, 5, 16, 30),
-        completedTime: DateTime(2026, 1, 5, 18, 0),
-      ),
-    ];
-  }
 }
 
-/// Custom Sliver Persistent Header Delegate for pinned Tasks header
 class _TasksHeaderDelegate extends SliverPersistentHeaderDelegate {
   final double minHeight;
   final double maxHeight;
