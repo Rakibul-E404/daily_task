@@ -4,4 +4,8 @@ class AppUrl {
 
   static const String baseUrl = 'https://newsheakh6733.sobhoy.com/api/v1';
   static const String loginIndividualAndChildren = '$baseUrl/auth/login/individual-user';
+  ///-------------------
+  ///--- UGC -----------
+  ///-------------------
+  static const String getUgcDailyProgress = '$baseUrl/tasks/daily-progress/v2';
 }

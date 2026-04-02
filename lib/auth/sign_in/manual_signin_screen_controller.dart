@@ -61,16 +61,16 @@ class ManualSignInScreenController extends GetxController {
           return false;
         }
 
-        // Save tokens
-        await SecureStorageService.saveAccessToken(accessToken);
+        // ✅ UPDATED: Save tokens using instance
+        await SecureStorageService.instance.saveAccessToken(accessToken);
         if (refreshToken != null) {
-          await SecureStorageService.saveRefreshToken(refreshToken);
+          await SecureStorageService.instance.saveRefreshToken(refreshToken);
         }
 
-        // Save user data
-        await SecureStorageService.saveUserData(loggedInUser!.toJson());
+        // ✅ UPDATED: Save user data using instance
+        await SecureStorageService.instance.saveUserData(loggedInUser!.toJson());
 
-        // ✅ Navigate by role
+        // Navigate by role
         _navigateByRole();
 
         return true;

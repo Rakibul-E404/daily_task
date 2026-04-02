@@ -18,12 +18,16 @@ class SplashScreenController {
   }
 
   Future<void> _checkAuth() async {
-    final accessToken = await SecureStorageService.getAccessToken();
+    // ✅ Using instance pattern
+    final accessToken = await SecureStorageService.instance.getAccessToken();
 
     if (accessToken != null) {
       // Token exists, load user info
-      final userJson = await SecureStorageService.getUserData();
-      final signInController = Get.put(ManualSignInScreenController());
+      final userJson = await SecureStorageService.instance.getUserData();
+
+      final signInController = Get.isRegistered<ManualSignInScreenController>()
+          ? Get.find<ManualSignInScreenController>()
+          : Get.put(ManualSignInScreenController());
 
       if (userJson != null) {
         signInController.loggedInUser = UserModel.fromJson(userJson);
