@@ -3,6 +3,7 @@ import 'package:askfemi/features/individual_user/widget/dotted_line_widget.dart'
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../../../utils/app_colors.dart';
 import '../../../../utils/app_texts_style.dart';
 import '../../../individual_user/views/notification/notification_screen.dart';
@@ -60,7 +61,7 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
             /// Collapsible App Bar
             _buildSliverAppBar(context, isEmptyState),
 
-            /// Daily Progress Section
+            /// Daily Progress Section (only when data is loaded)
             if (showDailyProgress)
               SliverToBoxAdapter(
                 child: Padding(
@@ -74,26 +75,30 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
                 ),
               ),
 
-            /// Loading indicator for progress
+            /// Shimmer Loading for Daily Progress
             if (!isEmptyState && controller.isLoadingProgress.value)
               SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.all(screenWidth * 0.04),
-                  child: const Center(
-                    child: CircularProgressIndicator(),
-                  ),
+                  child: _buildDailyProgressShimmer(screenWidth),
                 ),
               ),
 
-            /// Pinned Tasks Header
-            if (!isEmptyState && !controller.isLoadingTasks.value && tasks.isNotEmpty)
-              _buildPinnedTasksHeader(tasks, screenWidth),
+            /// Pinned Tasks Header - ALWAYS SHOW (don't wait for loading)
+            _buildPinnedTasksHeader(tasks, screenWidth, controller.isLoadingTasks.value),
 
-            /// Loading indicator for tasks
+            /// Shimmer Loading for Tasks (when loading and no tasks)
             if (controller.isLoadingTasks.value && tasks.isEmpty)
-              const SliverFillRemaining(
-                child: Center(
-                  child: CircularProgressIndicator(),
+              SliverPadding(
+                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                        (context, index) => Padding(
+                      padding: EdgeInsets.only(bottom: screenWidth * 0.04),
+                      child: _buildTaskCardShimmer(screenWidth),
+                    ),
+                    childCount: 5,
+                  ),
                 ),
               ),
 
@@ -113,6 +118,151 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
         ),
       );
     });
+  }
+
+  /// Shimmer for Daily Progress Card
+  Widget _buildDailyProgressShimmer(double screenWidth) {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade300,
+      highlightColor: Colors.grey.shade100,
+      child: Card(
+        color: AppColors.white,
+        elevation: 1,
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(screenWidth * 0.05),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(screenWidth * 0.04),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    width: screenWidth * 0.3,
+                    height: screenWidth * 0.06,
+                    color: Colors.white,
+                  ),
+                  Container(
+                    width: screenWidth * 0.15,
+                    height: screenWidth * 0.05,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(screenWidth * 0.01),
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: screenWidth * 0.03),
+              Container(
+                width: double.infinity,
+                height: screenWidth * 0.03,
+                color: Colors.white,
+              ),
+              SizedBox(height: screenWidth * 0.02),
+              Container(
+                width: screenWidth * 0.5,
+                height: screenWidth * 0.04,
+                color: Colors.white,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Shimmer for Task Card
+  Widget _buildTaskCardShimmer(double screenWidth) {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade300,
+      highlightColor: Colors.grey.shade100,
+      child: Card(
+        color: AppColors.white,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(screenWidth * 0.04),
+          side: BorderSide(
+            color: Colors.grey.shade300,
+            width: 1,
+          ),
+        ),
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: screenWidth * 0.04,
+            top: screenWidth * 0.06,
+            right: screenWidth * 0.04,
+            bottom: screenWidth * 0.04,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Title shimmer
+              Container(
+                width: screenWidth * 0.6,
+                height: screenWidth * 0.05,
+                color: Colors.white,
+              ),
+              SizedBox(height: screenWidth * 0.04),
+
+              // Time and subtasks row shimmer
+              Row(
+                children: [
+                  Container(
+                    width: screenWidth * 0.1,
+                    height: screenWidth * 0.035,
+                    color: Colors.white,
+                  ),
+                  SizedBox(width: screenWidth * 0.02),
+                  Container(
+                    width: screenWidth * 0.2,
+                    height: screenWidth * 0.035,
+                    color: Colors.white,
+                  ),
+                  const Spacer(),
+                  Container(
+                    width: screenWidth * 0.1,
+                    height: screenWidth * 0.035,
+                    color: Colors.white,
+                  ),
+                ],
+              ),
+              SizedBox(height: screenWidth * 0.04),
+
+              // Divider shimmer
+              Container(
+                width: double.infinity,
+                height: 1,
+                color: Colors.white,
+              ),
+              SizedBox(height: screenWidth * 0.04),
+
+              // Bottom section shimmer
+              Row(
+                children: [
+                  Container(
+                    width: screenWidth * 0.3,
+                    height: screenWidth * 0.08,
+                    color: Colors.white,
+                  ),
+                  const Spacer(),
+                  Container(
+                    width: screenWidth * 0.15,
+                    height: screenWidth * 0.06,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(screenWidth * 0.02),
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildSliverAppBar(BuildContext context, bool isEmptyState) {
@@ -193,10 +343,13 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
     );
   }
 
-  Widget _buildPinnedTasksHeader(List<UgcTask> tasks, double screenWidth) {
-    final activeTasks = tasks
-        .where((task) => task.status != TaskStatus.completed)
-        .length;
+  Widget _buildPinnedTasksHeader(List<UgcTask> tasks, double screenWidth, bool isLoadingTasks) {
+    // Show active count only when tasks are loaded, otherwise show placeholder
+    final activeTasks = tasks.isNotEmpty
+        ? tasks.where((task) => task.status != TaskStatus.completed).length
+        : 0;
+
+    final taskCount = tasks.isNotEmpty ? tasks.length : 0;
 
     return SliverPersistentHeader(
       pinned: true,
@@ -224,7 +377,9 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
                 ),
               ),
               Text(
-                '$activeTasks/${tasks.length} active',
+                isLoadingTasks && tasks.isEmpty
+                    ? 'Loading...'
+                    : '$activeTasks/$taskCount active',
                 style: TextStyle(
                   color: Colors.grey.shade600,
                   fontSize: screenWidth * 0.035,
@@ -247,7 +402,7 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
       double screenHeight,
       bool isLoadingTasks,
       ) {
-    if (isEmptyState) {
+    if (isEmptyState && !isLoadingTasks) {
       return SliverFillRemaining(
         hasScrollBody: false,
         child: Padding(
@@ -304,6 +459,10 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
           ),
         ),
       );
+    }
+
+    if (tasks.isEmpty && isLoadingTasks) {
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
     }
 
     return SliverPadding(
@@ -678,7 +837,6 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
                   borderRadius: BorderRadius.only(
                     topRight: Radius.circular(screenWidth * 0.04),
                     bottomLeft: Radius.circular(screenWidth * 0.04),
-
                   ),
                 ),
                 child: Text(
