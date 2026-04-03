@@ -46,6 +46,7 @@ dependencies:
   avatar_stack: ^3.0.0
   dio: ^5.9.2
   flutter_secure_storage: ^10.0.0
+  shimmer: ^3.0.0
 
 dev_dependencies:
   flutter_test:

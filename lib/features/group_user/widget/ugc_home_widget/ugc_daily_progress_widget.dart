@@ -145,7 +145,7 @@ class DailyProgressData {
 
 Widget ugcBuildDailyProgress(DailyProgressData data, double screenWidth) {
   return Card(
-    color: AppColors.backgroundColor,
+    color: AppColors.white,
     elevation: 1,
     child: Container(
       width: double.infinity,

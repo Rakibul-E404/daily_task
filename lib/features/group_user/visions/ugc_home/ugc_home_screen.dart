@@ -42,17 +42,6 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
       final tasks = controller.tasks;
       final isEmptyState = tasks.isEmpty && !controller.isLoadingTasks.value;
 
-      // Debug prints to check data
-      print('Tasks length: ${tasks.length}');
-      print('Daily Progress: ${controller.dailyProgress.value}');
-      print('IsLoadingProgress: ${controller.isLoadingProgress.value}');
-      print('Daily Progress total: ${controller.dailyProgress.value?.total}');
-
-      // Show daily progress if:
-      // 1. Not empty state
-      // 2. Not loading progress
-      // 3. Daily progress data exists
-      // 4. Total tasks > 0 (from API)
       final bool showDailyProgress = !isEmptyState &&
           !controller.isLoadingProgress.value &&
           controller.dailyProgress.value != null;
@@ -349,19 +338,13 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
     final hasGroupMembers =
         task.groupMembers != null && task.groupMembers!.isNotEmpty;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.backgroundColor,
+    return Card(
+      color: AppColors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(screenWidth * 0.04),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-        border: Border.all(
-          color: Colors.grey.shade200,
+        side: BorderSide(
+          color: Colors.grey.shade300,
           width: 1,
         ),
       ),
@@ -376,7 +359,7 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
             Padding(
               padding: EdgeInsets.only(
                 left: screenWidth * 0.04,
-                top: screenWidth * 0.06, // Extra space for status badge
+                top: screenWidth * 0.06,
                 right: screenWidth * 0.04,
                 bottom: screenWidth * 0.04,
               ),
@@ -535,9 +518,12 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
                                               ),
                                               child: CircleAvatar(
                                                 radius: screenWidth * 0.04,
-                                                backgroundImage: AssetImage(
-                                                  task.groupMembers![i],
-                                                ),
+                                                backgroundImage: task.groupMembers![i].startsWith('http')
+                                                    ? NetworkImage(task.groupMembers![i])
+                                                    : (task.groupMembers![i].startsWith('assets')
+                                                    ? AssetImage(task.groupMembers![i]) as ImageProvider
+                                                    : NetworkImage(task.groupMembers![i])),
+                                                onBackgroundImageError: (_, __) {},
                                               ),
                                             ),
                                           ),
@@ -585,9 +571,14 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
                                 children: [
                                   CircleAvatar(
                                     radius: screenWidth * 0.04,
-                                    backgroundImage: const AssetImage(
-                                      "assets/images/dummy_user_image.png",
-                                    ),
+                                    backgroundImage: task.assignedByImage != null
+                                        ? (task.assignedByImage!.startsWith('http')
+                                        ? NetworkImage(task.assignedByImage!)
+                                        : (task.assignedByImage!.startsWith('assets')
+                                        ? AssetImage(task.assignedByImage!) as ImageProvider
+                                        : NetworkImage(task.assignedByImage!)))
+                                        : const AssetImage("assets/images/dummy_user_image.png") as ImageProvider,
+                                    onBackgroundImageError: (_, __) {},
                                   ),
                                   SizedBox(width: screenWidth * 0.02),
                                   Expanded(
@@ -611,9 +602,14 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
                                   children: [
                                     CircleAvatar(
                                       radius: screenWidth * 0.035,
-                                      backgroundImage: const AssetImage(
-                                        "assets/images/dummy_user_image.png",
-                                      ),
+                                      backgroundImage: task.assignedByImage != null
+                                          ? (task.assignedByImage!.startsWith('http')
+                                          ? NetworkImage(task.assignedByImage!)
+                                          : (task.assignedByImage!.startsWith('assets')
+                                          ? AssetImage(task.assignedByImage!) as ImageProvider
+                                          : NetworkImage(task.assignedByImage!)))
+                                          : const AssetImage("assets/images/dummy_user_image.png") as ImageProvider,
+                                      onBackgroundImageError: (_, __) {},
                                     ),
                                     SizedBox(width: screenWidth * 0.015),
                                     Expanded(
@@ -667,12 +663,12 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
               ),
             ),
 
-            // Status Badge - Positioned to touch the top border exactly like the image
+            // Status Badge
             Positioned(
               top: 0,
               right: 0,
               child: Container(
-                width: screenWidth * 0.25, // Fixed width to ensure proper coverage
+                width: screenWidth * 0.25,
                 padding: EdgeInsets.symmetric(
                   horizontal: screenWidth * 0.03,
                   vertical: screenWidth * 0.015,
@@ -680,8 +676,9 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
                 decoration: BoxDecoration(
                   color: _getStatusBackgroundColor(task.status),
                   borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(screenWidth * 0.04), // Matches card radius
-                    bottomRight: Radius.circular(screenWidth * 0.04),
+                    topRight: Radius.circular(screenWidth * 0.04),
+                    bottomLeft: Radius.circular(screenWidth * 0.04),
+
                   ),
                 ),
                 child: Text(
