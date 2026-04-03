@@ -4,7 +4,7 @@
 /// ===============================================================
 library;
 
-import 'package:askfemi/features/individual_user/views/profile/personal_information/personal_profile_info_screen.dart';
+import 'package:askfemi/screens/personal_information/personal_profile_info_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -12,7 +12,7 @@ import 'package:get/get_navigation/src/extension_navigation.dart';
 
 import '../../../../../utils/app_colors.dart';
 import '../../../../../utils/app_texts_style.dart';
-import '../../../widget/edit_update_button.dart';
+import '../../features/individual_user/widget/edit_update_button.dart';
 
 
 
