@@ -7,6 +7,7 @@ class AppUrl {
   static const String loginIndividualAndChildren = '$baseUrl/auth/login/individual-user';
   static const String getPersonalInformation = '$baseUrl/users/profile/v2';
   static const String updatePersonalInformation = '$baseUrl/users/profile-info';
+  static const String updatePersonalInformationImage = '$baseUrl/users/profile-picture';
   ///-------------------
   ///--- UGC -----------
   ///-------------------
