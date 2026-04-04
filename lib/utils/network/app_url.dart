@@ -6,6 +6,7 @@ class AppUrl {
   static const String imageBaseUrl = 'https://newsheakh6733.sobhoy.com';
   static const String loginIndividualAndChildren = '$baseUrl/auth/login/individual-user';
   static const String getPersonalInformation = '$baseUrl/users/profile/v2';
+  static const String updatePersonalInformation = '$baseUrl/users/profile-info';
   ///-------------------
   ///--- UGC -----------
   ///-------------------

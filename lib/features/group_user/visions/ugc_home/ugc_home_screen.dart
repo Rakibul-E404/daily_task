@@ -333,6 +333,7 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
     );
   }
 
+
   Widget _buildSliverAppBar(BuildContext context, bool isEmptyState, PersonalInformationController profileController) {
     final screenWidth = MediaQuery.of(context).size.width;
 
@@ -358,13 +359,36 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
           children: [
             Row(
               children: [
-                CircleAvatar(
-                  radius: screenWidth * 0.05,
-                  backgroundImage: profileController.userProfileImage.value.isNotEmpty &&
+                // Profile Icon instead of CircleAvatar with AssetImage
+                Container(
+                  width: screenWidth * 0.1,
+                  height: screenWidth * 0.1,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.primaryColor.withOpacity(0.1),
+                  ),
+                  child: profileController.userProfileImage.value.isNotEmpty &&
                       profileController.userProfileImage.value.startsWith('http')
-                      ? NetworkImage(profileController.userProfileImage.value)
-                      : const AssetImage("assets/images/dummy_user_image.png") as ImageProvider,
-                  onBackgroundImageError: (_, __) {},
+                      ? ClipOval(
+                    child: Image.network(
+                      profileController.userProfileImage.value,
+                      width: screenWidth * 0.1,
+                      height: screenWidth * 0.1,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          Icons.person,
+                          size: screenWidth * 0.06,
+                          color: AppColors.primaryColor,
+                        );
+                      },
+                    ),
+                  )
+                      : Icon(
+                    Icons.person,
+                    size: screenWidth * 0.06,
+                    color: AppColors.primaryColor,
+                  ),
                 ),
                 SizedBox(width: screenWidth * 0.03),
                 Column(
@@ -412,6 +436,7 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
       ),
     );
   }
+
 
   Widget _buildPinnedTasksHeader(List<UgcTask> tasks, double screenWidth, bool isLoadingTasks) {
     final activeTasks = tasks.isNotEmpty
