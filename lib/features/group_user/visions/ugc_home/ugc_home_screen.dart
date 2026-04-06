@@ -1,3 +1,4 @@
+import 'package:askfemi/features/group_user/visions/ugc_home/ugc_task_details/ugc_task_details_screen.dart';
 import 'package:askfemi/features/group_user/visions/ugc_home/ugc_task_details/ugc_task_model/ugc_task_model.dart';
 import 'package:askfemi/features/individual_user/widget/dotted_line_widget.dart';
 import 'package:flutter/material.dart';
@@ -162,7 +163,7 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
                     delegate: SliverChildBuilderDelegate(
                           (context, index) => Padding(
                         padding: EdgeInsets.only(bottom: screenWidth * 0.04),
-                        child: _buildTaskCardShimmer(screenWidth),
+                        child: InkWell(child: _buildTaskCardShimmer(screenWidth)),
                       ),
                       childCount: 5,
                     ),
@@ -602,8 +603,22 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
         ),
       ),
       child: InkWell(
+        // onTap: () {
+        //   Get.to(() => UgcTaskDetailsScreen());
+        // },
+
         onTap: () {
-          // Navigate to task details
+          // Debug print to check if task.id exists
+          print('🖱️ Task tapped - ID: ${task.id}');
+          print('🖱️ Task title: ${task.title}');
+
+          // Navigate to task details with task ID
+          Get.to(
+                () => const UgcTaskDetailsScreen(),
+            arguments: {
+              'taskId': task.id,  // Pass the task ID
+            },
+          );
         },
         borderRadius: BorderRadius.circular(screenWidth * 0.04),
         child: Stack(
