@@ -20,4 +20,15 @@ class AppUrl {
     return '$baseUrl/tasks/$taskId';
   }
 
+
+
+  ///-------------------
+  ///--- Individual ----
+  ///-------------------
+
+  static const String signUpIndevidual = '$baseUrl/auth/register/v2';
+  static const String verifyEmail = '$baseUrl/auth/verify-email';
+  static const String resendVerificationCode = '$baseUrl/auth/resend-otp';
+
+
 }

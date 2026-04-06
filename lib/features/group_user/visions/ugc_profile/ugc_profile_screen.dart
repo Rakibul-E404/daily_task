@@ -345,9 +345,6 @@ class UgcProfileScreen extends StatelessWidget {
                 await SecureStorageService.instance.clearAll();
                 await CacheService.clearCache();
                 Get.offAll(() =>  SignInScreen());
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Logged out successfully")),
-                );
               },
               child: Text(
                 "Logout",

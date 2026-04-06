@@ -275,9 +275,6 @@ class ProfileScreen extends StatelessWidget {
                                       ),
                                       onPressed: () {
                                         Get.offAll(()=>SignInScreen());
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text("Logged out successfully")),
-                                        );
                                       },
                                       child:  Text("Logout",style: AppTextStyles.defaultTextStyle.copyWith(
                                         color: AppColors.red,
