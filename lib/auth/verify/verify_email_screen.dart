@@ -10,7 +10,6 @@ import '../../utils/app_colors.dart';
 import '../../utils/congratulations_screen.dart';
 import '../../utils/network/app_url.dart';
 import '../../utils/network/network_caller_dio.dart';
-import '../../utils/network/network_response_dio.dart';
 import '../../utils/network/secure_storage_service.dart';
 
 class VerifyEmailScreen extends StatefulWidget {

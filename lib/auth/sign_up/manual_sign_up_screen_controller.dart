@@ -63,11 +63,7 @@ class ManualSignUpController extends GetxController {
   // Update date of birth - expects date in DD/MM/YYYY format from DateOfBirthField
   void updateDateOfBirth(String value) {
     dateOfBirth.value = value;
-  }
-
-  // Update age
-  void updateAge(String value) {
-    age.value = value;
+    _calculateAgeFromDOB(value);
   }
 
   // Update password
@@ -78,6 +74,66 @@ class ManualSignUpController extends GetxController {
   // Update terms agreement
   void updateTermsAgreement(bool value) {
     agreeToTerms.value = value;
+  }
+
+  // Calculate age from date of birth
+  void _calculateAgeFromDOB(String dobString) {
+    if (dobString.isEmpty) {
+      age.value = '';
+      return;
+    }
+
+    try {
+      // Clean the date string
+      String cleanDate = dobString.replaceAll(' ', '');
+      DateTime? birthDate;
+
+      // Parse date in DD/MM/YYYY format
+      if (cleanDate.contains('/')) {
+        final parts = cleanDate.split('/');
+        if (parts.length == 3) {
+          final day = int.parse(parts[0]);
+          final month = int.parse(parts[1]);
+          final year = int.parse(parts[2]);
+          birthDate = DateTime(year, month, day);
+        }
+      }
+      // Parse date in DD-MM-YYYY format
+      else if (cleanDate.contains('-')) {
+        final parts = cleanDate.split('-');
+        if (parts.length == 3) {
+          final day = int.parse(parts[0]);
+          final month = int.parse(parts[1]);
+          final year = int.parse(parts[2]);
+          birthDate = DateTime(year, month, day);
+        }
+      }
+
+      if (birthDate != null && birthDate.isValid) {
+        final today = DateTime.now();
+        int calculatedAge = today.year - birthDate.year;
+
+        // Adjust age if birthday hasn't occurred yet this year
+        if (today.month < birthDate.month ||
+            (today.month == birthDate.month && today.day < birthDate.day)) {
+          calculatedAge--;
+        }
+
+        // Ensure age is not negative
+        if (calculatedAge < 0) calculatedAge = 0;
+
+        age.value = calculatedAge.toString();
+        print('📅 Calculated age: ${age.value} from DOB: $dobString');
+      }
+    } catch (e) {
+      print('Error calculating age: $e');
+      age.value = '';
+    }
+  }
+
+  // Update age manually (if user wants to override)
+  void updateAge(String value) {
+    age.value = value;
   }
 
   // Convert date from DD/MM/YYYY to YYYY-MM-DD (ISO format)
@@ -133,6 +189,15 @@ class ManualSignUpController extends GetxController {
       return false;
     }
 
+// Optional: Validate phone number format (starts with + and has digits)
+    if (!phoneNumber.value.trim().startsWith('+') &&
+        !RegExp(r'^[0-9]+$').hasMatch(phoneNumber.value.trim())) {
+      errorMessage.value = 'Phone number must start with + followed by country code (e.g., +880123456789)';
+      return false;
+    }
+
+
+
     if (gender.value.isEmpty) {
       errorMessage.value = 'Please select your gender';
       return false;
@@ -145,6 +210,13 @@ class ManualSignUpController extends GetxController {
 
     if (age.value.trim().isEmpty) {
       errorMessage.value = 'Please enter your age';
+      return false;
+    }
+
+    // Validate age is reasonable (0-120)
+    final ageValue = int.tryParse(age.value.trim());
+    if (ageValue == null || ageValue < 0 || ageValue > 120) {
+      errorMessage.value = 'Please enter a valid age (1-120)';
       return false;
     }
 
@@ -203,6 +275,7 @@ class ManualSignUpController extends GetxController {
 
       print('📤 Sign up request: $requestBody');
       print('📤 Formatted DOB: $formattedDob');
+      print('📤 Age: ${age.value}');
 
       final response = await _networkCaller.postRequest(
         AppUrl.signUpIndevidual,
@@ -285,5 +358,20 @@ class ManualSignUpController extends GetxController {
     password.value = '';
     agreeToTerms.value = false;
     errorMessage.value = '';
+  }
+}
+
+// Extension to check if DateTime is valid
+extension DateTimeExtension on DateTime {
+  bool get isValid {
+    try {
+      // Check if the date components are within valid ranges
+      if (year < 1900 || year > DateTime.now().year) return false;
+      if (month < 1 || month > 12) return false;
+      if (day < 1 || day > DateTime(year, month, 0).day) return false;
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 }
