@@ -1,5 +1,5 @@
 /**
-
+import 'package:askfemi/features/group_user/visions/ugc_home/ugc_task_details/ugc_task_details_screen.dart';
 import 'package:askfemi/features/group_user/visions/ugc_task_status/ugc_task_status_screen_controller.dart';
 import 'package:askfemi/utils/app_colors.dart';
 import 'package:askfemi/utils/app_texts_style.dart';
@@ -8,14 +8,42 @@ import 'package:flutter/material.dart';
 import 'package:avatar_stack/avatar_stack.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../../../screens/widget/history_calender_widget.dart';
 import '../../widget/custom_dashed_divider.dart';
 
-class UgcTaskStatusScreen extends StatelessWidget {
+class UgcTaskStatusScreen extends StatefulWidget {
   const UgcTaskStatusScreen({super.key});
 
-  void _showCalendarFilter(BuildContext context, UgcTaskStatusController controller) {
+  @override
+  State<UgcTaskStatusScreen> createState() => _UgcTaskStatusScreenState();
+}
+
+class _UgcTaskStatusScreenState extends State<UgcTaskStatusScreen> {
+  late final UgcTaskStatusController controller;
+
+  bool _isRefreshing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.put(UgcTaskStatusController());
+  }
+
+  @override
+  void dispose() {
+    Get.delete<UgcTaskStatusController>();
+    super.dispose();
+  }
+
+  Future<void> _onRefresh() async {
+    setState(() => _isRefreshing = true);
+    await controller.refreshData();
+    setState(() => _isRefreshing = false);
+  }
+
+  void _showCalendarFilter(BuildContext context) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -69,21 +97,18 @@ class UgcTaskStatusScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(UgcTaskStatusController());
-
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       body: SafeArea(
         child: Obx(() {
-          if (controller.isLoading.value && controller.getCurrentTaskCount() == 0) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
+          final tasks = controller.getCurrentTasks();
+          final isLoading = controller.isLoading.value;
+          final bool shouldShowShimmer = (isLoading && tasks.isEmpty) || _isRefreshing;
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              /// Header
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Row(
@@ -105,7 +130,7 @@ class UgcTaskStatusScreen extends StatelessWidget {
                             padding: const EdgeInsets.only(top: 4),
                             child: Text(
                               'Filtered: ${DateFormat('dd/MM/yyyy').format(controller.selectedFromDate.value!)} - ${DateFormat('dd/MM/yyyy').format(controller.selectedToDate.value!)}',
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 12,
                                 color: AppColors.primaryColor,
                               ),
@@ -114,12 +139,14 @@ class UgcTaskStatusScreen extends StatelessWidget {
                       ],
                     ),
                     IconButton(
-                      onPressed: () => _showCalendarFilter(context, controller),
+                      onPressed: () => _showCalendarFilter(context),
                       icon: const Icon(CupertinoIcons.calendar_today),
                     ),
                   ],
                 ),
               ),
+
+              /// Tab bar
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
                 child: SingleChildScrollView(
@@ -150,68 +177,101 @@ class UgcTaskStatusScreen extends StatelessWidget {
                   ),
                 ),
               ),
+
               const SizedBox(height: 8),
+
+              /// Content
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: () => controller.refreshData(),
+                  onRefresh: _onRefresh,
+                  displacement: 0.0,       // 150px pull threshold
+                  strokeWidth: 0.0,
+                  color: AppColors.white,
+                  backgroundColor: Colors.transparent,
                   child: CustomScrollView(
-                    physics: const BouncingScrollPhysics(),
+                    physics: const BouncingScrollPhysics(
+                      parent: AlwaysScrollableScrollPhysics(),
+                    ),
                     slivers: [
-                      Obx(() {
-                        final tasks = controller.getCurrentTasks();
-                        if (tasks.isEmpty && !controller.isLoading.value) {
-                          return SliverFillRemaining(
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.inbox_outlined,
-                                    size: 64,
-                                    color: Colors.grey.shade400,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    'No ${controller.tabTitles[controller.selectedTab.value].toLowerCase()} tasks',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                  ),
-                                ],
+                      /// Shimmer state
+                      if (shouldShowShimmer)
+                        SliverPadding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          sliver: SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                                  (context, index) => Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: _buildShimmerCard(),
                               ),
+                              childCount: 5,
                             ),
-                          );
-                        }
+                          ),
+                        )
 
-                        return SliverList(
+                      /// Task list
+                      else if (tasks.isNotEmpty)
+                        SliverList(
                           delegate: SliverChildBuilderDelegate(
                                 (context, index) {
                               final task = tasks[index];
                               return Padding(
-                                padding: EdgeInsets.only(
+                                padding: const EdgeInsets.only(
                                   bottom: 12,
                                   left: 16,
                                   right: 16,
-                                  top: index == 0 ? 0 : 0,
                                 ),
-                                child: _buildTaskCard(
-                                  title: task['title'] as String,
-                                  time: task['time'] as String,
-                                  subtasks: task['subtasks'] as int?,
-                                  progress: task['progress'] as int?,
-                                  assignee: task['assignee'] as String?,
-                                  taskType: task['taskType'] as String?,
-                                  isGroupTask: task['isGroupTask'] as bool,
-                                  status: controller.selectedTab.value,
-                                  groupMemberImages: task['groupMemberImages'] as List<String>? ?? [],
+                                child: GestureDetector(
+                                  onTap: () {
+                                    Get.to(
+                                          () => const UgcTaskDetailsScreen(),
+                                      arguments: {
+                                        'taskId': task['id'] as String,
+                                      },
+                                    );
+                                  },
+                                  child: _buildTaskCard(
+                                    title: task['title'] as String,
+                                    time: task['time'] as String,
+                                    subtasks: task['subtasks'] as int?,
+                                    progress: task['progress'] as int?,
+                                    assignee: task['assignee'] as String?,
+                                    taskType: task['taskType'] as String?,
+                                    isGroupTask: task['isGroupTask'] as bool,
+                                    status: controller.selectedTab.value,
+                                    groupMemberImages:
+                                    task['groupMemberImages'] as List<String>? ?? [],
+                                  ),
                                 ),
                               );
                             },
                             childCount: tasks.length,
                           ),
-                        );
-                      }),
+                        ),
+
+                      /// Empty state
+                      if (tasks.isEmpty && !shouldShowShimmer)
+                        SliverFillRemaining(
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.inbox_outlined,
+                                  size: 64,
+                                  color: Colors.grey.shade400,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'No ${controller.tabTitles[controller.selectedTab.value].toLowerCase()} tasks',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -223,7 +283,62 @@ class UgcTaskStatusScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusTab(String text, int index, bool isSelected, VoidCallback onTap) {
+  Widget _buildShimmerCard() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade300,
+      highlightColor: Colors.grey.shade100,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(width: double.infinity, height: 20, color: Colors.white),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Container(width: 60, height: 16, color: Colors.white),
+                  const SizedBox(width: 16),
+                  Container(width: 80, height: 16, color: Colors.white),
+                  const Spacer(),
+                  Container(width: 40, height: 16, color: Colors.white),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Container(width: double.infinity, height: 1, color: Colors.white),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Container(
+                    width: 100,
+                    height: 30,
+                    color: Colors.white,
+                  ),
+                  const Spacer(),
+                  Container(
+                    width: 80,
+                    height: 30,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusTab(
+      String text, int index, bool isSelected, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -300,11 +415,7 @@ class UgcTaskStatusScreen extends StatelessWidget {
                   CircleAvatar(
                     radius: 12,
                     backgroundColor: AppColors.green,
-                    child: const Icon(
-                      Icons.check,
-                      color: Colors.white,
-                      size: 11,
-                    ),
+                    child: const Icon(Icons.check, color: Colors.white, size: 11),
                   ),
                   const SizedBox(width: 8),
                 ],
@@ -344,10 +455,7 @@ class UgcTaskStatusScreen extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         '$subtasks subtasks',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade600,
-                        ),
+                        style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
                       ),
                     ],
                   ),
@@ -377,10 +485,7 @@ class UgcTaskStatusScreen extends StatelessWidget {
                         const SizedBox(width: 4),
                         Text(
                           '$progress%',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade600,
-                          ),
+                          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                         ),
                       ],
                     ),
@@ -426,7 +531,8 @@ class UgcTaskStatusScreen extends StatelessWidget {
                       ),
                     ),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 10),
                       child: Text(
                         buttonText,
                         style: AppTextStyles.smallText.copyWith(
@@ -482,7 +588,9 @@ class UgcTaskStatusScreen extends StatelessWidget {
         ],
       );
     } else if (isGroupTask) {
-      final images = groupMemberImages.isNotEmpty ? groupMemberImages : [
+      final images = groupMemberImages.isNotEmpty
+          ? groupMemberImages
+          : [
         "assets/images/dummy_child_user_image.png",
         "assets/images/dummy_child_user_image.png",
         "assets/images/dummy_child_user_image.png",
@@ -511,7 +619,7 @@ class UgcTaskStatusScreen extends StatelessWidget {
                     return Container(
                       width: 32,
                       height: 32,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: AppColors.primaryColor,
                         shape: BoxShape.circle,
                       ),
@@ -550,11 +658,7 @@ class UgcTaskStatusScreen extends StatelessWidget {
               CircleAvatar(
                 radius: 16,
                 backgroundColor: Colors.grey.shade300,
-                child: Icon(
-                  Icons.person,
-                  size: 16,
-                  color: Colors.grey.shade600,
-                ),
+                child: Icon(Icons.person, size: 16, color: Colors.grey.shade600),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -577,8 +681,6 @@ class UgcTaskStatusScreen extends StatelessWidget {
 
 
 
-
-
 import 'package:askfemi/features/group_user/visions/ugc_home/ugc_task_details/ugc_task_details_screen.dart';
 import 'package:askfemi/features/group_user/visions/ugc_task_status/ugc_task_status_screen_controller.dart';
 import 'package:askfemi/utils/app_colors.dart';
@@ -588,14 +690,41 @@ import 'package:flutter/material.dart';
 import 'package:avatar_stack/avatar_stack.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../../../screens/widget/history_calender_widget.dart';
 import '../../widget/custom_dashed_divider.dart';
 
-class UgcTaskStatusScreen extends StatelessWidget {
+class UgcTaskStatusScreen extends StatefulWidget {
   const UgcTaskStatusScreen({super.key});
 
-  void _showCalendarFilter(BuildContext context, UgcTaskStatusController controller) {
+  @override
+  State<UgcTaskStatusScreen> createState() => _UgcTaskStatusScreenState();
+}
+
+class _UgcTaskStatusScreenState extends State<UgcTaskStatusScreen> {
+  late final UgcTaskStatusController controller;
+  bool _isRefreshing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.put(UgcTaskStatusController());
+  }
+
+  @override
+  void dispose() {
+    Get.delete<UgcTaskStatusController>();
+    super.dispose();
+  }
+
+  Future<void> _onRefresh() async {
+    setState(() => _isRefreshing = true);
+    await controller.refreshData();
+    setState(() => _isRefreshing = false);
+  }
+
+  void _showCalendarFilter(BuildContext context) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -649,21 +778,18 @@ class UgcTaskStatusScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(UgcTaskStatusController());
-
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       body: SafeArea(
         child: Obx(() {
-          if (controller.isLoading.value && controller.getCurrentTaskCount() == 0) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
+          final tasks = controller.getCurrentTasks();
+          final isLoading = controller.isLoading.value;
+          final bool shouldShowShimmer = (isLoading && tasks.isEmpty) || _isRefreshing;
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              /// Header
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Row(
@@ -685,7 +811,7 @@ class UgcTaskStatusScreen extends StatelessWidget {
                             padding: const EdgeInsets.only(top: 4),
                             child: Text(
                               'Filtered: ${DateFormat('dd/MM/yyyy').format(controller.selectedFromDate.value!)} - ${DateFormat('dd/MM/yyyy').format(controller.selectedToDate.value!)}',
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 12,
                                 color: AppColors.primaryColor,
                               ),
@@ -694,12 +820,14 @@ class UgcTaskStatusScreen extends StatelessWidget {
                       ],
                     ),
                     IconButton(
-                      onPressed: () => _showCalendarFilter(context, controller),
+                      onPressed: () => _showCalendarFilter(context),
                       icon: const Icon(CupertinoIcons.calendar_today),
                     ),
                   ],
                 ),
               ),
+
+              /// Tab bar
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
                 child: SingleChildScrollView(
@@ -730,54 +858,54 @@ class UgcTaskStatusScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
-              Expanded(
-                child: RefreshIndicator(
-                  onRefresh: () => controller.refreshData(),
-                  child: CustomScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    slivers: [
-                      Obx(() {
-                        final tasks = controller.getCurrentTasks();
-                        if (tasks.isEmpty && !controller.isLoading.value) {
-                          return SliverFillRemaining(
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.inbox_outlined,
-                                    size: 64,
-                                    color: Colors.grey.shade400,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    'No ${controller.tabTitles[controller.selectedTab.value].toLowerCase()} tasks',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }
 
-                        return SliverList(
+              const SizedBox(height: 8),
+
+              /// Content
+              Expanded(
+                child: NotificationListener<ScrollNotification>(
+                  onNotification: (scrollInfo) {
+                    if (!_isRefreshing &&
+                        scrollInfo.metrics.pixels <=
+                            scrollInfo.metrics.minScrollExtent - 100) {
+                      _onRefresh();
+                    }
+                    return false;
+                  },
+                  child: CustomScrollView(
+                    physics: const BouncingScrollPhysics(
+                      parent: AlwaysScrollableScrollPhysics(),
+                    ),
+                    slivers: [
+                      /// Shimmer state
+                      if (shouldShowShimmer)
+                        SliverPadding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          sliver: SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                                  (context, index) => Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: _buildShimmerCard(),
+                              ),
+                              childCount: 5,
+                            ),
+                          ),
+                        )
+
+                      /// Task list
+                      else if (tasks.isNotEmpty)
+                        SliverList(
                           delegate: SliverChildBuilderDelegate(
                                 (context, index) {
                               final task = tasks[index];
                               return Padding(
-                                padding: EdgeInsets.only(
+                                padding: const EdgeInsets.only(
                                   bottom: 12,
                                   left: 16,
                                   right: 16,
-                                  top: index == 0 ? 0 : 0,
                                 ),
                                 child: GestureDetector(
                                   onTap: () {
-                                    // Navigate to task details screen
                                     Get.to(
                                           () => const UgcTaskDetailsScreen(),
                                       arguments: {
@@ -794,15 +922,40 @@ class UgcTaskStatusScreen extends StatelessWidget {
                                     taskType: task['taskType'] as String?,
                                     isGroupTask: task['isGroupTask'] as bool,
                                     status: controller.selectedTab.value,
-                                    groupMemberImages: task['groupMemberImages'] as List<String>? ?? [],
+                                    groupMemberImages:
+                                    task['groupMemberImages'] as List<String>? ?? [],
                                   ),
                                 ),
                               );
                             },
                             childCount: tasks.length,
                           ),
-                        );
-                      }),
+                        ),
+
+                      /// Empty state
+                      if (tasks.isEmpty && !shouldShowShimmer)
+                        SliverFillRemaining(
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.inbox_outlined,
+                                  size: 64,
+                                  color: Colors.grey.shade400,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'No ${controller.tabTitles[controller.selectedTab.value].toLowerCase()} tasks',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -810,6 +963,61 @@ class UgcTaskStatusScreen extends StatelessWidget {
             ],
           );
         }),
+      ),
+    );
+  }
+
+  // =========================== Helper Widgets ===========================
+  Widget _buildShimmerCard() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade300,
+      highlightColor: Colors.grey.shade100,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(width: double.infinity, height: 20, color: Colors.white),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Container(width: 60, height: 16, color: Colors.white),
+                  const SizedBox(width: 16),
+                  Container(width: 80, height: 16, color: Colors.white),
+                  const Spacer(),
+                  Container(width: 40, height: 16, color: Colors.white),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Container(width: double.infinity, height: 1, color: Colors.white),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Container(
+                    width: 100,
+                    height: 30,
+                    color: Colors.white,
+                  ),
+                  const Spacer(),
+                  Container(
+                    width: 80,
+                    height: 30,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -891,11 +1099,7 @@ class UgcTaskStatusScreen extends StatelessWidget {
                   CircleAvatar(
                     radius: 12,
                     backgroundColor: AppColors.green,
-                    child: const Icon(
-                      Icons.check,
-                      color: Colors.white,
-                      size: 11,
-                    ),
+                    child: const Icon(Icons.check, color: Colors.white, size: 11),
                   ),
                   const SizedBox(width: 8),
                 ],
@@ -935,10 +1139,7 @@ class UgcTaskStatusScreen extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         '$subtasks subtasks',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade600,
-                        ),
+                        style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
                       ),
                     ],
                   ),
@@ -968,10 +1169,7 @@ class UgcTaskStatusScreen extends StatelessWidget {
                         const SizedBox(width: 4),
                         Text(
                           '$progress%',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade600,
-                          ),
+                          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                         ),
                       ],
                     ),
@@ -1073,7 +1271,9 @@ class UgcTaskStatusScreen extends StatelessWidget {
         ],
       );
     } else if (isGroupTask) {
-      final images = groupMemberImages.isNotEmpty ? groupMemberImages : [
+      final images = groupMemberImages.isNotEmpty
+          ? groupMemberImages
+          : [
         "assets/images/dummy_child_user_image.png",
         "assets/images/dummy_child_user_image.png",
         "assets/images/dummy_child_user_image.png",
@@ -1102,7 +1302,7 @@ class UgcTaskStatusScreen extends StatelessWidget {
                     return Container(
                       width: 32,
                       height: 32,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: AppColors.primaryColor,
                         shape: BoxShape.circle,
                       ),
@@ -1141,11 +1341,7 @@ class UgcTaskStatusScreen extends StatelessWidget {
               CircleAvatar(
                 radius: 16,
                 backgroundColor: Colors.grey.shade300,
-                child: Icon(
-                  Icons.person,
-                  size: 16,
-                  color: Colors.grey.shade600,
-                ),
+                child: Icon(Icons.person, size: 16, color: Colors.grey.shade600),
               ),
               const SizedBox(width: 8),
               Expanded(

@@ -6,7 +6,6 @@ import 'package:intl/intl.dart';
 import '../../../../screens/widget/history_calender_widget.dart';
 import '../../../../utils/app_colors.dart';
 import '../../widget/build_task_card.dart';
-import '../../widget/history_calender_widget.dart';
 import '../home/task_details/model/sub_task_model.dart';
 import '../home/task_details/model/task_model.dart';
 
