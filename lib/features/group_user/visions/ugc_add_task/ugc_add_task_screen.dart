@@ -1,5 +1,6 @@
 import 'package:askfemi/features/group_user/visions/ugc_add_task/ugc_personal_task_screen.dart';
 import 'package:askfemi/features/group_user/visions/ugc_add_task/ugc_single_or_collaborative_task_screen.dart';
+import 'package:askfemi/screens/personal_information/personal_Infromation_screen_controller.dart';
 import 'package:askfemi/utils/app_colors.dart';
 import 'package:askfemi/utils/app_texts_style.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +12,11 @@ class UgcAddTaskScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Get the personal information controller
+    final profileController = Get.isRegistered<PersonalInformationController>()
+        ? Get.find<PersonalInformationController>()
+        : Get.put(PersonalInformationController());
+
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
@@ -27,59 +33,75 @@ class UgcAddTaskScreen extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: ListView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        children: [
-          Text(
-            'Track and analyze task performance across your team',
-            textAlign: TextAlign.center,
-            style: AppTextStyles.smallText.copyWith(fontSize: 18),
-          ),
-          const SizedBox(height: 24),
-          // Single Assignment - Filled Button with centered "or"
-          CreateTaskCard(
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Collaborative Task',
-                  textAlign: TextAlign.left,
-                  style: AppTextStyles.smallHeading.copyWith(fontSize: 18),
-                ),
-                Text(
-                  '  or  ',
-                  textAlign: TextAlign.left,
-                  style: AppTextStyles.smallHeading.copyWith(fontSize: 18),
-                ),
-                Text(
-                  'Single Assignment',
-                  textAlign: TextAlign.left,
-                  style: AppTextStyles.smallHeading.copyWith(fontSize: 18),
-                ),
-              ],
+      body: Obx(() {
+        // Check if user has secondary account (Task Manager)
+        final isAccountSecondary = profileController.isAccountSecondary.value;
+
+        return ListView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          children: [
+            Text(
+              'Track and analyze task performance across your team',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.smallText.copyWith(fontSize: 18),
             ),
-            subtitle: 'Assign task to one or multiple members',
-            buttonText: 'Create Task',
-            svgIcon: SvgPicture.asset(
-              'assets/icons/collaborative_task_icon.svg',
+            const SizedBox(height: 24),
+
+            // Show Collaborative & Single Assignment options only for secondary accounts
+            if (isAccountSecondary) ...[
+              // Single Assignment - Filled Button with centered "or"
+              CreateTaskCard(
+                title: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Collaborative Task',
+                      textAlign: TextAlign.left,
+                      style: AppTextStyles.smallHeading.copyWith(fontSize: 18),
+                    ),
+                    Text(
+                      '  or  ',
+                      textAlign: TextAlign.left,
+                      style: AppTextStyles.smallHeading.copyWith(fontSize: 18),
+                    ),
+                    Text(
+                      'Single Assignment',
+                      textAlign: TextAlign.left,
+                      style: AppTextStyles.smallHeading.copyWith(fontSize: 18),
+                    ),
+                  ],
+                ),
+                subtitle: 'Assign task to one or multiple members',
+                buttonText: 'Create Task',
+                svgIcon: SvgPicture.asset(
+                  'assets/icons/collaborative_task_icon.svg',
+                ),
+                iconBackgroundColor: AppColors.primaryColor,
+                isOutlined: false,
+                onPressed: () {
+                  Get.to(() => const UgcSingleOrCollaborativeTaskScreen());
+                },
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            // Personal Task - Always visible for all users
+            CreateTaskCard(
+              title: 'Personal Task',
+              subtitle: 'Create task for yourself',
+              buttonText: 'Create Task',
+              iconBackgroundColor: Colors.blue.shade50,
+              svgIcon: SvgPicture.asset('assets/icons/personal_task.svg'),
+              isOutlined: true,
+              onPressed: () {
+                Get.to(() => const UgcPersonalTaskScreen());
+              },
             ),
-            iconBackgroundColor: AppColors.primaryColor,
-            isOutlined: false,
-          ),
-          const SizedBox(height: 16),
-          // Personal Task - Keep as simple string
-          CreateTaskCard(
-            title: 'Personal Task',
-            subtitle: 'Create task for yourself',
-            buttonText: 'Create Task',
-            iconBackgroundColor: Colors.blue.shade50,
-            svgIcon: SvgPicture.asset('assets/icons/personal_task.svg'),
-            isOutlined: true,
-          ),
-          const SizedBox(height: 60),
-        ],
-      ),
+            const SizedBox(height: 60),
+          ],
+        );
+      }),
     );
   }
 }
@@ -91,6 +113,7 @@ class CreateTaskCard extends StatelessWidget {
   final String buttonText;
   final Color iconBackgroundColor;
   final bool isOutlined;
+  final VoidCallback? onPressed;
 
   // Icon-related properties
   final IconData? iconData;
@@ -106,6 +129,7 @@ class CreateTaskCard extends StatelessWidget {
     required this.buttonText,
     required this.iconBackgroundColor,
     this.isOutlined = false,
+    this.onPressed,
     this.iconData,
     this.svgIcon,
     this.svgAssetPath,
@@ -164,7 +188,7 @@ class CreateTaskCard extends StatelessWidget {
               width: double.infinity,
               child: isOutlined
                   ? OutlinedButton(
-                onPressed: () {
+                onPressed: onPressed ?? () {
                   Get.to(() => const UgcPersonalTaskScreen());
                 },
                 style: OutlinedButton.styleFrom(
@@ -182,7 +206,7 @@ class CreateTaskCard extends StatelessWidget {
                 ),
               )
                   : ElevatedButton(
-                onPressed: () {
+                onPressed: onPressed ?? () {
                   Get.to(() => const UgcSingleOrCollaborativeTaskScreen());
                 },
                 style: ElevatedButton.styleFrom(
