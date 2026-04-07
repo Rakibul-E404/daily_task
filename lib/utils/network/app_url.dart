@@ -20,6 +20,10 @@ class AppUrl {
     return '$baseUrl/tasks/$taskId';
   }
 
+  static String getTaskStatusList(String taskStatus){
+    return '$baseUrl/tasks?status=$taskStatus';
+  }
+
 
 
   ///-------------------

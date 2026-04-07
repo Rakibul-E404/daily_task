@@ -1,209 +1,162 @@
+
+import 'package:askfemi/features/group_user/visions/ugc_task_status/ugc_task_status_screen_controller.dart';
 import 'package:askfemi/utils/app_colors.dart';
 import 'package:askfemi/utils/app_texts_style.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:avatar_stack/avatar_stack.dart';
+import 'package:get/get.dart';
 
-class UgcTaskStatusScreen extends StatefulWidget {
+import '../../widget/custom_dashed_divider.dart';
+
+class UgcTaskStatusScreen extends StatelessWidget {
   const UgcTaskStatusScreen({super.key});
 
   @override
-  State<UgcTaskStatusScreen> createState() => _UgcTaskStatusScreenState();
-}
-
-class _UgcTaskStatusScreenState extends State<UgcTaskStatusScreen> {
-  int selectedTab = 0;
-  final List<String> tabTitles = ['Pending', 'In Progress', 'Completed'];
-
-  final List<List<Map<String, dynamic>>> taskData = [
-    [
-      {
-        'title': 'Complete Math Home work',
-        'time': '10.30 AM',
-        'subtasks': null,
-        'progress': null,
-        'assignee': 'Assigned by Mr Tom Alex',
-        'taskType': null,
-        'isGroupTask': false,
-      },
-      {
-        'title': 'UI/UX design',
-        'time': '10.30 AM',
-        'subtasks': 5,
-        'progress': 0,
-        'assignee': 'Assigned by Mr Tom Alex',
-        'taskType': 'Self Task',
-        'isGroupTask': false,
-      },
-      {
-        'title': 'Math Home work',
-        'time': '10.30 AM',
-        'subtasks': 5,
-        'progress': 0,
-        'assignee': 'Assigned by Mr Tom Alex',
-        'taskType': null,
-        'isGroupTask': false,
-      },
-      {
-        'title': 'Landing page design',
-        'time': '10.30 AM',
-        'subtasks': 5,
-        'progress': 0,
-        'assignee': 'Assigned by Mr Tom Alex',
-        'taskType': 'Group Tasks',
-        'isGroupTask': true,
-      },
-    ],
-    [
-      {
-        'title': 'Mobile App Development',
-        'time': '02.00 PM',
-        'subtasks': 8,
-        'progress': 60,
-        'assignee': 'Assigned by John Doe',
-        'taskType': 'Self Task',
-        'isGroupTask': false,
-      },
-      {
-        'title': 'Backend API Integration',
-        'time': '11.00 AM',
-        'subtasks': 3,
-        'progress': 40,
-        'assignee': 'Assigned by Jane Smith',
-        'taskType': null,
-        'isGroupTask': false,
-      },
-      {
-        'title': 'Team Project Review',
-        'time': '03.30 PM',
-        'subtasks': 6,
-        'progress': 75,
-        'assignee': 'Assigned by Team Lead',
-        'taskType': 'Group Tasks',
-        'isGroupTask': true,
-      },
-    ],
-    [
-      {
-        'title': 'Research Paper Writing',
-        'time': '09.00 AM',
-        'subtasks': 4,
-        'progress': 100,
-        'assignee': 'Assigned by Dr. Williams',
-        'taskType': 'Self Task',
-        'isGroupTask': false,
-      },
-      {
-        'title': 'Database Migration',
-        'time': '01.00 PM',
-        'subtasks': 7,
-        'progress': 100,
-        'assignee': 'Assigned by Tech Lead',
-        'taskType': null,
-        'isGroupTask': false,
-      },
-      {
-        'title': 'Marketing Campaign',
-        'time': '04.00 PM',
-        'subtasks': 10,
-        'progress': 100,
-        'assignee': 'Assigned by Marketing Head',
-        'taskType': 'Group Tasks',
-        'isGroupTask': true,
-      },
-      {
-        'title': 'Client Presentation',
-        'time': '11.30 AM',
-        'subtasks': 5,
-        'progress': 100,
-        'assignee': 'Assigned by Sales Manager',
-        'taskType': 'Self Task',
-        'isGroupTask': false,
-      },
-    ],
-  ];
-
-  @override
   Widget build(BuildContext context) {
+    final controller = Get.put(UgcTaskStatusController());
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Text(
-                'All Status',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
+        child: Obx(() {
+          if (controller.isLoading.value && controller.getCurrentTaskCount() == 0) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildStatusTab('Pending (${taskData[0].length})', 0),
-                    const SizedBox(width: 8),
-                    _buildStatusTab('In Progress (${taskData[1].length})', 1),
-                    const SizedBox(width: 8),
-                    _buildStatusTab('Completed (${taskData[2].length})', 2),
+                    const Text(
+                      'All Status',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        ///todo::
+                      },
+                      icon: const Icon(CupertinoIcons.calendar_today),
+                    ),
                   ],
                 ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: CustomScrollView(
-                physics: const BouncingScrollPhysics(),
-                slivers: [
-                  SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                        final task = taskData[selectedTab][index];
-                        return Padding(
-                          padding: EdgeInsets.only(
-                            bottom: 12,
-                            left: 16,
-                            right: 16,
-                            top: index == 0 ? 0 : 0,
-                          ),
-                          child: _buildTaskCard(
-                            title: task['title'] as String,
-                            time: task['time'] as String,
-                            subtasks: task['subtasks'] as int?,
-                            progress: task['progress'] as int?,
-                            assignee: task['assignee'] as String?,
-                            taskType: task['taskType'] as String?,
-                            isGroupTask: task['isGroupTask'] as bool,
-                            status: selectedTab,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      Obx(() => _buildStatusTab(
+                        'Pending (${controller.pendingTasks.length})',
+                        0,
+                        controller.selectedTab.value == 0,
+                            () => controller.changeTab(0),
+                      )),
+                      const SizedBox(width: 8),
+                      Obx(() => _buildStatusTab(
+                        'In Progress (${controller.inProgressTasks.length})',
+                        1,
+                        controller.selectedTab.value == 1,
+                            () => controller.changeTab(1),
+                      )),
+                      const SizedBox(width: 8),
+                      Obx(() => _buildStatusTab(
+                        'Completed (${controller.completedTasks.length})',
+                        2,
+                        controller.selectedTab.value == 2,
+                            () => controller.changeTab(2),
+                      )),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: () => controller.refreshData(),
+                  child: CustomScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    slivers: [
+                      Obx(() {
+                        final tasks = controller.getCurrentTasks();
+                        if (tasks.isEmpty && !controller.isLoading.value) {
+                          return SliverFillRemaining(
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.inbox_outlined,
+                                    size: 64,
+                                    color: Colors.grey.shade400,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'No ${controller.tabTitles[controller.selectedTab.value].toLowerCase()} tasks',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+
+                        return SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                                (context, index) {
+                              final task = tasks[index];
+                              return Padding(
+                                padding: EdgeInsets.only(
+                                  bottom: 12,
+                                  left: 16,
+                                  right: 16,
+                                  top: index == 0 ? 0 : 0,
+                                ),
+                                child: _buildTaskCard(
+                                  title: task['title'] as String,
+                                  time: task['time'] as String,
+                                  subtasks: task['subtasks'] as int?,
+                                  progress: task['progress'] as int?,
+                                  assignee: task['assignee'] as String?,
+                                  taskType: task['taskType'] as String?,
+                                  isGroupTask: task['isGroupTask'] as bool,
+                                  status: controller.selectedTab.value,
+                                  groupMemberImages: task['groupMemberImages'] as List<String>? ?? [],
+                                ),
+                              );
+                            },
+                            childCount: tasks.length,
                           ),
                         );
-                      },
-                      childCount: taskData[selectedTab].length,
-                    ),
+                      }),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          );
+        }),
       ),
     );
   }
 
-  Widget _buildStatusTab(String text, int index) {
-    final isSelected = selectedTab == index;
+  Widget _buildStatusTab(String text, int index, bool isSelected, VoidCallback onTap) {
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedTab = index;
-        });
-      },
+      onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
@@ -234,6 +187,7 @@ class _UgcTaskStatusScreenState extends State<UgcTaskStatusScreen> {
     String? taskType,
     required bool isGroupTask,
     required int status,
+    List<String> groupMemberImages = const [],
   }) {
     String buttonText = 'Start';
     Color buttonColor = AppColors.primaryColor;
@@ -271,14 +225,41 @@ class _UgcTaskStatusScreenState extends State<UgcTaskStatusScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.black,
-              ),
+            Row(
+              children: [
+                if (status == 2) ...[
+                  CircleAvatar(
+                    radius: 12,
+                    backgroundColor: AppColors.green,
+                    child: const Icon(
+                      Icons.check,
+                      color: Colors.white,
+                      size: 11,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+
+                Expanded(
+                  child: Text(
+                    title,
+                    style: AppTextStyles.smallHeading.copyWith(
+                      decoration: status == 2
+                          ? TextDecoration.lineThrough
+                          : TextDecoration.none,
+                      decorationColor: AppColors.black,
+                      decorationThickness: 1.5,
+
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
             ),
+
+
+
+
             const SizedBox(height: 12),
             Row(
               children: [
@@ -293,7 +274,7 @@ class _UgcTaskStatusScreenState extends State<UgcTaskStatusScreen> {
                   ],
                 ),
                 const SizedBox(width: 16),
-                if (subtasks != null) ...[
+                if (subtasks != null && subtasks > 0) ...[
                   Row(
                     children: [
                       Icon(Icons.list_alt, size: 16, color: Colors.grey.shade600),
@@ -308,7 +289,7 @@ class _UgcTaskStatusScreenState extends State<UgcTaskStatusScreen> {
                     ],
                   ),
                   const SizedBox(width: 16),
-                  Spacer(),
+                  const Spacer(),
                   if (progress != null)
                     Row(
                       children: [
@@ -344,7 +325,11 @@ class _UgcTaskStatusScreenState extends State<UgcTaskStatusScreen> {
               ],
             ),
             const SizedBox(height: 16),
-            Divider(color: Colors.grey.shade200),
+            DashedDivider(
+              color: Colors.grey.shade300,
+              dashWidth: 6,
+              dashSpacing: 4,
+            ),
             const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -355,6 +340,7 @@ class _UgcTaskStatusScreenState extends State<UgcTaskStatusScreen> {
                     taskType: taskType,
                     assignee: assignee,
                     isGroupTask: isGroupTask,
+                    groupMemberImages: groupMemberImages,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -400,6 +386,7 @@ class _UgcTaskStatusScreenState extends State<UgcTaskStatusScreen> {
     String? taskType,
     String? assignee,
     required bool isGroupTask,
+    List<String> groupMemberImages = const [],
   }) {
     if (taskType != null && !isGroupTask) {
       return Container(
@@ -432,27 +419,31 @@ class _UgcTaskStatusScreenState extends State<UgcTaskStatusScreen> {
         ],
       );
     } else if (isGroupTask) {
+      final images = groupMemberImages.isNotEmpty ? groupMemberImages : [
+        "assets/images/dummy_child_user_image.png",
+        "assets/images/dummy_child_user_image.png",
+        "assets/images/dummy_child_user_image.png",
+      ];
+
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              // ✅ FIXED: Correct avatar_stack v3.0.0 API
               SizedBox(
                 width: 80,
                 height: 32,
                 child: AvatarStack(
                   height: 32,
-                  avatars: const [
-                    ExactAssetImage("assets/images/dummy_child_user_image.png"),
-                    ExactAssetImage("assets/images/dummy_child_user_image.png"),
-                    ExactAssetImage("assets/images/dummy_child_user_image.png"),
-                    ExactAssetImage("assets/images/dummy_child_user_image.png"),
-                    ExactAssetImage("assets/images/dummy_child_user_image.png"),
-                  ],
+                  avatars: images.map((image) {
+                    if (image.startsWith('http')) {
+                      return NetworkImage(image) as ImageProvider;
+                    } else {
+                      return AssetImage(image) as ImageProvider;
+                    }
+                  }).toList(),
                   borderWidth: 2,
                   borderColor: Colors.white,
-                  // ✅ FIXED: InfoWidgetBuilder signature is (hiddenCount, totalAvatars)
                   infoWidgetBuilder: (hiddenCount, totalAvatars) {
                     return Container(
                       width: 32,
@@ -518,3 +509,5 @@ class _UgcTaskStatusScreenState extends State<UgcTaskStatusScreen> {
     return const SizedBox();
   }
 }
+
+
