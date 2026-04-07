@@ -1,5 +1,4 @@
-// library;
-import 'package:askfemi/screens/personal_information/personal_Infromation_screen_controller.dart';
+import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -9,6 +8,7 @@ import '../../../../../utils/network/app_url.dart';
 import '../../../../../utils/network/network_caller_dio.dart';
 import '../../../../../utils/network/secure_storage_service.dart';
 import '../../features/individual_user/widget/edit_update_button.dart';
+import 'package:askfemi/screens/personal_information/personal_Infromation_screen_controller.dart';
 
 class EditPersonalProfileInfoScreen extends StatefulWidget {
   const EditPersonalProfileInfoScreen({super.key});
@@ -66,74 +66,6 @@ class _EditPersonalProfileInfoScreenState extends State<EditPersonalProfileInfoS
   }
 
 
-/**  Future<void> _updateProfile() async {
-    if (_isUpdating) return;
-
-    // Validate required fields
-    if (nameController.text.trim().isEmpty) {
-      _showErrorSnackbar('Name cannot be empty');
-      return;
-    }
-
-    if (phoneController.text.trim().isEmpty) {
-      _showErrorSnackbar('Phone number cannot be empty');
-      return;
-    }
-
-    setState(() {
-      _isUpdating = true;
-    });
-
-    try {
-      final token = await SecureStorageService.instance.getAccessToken();
-
-      if (token == null) {
-        _showErrorSnackbar('No access token found');
-        return;
-      }
-
-      // Option 1: Try with 'location'
-      final Map<String, dynamic> requestBody = {
-        "name": nameController.text.trim(),
-        "phoneNumber": phoneController.text.trim(),
-        "location": addressController.text.trim(),
-      };
-
-
-      print('📤 Updating profile with: $requestBody');
-
-      final response = await _networkCaller.putRequest(
-        AppUrl.updatePersonalInformationProfileData,
-        body: requestBody,
-        headers: {'Authorization': 'Bearer $token'},
-      );
-
-      print('📡 Response: ${response.statusCode} - ${response.jsonResponse}');
-
-      if (response.isSuccess) {
-        final profileController = Get.find<PersonalInformationController>();
-        await profileController.refreshData();
-
-        _showSuccessSnackbar('Profile updated successfully');
-        Get.back();
-      } else {
-        _showErrorSnackbar(response.errorMessage ?? 'Failed to update profile');
-      }
-    } catch (e) {
-      print('Error: $e');
-      _showErrorSnackbar('Error: ${e.toString()}');
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isUpdating = false;
-        });
-      }
-    }
-  }*/
-
-
-
-
 
   Future<void> _updateProfile() async {
     if (_isUpdating) return;
@@ -154,6 +86,7 @@ class _EditPersonalProfileInfoScreenState extends State<EditPersonalProfileInfoS
     });
 
     try {
+      final profileController = Get.find<PersonalInformationController>();
       final token = await SecureStorageService.instance.getAccessToken();
 
       if (token == null) {
@@ -161,18 +94,15 @@ class _EditPersonalProfileInfoScreenState extends State<EditPersonalProfileInfoS
         return;
       }
 
-      // Try different request body formats
+      // First, upload profile image if changed
+      final imageUrl = await profileController.uploadProfileImageIfChanged();
+
+      // Then update profile data
       final Map<String, dynamic> requestBody = {
         "name": nameController.text.trim(),
         "phoneNumber": phoneController.text.trim(),
         "location": addressController.text.trim(),
       };
-
-      // Alternative: Try without phoneNumber if it's causing issues
-      // final Map<String, dynamic> requestBody = {
-      //   "name": nameController.text.trim(),
-      //   "location": addressController.text.trim(),
-      // };
 
       print('📤 Updating profile with: $requestBody');
 
@@ -182,19 +112,14 @@ class _EditPersonalProfileInfoScreenState extends State<EditPersonalProfileInfoS
         headers: {'Authorization': 'Bearer $token'},
       );
 
-      print('📡 Response status code: ${response.statusCode}');
-      print('📡 Response success: ${response.isSuccess}');
-      print('📡 Response body: ${response.jsonResponse}');
+      print('📡 Response: ${response.statusCode} - ${response.jsonResponse}');
 
       if (response.isSuccess) {
-        final profileController = Get.find<PersonalInformationController>();
         await profileController.refreshData();
-
         _showSuccessSnackbar('Profile updated successfully');
         Get.back();
       } else {
-        // Try alternative endpoint if this one fails
-        await _updateProfileAlternative(token);
+        _showErrorSnackbar(response.errorMessage ?? 'Failed to update profile');
       }
     } catch (e) {
       print('Error: $e');
@@ -207,6 +132,8 @@ class _EditPersonalProfileInfoScreenState extends State<EditPersonalProfileInfoS
       }
     }
   }
+
+
 
 // Alternative update method with different endpoint
   Future<void> _updateProfileAlternative(String token) async {
@@ -423,59 +350,6 @@ class LabeledTextField extends StatelessWidget {
   }
 }
 
-// /// ----------------------------
-// /// PROFILE AVATAR WIDGET
-// /// ----------------------------
-// class ProfileAvatar extends StatelessWidget {
-//   final bool showEdit;
-//
-//   const ProfileAvatar({super.key, this.showEdit = false});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     // Get profile image from controller
-//     final profileController = Get.isRegistered<PersonalInformationController>()
-//         ? Get.find<PersonalInformationController>()
-//         : null;
-//
-//     final imageUrl = profileController?.userProfileImage.value ?? '';
-//
-//     return Stack(
-//       children: [
-//         CircleAvatar(
-//           radius: 60,
-//           backgroundImage: imageUrl.isNotEmpty && imageUrl.startsWith('http')
-//               ? NetworkImage(imageUrl)
-//               : const AssetImage('assets/images/dummy_user_image.png') as ImageProvider,
-//           onBackgroundImageError: (_, __) {},
-//         ),
-//         /// Edit icon shown only in edit screen
-//         if (showEdit)
-//           Positioned(
-//             bottom: 0,
-//             right: 0,
-//             child: GestureDetector(
-//               onTap: () {
-//                 // TODO: Implement image picker functionality
-//                 print('Edit profile image tapped');
-//               },
-//               child: Container(
-//                 padding: const EdgeInsets.all(5),
-//                 decoration: const BoxDecoration(
-//                   color: AppColors.primaryColor,
-//                   shape: BoxShape.circle,
-//                 ),
-//                 child: const Icon(CupertinoIcons.pencil_circle_fill, size: 25, color: Colors.white),
-//               ),
-//             ),
-//           ),
-//       ],
-//     );
-//   }
-// }
-
-
-
 
 
 /// ----------------------------
@@ -492,67 +366,75 @@ class ProfileAvatar extends StatelessWidget {
         ? Get.find<PersonalInformationController>()
         : null;
 
-    final imageUrl = profileController?.userProfileImage.value ?? '';
-    final isUploading = profileController?.isUploadingImage ?? false.obs;
+    return Obx(() {
+      String imageUrl = profileController?.getDisplayImage() ?? '';
+      final isUploading = profileController?.isUploadingImage ?? false.obs;
 
-    return Obx(() => Center(
-      child: Column(
-        children: [
-          Stack(
-            children: [
-              CircleAvatar(
-                radius: 60,
-                backgroundImage: imageUrl.isNotEmpty && imageUrl.startsWith('http')
-                    ? NetworkImage(imageUrl)
-                    : const AssetImage('assets/images/dummy_user_image.png') as ImageProvider,
-                onBackgroundImageError: (_, __) {},
-              ),
-              if (showEdit)
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: GestureDetector(
-                    onTap: isUploading.value ? null : () {
-                      profileController?.showImagePickerOptions();
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(5),
-                      decoration: const BoxDecoration(
-                        color: AppColors.primaryColor,
-                        shape: BoxShape.circle,
-                      ),
-                      child: isUploading.value
-                          ? const SizedBox(
-                        width: 25,
-                        height: 25,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
+      return Center(
+        child: Column(
+          children: [
+            Stack(
+              children: [
+                CircleAvatar(
+                  radius: 60,
+                  backgroundImage: imageUrl.isNotEmpty
+                      ? (imageUrl.startsWith('http') || imageUrl.startsWith('assets')
+                      ? (imageUrl.startsWith('http')
+                      ? NetworkImage(imageUrl)
+                      : const AssetImage('assets/images/dummy_user_image.png') as ImageProvider)
+                      : FileImage(File(imageUrl)) as ImageProvider)
+                      : const AssetImage('assets/images/dummy_user_image.png') as ImageProvider,
+                  onBackgroundImageError: (_, __) {},
+                ),
+                if (showEdit)
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: GestureDetector(
+                      onTap: isUploading.value ? null : () {
+                        profileController?.showImagePickerOptions();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: const BoxDecoration(
+                          color: AppColors.primaryColor,
+                          shape: BoxShape.circle,
+                        ),
+                        child: isUploading.value
+                            ? const SizedBox(
+                          width: 25,
+                          height: 25,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                            : const Icon(
+                          CupertinoIcons.pencil_circle_fill,
+                          size: 25,
                           color: Colors.white,
                         ),
-                      )
-                          : const Icon(
-                        CupertinoIcons.pencil_circle_fill,
-                        size: 25,
-                        color: Colors.white,
                       ),
                     ),
                   ),
-                ),
-            ],
-          ),
-          if (isUploading.value)
-            const Padding(
-              padding: EdgeInsets.only(top: 8),
-              child: Text(
-                'Uploading...',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
+              ],
+            ),
+            if (isUploading.value)
+              const Padding(
+                padding: EdgeInsets.only(top: 8),
+                child: Text(
+                  'Uploading...',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
                 ),
               ),
-            ),
-        ],
-      ),
-    ));
+          ],
+        ),
+      );
+    });
   }
 }
+
+
