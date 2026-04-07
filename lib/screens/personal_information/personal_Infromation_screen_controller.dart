@@ -118,7 +118,8 @@ class PersonalInformationController extends GetxController {
           final phoneNumber = result['phoneNumber'] ?? '';
           final isSecondary = attributes?['isAccountSecondary'] ?? false;
 
-          String profileImage = "assets/images/dummy_user_image.png";
+          // Get profile image URL - empty string if not available
+          String profileImage = '';
           final profileImageData = result['profileImage'];
           if (profileImageData != null && profileImageData['imageUrl'] != null) {
             profileImage = _getImageUrl(profileImageData['imageUrl']);
@@ -210,6 +211,8 @@ class PersonalInformationController extends GetxController {
           final profileImageData = result['profileImage'];
           if (profileImageData != null && profileImageData['imageUrl'] != null) {
             userProfileImage.value = _getImageUrl(profileImageData['imageUrl']);
+          } else {
+            userProfileImage.value = '';
           }
 
           final profileId = result['profileId'];
@@ -263,7 +266,6 @@ class PersonalInformationController extends GetxController {
       );
 
       if (image != null) {
-        // Store temp image file and mark changes
         tempProfileImageFile.value = File(image.path);
         hasImageChanges.value = true;
       }
@@ -287,7 +289,6 @@ class PersonalInformationController extends GetxController {
       );
 
       if (image != null) {
-        // Store temp image file and mark changes
         tempProfileImageFile.value = File(image.path);
         hasImageChanges.value = true;
       }
@@ -311,7 +312,6 @@ class PersonalInformationController extends GetxController {
         final imageUrl = await _imageUploadService.uploadProfileImage(tempProfileImageFile.value!);
         if (imageUrl != null) {
           userProfileImage.value = imageUrl;
-          // Reset temp values
           tempProfileImageFile.value = null;
           hasImageChanges.value = false;
           return imageUrl;
@@ -434,7 +434,7 @@ class PersonalInformationController extends GetxController {
 
   String _getImageUrl(String? imagePath) {
     if (imagePath == null || imagePath.isEmpty) {
-      return "assets/images/dummy_user_image.png";
+      return '';  // Return empty string instead of dummy image
     }
     if (imagePath.startsWith('http')) {
       return imagePath;
