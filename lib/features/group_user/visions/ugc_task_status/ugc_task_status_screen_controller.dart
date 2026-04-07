@@ -1,3 +1,4 @@
+/**
 // ugc_task_status_controller.dart
 import 'package:get/get.dart';
 import '../../../../utils/network/app_url.dart';
@@ -170,6 +171,236 @@ class UgcTaskStatusController extends GetxController {
   }
 
   Future<void> refreshData() async {
+    await fetchAllTasks();
+  }
+}*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import 'package:get/get.dart';
+import '../../../../utils/network/app_url.dart';
+import '../../../../utils/network/network_caller_dio.dart';
+import '../../../../utils/network/network_response_dio.dart';
+import '../../../../utils/network/secure_storage_service.dart';
+
+class UgcTaskStatusController extends GetxController {
+  final NetworkCallerDio _networkCaller = NetworkCallerDio();
+
+  var isLoading = false.obs;
+  var errorMessage = RxString('');
+
+  var pendingTasks = <Map<String, dynamic>>[].obs;
+  var inProgressTasks = <Map<String, dynamic>>[].obs;
+  var completedTasks = <Map<String, dynamic>>[].obs;
+
+  var selectedTab = 0.obs;
+  final List<String> tabTitles = ['Pending', 'In Progress', 'Completed'];
+
+  // Filter dates
+  var selectedFromDate = Rx<DateTime?>(null);
+  var selectedToDate = Rx<DateTime?>(null);
+  var isFilterApplied = false.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    fetchAllTasks();
+  }
+
+  Future<void> fetchAllTasks() async {
+    await Future.wait([
+      fetchTasksByStatus('pending'),
+      fetchTasksByStatus('inProgress'),
+      fetchTasksByStatus('completed'),
+    ]);
+  }
+
+  Future<void> fetchTasksByStatus(String status) async {
+    try {
+      final token = await SecureStorageService.instance.getAccessToken();
+
+      if (token == null) {
+        print('No access token found');
+        return;
+      }
+
+      // Use single URL method with optional date parameters
+      String fromDate;
+      String toDate;
+
+      if (isFilterApplied.value && selectedFromDate.value != null && selectedToDate.value != null) {
+        fromDate = _formatDateToString(selectedFromDate.value!);
+        toDate = _formatDateToString(selectedToDate.value!);
+        print('📅 Filtering $status tasks from $fromDate to $toDate');
+      } else {
+        fromDate = '';
+        toDate = '';
+      }
+
+      final url = AppUrl.getTaskStatusList(
+        taskStatus: status,
+        fromDate: fromDate.isNotEmpty ? fromDate : null,
+        toDate: toDate.isNotEmpty ? toDate : null,
+      );
+
+      final response = await _networkCaller.getRequest(
+        url,
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      if (response.isSuccess && response.jsonResponse != null) {
+        final attributes = response.jsonResponse?['data']?['attributes'];
+
+        if (attributes != null && attributes is List) {
+          final List<Map<String, dynamic>> tasks = [];
+
+          for (var taskJson in attributes) {
+            final mappedTask = _mapApiResponseToTaskData(taskJson);
+            tasks.add(mappedTask);
+          }
+
+          switch (status.toLowerCase()) {
+            case 'pending':
+              pendingTasks.value = tasks;
+              break;
+            case 'inprogress':
+              inProgressTasks.value = tasks;
+              break;
+            case 'completed':
+              completedTasks.value = tasks;
+              break;
+          }
+        }
+      }
+    } catch (e) {
+      print('Error fetching $status tasks: $e');
+      errorMessage.value = e.toString();
+    }
+  }
+
+  String _formatDateToString(DateTime date) {
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  }
+
+  Map<String, dynamic> _mapApiResponseToTaskData(Map<String, dynamic> json) {
+    final status = json['status']?.toString().toLowerCase() ?? 'pending';
+
+    final subtaskProgress = json['subtaskProgress'] ?? {};
+    final totalSubtasks = subtaskProgress['total'] ?? json['totalSubtasks'] ?? 0;
+    final completedSubtasks = subtaskProgress['completed'] ?? json['completedSubtasks'] ?? 0;
+    final progressPercentage = totalSubtasks > 0
+        ? (completedSubtasks / totalSubtasks * 100).toInt()
+        : 0;
+
+    String? taskTypeDisplay;
+    final taskType = json['taskType']?.toString() ?? 'personal';
+    final assignedUserIds = json['assignedUserIds'] as List?;
+    final isGroupTask = taskType == 'collaborative' && assignedUserIds != null && assignedUserIds.length > 1;
+
+    if (taskType == 'personal') {
+      taskTypeDisplay = 'Self Task';
+    } else if (isGroupTask) {
+      taskTypeDisplay = 'Group Tasks';
+    }
+
+    String? assigneeName;
+    final createdBy = json['createdById'];
+    if (createdBy != null && createdBy['name'] != null) {
+      assigneeName = 'Assigned by ${createdBy['name']}';
+    }
+
+    List<String> groupMemberImages = [];
+    if (isGroupTask && assignedUserIds != null) {
+      for (var user in assignedUserIds) {
+        final profileImage = user['profileImage'];
+        if (profileImage != null && profileImage['imageUrl'] != null) {
+          String imageUrl = profileImage['imageUrl'];
+          if (!imageUrl.startsWith('http')) {
+            String cleanPath = imageUrl;
+            if (cleanPath.startsWith('/')) {
+              cleanPath = cleanPath.substring(1);
+            }
+            imageUrl = '${AppUrl.imageBaseUrl}/$cleanPath';
+          }
+          groupMemberImages.add(imageUrl);
+        } else {
+          groupMemberImages.add("assets/images/dummy_child_user_image.png");
+        }
+      }
+    }
+
+    return {
+      'id': json['_id'] ?? '',
+      'title': json['title'] ?? '',
+      'time': json['scheduledTime'] ?? '',
+      'subtasks': totalSubtasks,
+      'progress': progressPercentage,
+      'assignee': assigneeName,
+      'taskType': taskTypeDisplay,
+      'isGroupTask': isGroupTask,
+      'status': status,
+      'groupMemberImages': groupMemberImages,
+      'description': json['description'] ?? '',
+      'priority': json['priority'] ?? 'medium',
+      'dueDate': json['dueDate'],
+      'createdAt': json['createdAt'],
+      'startTime': json['startTime'],
+    };
+  }
+
+  List<Map<String, dynamic>> getCurrentTasks() {
+    switch (selectedTab.value) {
+      case 0:
+        return pendingTasks;
+      case 1:
+        return inProgressTasks;
+      case 2:
+        return completedTasks;
+      default:
+        return [];
+    }
+  }
+
+  int getCurrentTaskCount() {
+    return getCurrentTasks().length;
+  }
+
+  void changeTab(int index) {
+    selectedTab.value = index;
+  }
+
+  Future<void> refreshData() async {
+    await fetchAllTasks();
+  }
+
+  // Apply date filter
+  Future<void> applyDateFilter(DateTime fromDate, DateTime toDate) async {
+    selectedFromDate.value = fromDate;
+    selectedToDate.value = toDate;
+    isFilterApplied.value = true;
+    await fetchAllTasks();
+  }
+
+  // Clear date filter
+  Future<void> clearDateFilter() async {
+    selectedFromDate.value = null;
+    selectedToDate.value = null;
+    isFilterApplied.value = false;
     await fetchAllTasks();
   }
 }

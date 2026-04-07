@@ -6,7 +6,8 @@ class AppUrl {
   static const String loginIndividualAndChildren =
       '$baseUrl/auth/login/individual-user';
   static const String getPersonalInformation = '$baseUrl/users/profile/v2';
-  static const String updatePersonalInformationProfileData = '$baseUrl/users/profile-info';
+  static const String updatePersonalInformationProfileData =
+      '$baseUrl/users/profile-info';
   static const String updatePersonalInformationProfileImage =
       '$baseUrl/users/profile-picture';
 
@@ -20,9 +21,25 @@ class AppUrl {
     return '$baseUrl/tasks/$taskId';
   }
 
-  static String getTaskStatusList(String taskStatus){
-    return '$baseUrl/tasks?status=$taskStatus';
+  static String getTaskStatusList({
+    required String taskStatus,
+    String? fromDate,
+    String? toDate,
+  }) {
+    String url = '$baseUrl/tasks?status=$taskStatus';
+
+    if (fromDate != null && fromDate.isNotEmpty) {
+      url = '$url&from=$fromDate';
+    }
+
+    if (toDate != null && toDate.isNotEmpty) {
+      url = '$url&to=$toDate';
+    }
+
+    return url;
   }
+
+
 
 
 
@@ -33,6 +50,4 @@ class AppUrl {
   static const String signUpIndevidual = '$baseUrl/auth/register/v2';
   static const String verifyEmail = '$baseUrl/auth/verify-email';
   static const String resendVerificationCode = '$baseUrl/auth/resend-otp';
-
-
 }
