@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:askfemi/utils/network/network_response_dio.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 
 class NetworkCallerDio {
   final Dio _dio = Dio();
+
 
   // Generic function to handle any HTTP request (GET, POST, PUT, DELETE)
   Future<NetworkResponseDio> _request(
@@ -134,7 +136,8 @@ class NetworkCallerDio {
       String url, {
         Map<String, String>? headers,
         bool isLogin = false,
-      }) async {
+      }) async
+  {
     return _request('GET', url, headers: headers, isLogin: isLogin);
   }
 
@@ -144,7 +147,8 @@ class NetworkCallerDio {
         Map<String, dynamic>? body,
         bool isLogin = false,
         Map<String, String>? headers,
-      }) async {
+      }) async
+  {
     return _request(
       'POST',
       url,
@@ -160,7 +164,8 @@ class NetworkCallerDio {
         Map<String, dynamic>? body,
         bool isLogin = false,
         Map<String, String>? headers,
-      }) async {
+      }) async
+  {
     return _request(
       'PUT',
       url,
@@ -176,7 +181,8 @@ class NetworkCallerDio {
         Map<String, dynamic>? body,
         bool isLogin = false,
         Map<String, String>? headers,
-      }) async {
+      }) async
+  {
     return _request(
       'DELETE',
       url,
@@ -192,7 +198,8 @@ class NetworkCallerDio {
         Map<String, dynamic>? body,
         bool isLogin = false,
         Map<String, String>? headers,
-      }) async {
+      }) async
+  {
     return _request(
       'PATCH',
       url,
@@ -200,5 +207,78 @@ class NetworkCallerDio {
       isLogin: isLogin,
       headers: headers,
     );
+  }
+
+
+
+
+
+// PUT Request with Multipart Form Data (for file uploads)
+  Future<NetworkResponseDio> putMultipartRequest(
+      String url, {
+        Map<String, dynamic>? body,
+        Map<String, File>? files,
+        bool isLogin = false,
+        Map<String, String>? headers,
+      }) async {
+    final Map<String, String> requestHeaders = <String, String>{
+      ...?headers,
+    };
+
+    try {
+      debugPrint('🌐 PUT Multipart Request to: $url');
+      debugPrint('📋 Headers: $requestHeaders');
+      debugPrint('📦 Body: $body');
+      if (files != null) {
+        debugPrint('📎 Files: ${files.keys}');
+      }
+
+      // Create FormData
+      FormData formData = FormData();
+
+      // Add text fields
+      body?.forEach((key, value) {
+        formData.fields.add(MapEntry(key, value.toString()));
+      });
+
+      // Add files
+      files?.forEach((key, file) {
+        formData.files.add(
+          MapEntry(
+            key,
+            MultipartFile.fromFileSync(
+              file.path,
+              filename: file.path.split('/').last,
+            ),
+          ),
+        );
+      });
+
+      final response = await _dio.put(
+        url,
+        data: formData,
+        options: Options(
+          headers: requestHeaders,
+          contentType: 'multipart/form-data',
+        ),
+      );
+
+      debugPrint('✅ Response Status: ${response.statusCode}');
+      debugPrint('📄 Response Body: ${response.data}');
+
+      final fakeHttpResponse = Response(
+        requestOptions: response.requestOptions,
+        data: response.data,
+        statusCode: response.statusCode,
+      );
+
+      return _handleResponse(fakeHttpResponse, isLogin);
+    } catch (e) {
+      debugPrint('❌ Error: $e');
+      return NetworkResponseDio(
+        isSuccess: false,
+        errorMessage: e.toString(),
+      );
+    }
   }
 }

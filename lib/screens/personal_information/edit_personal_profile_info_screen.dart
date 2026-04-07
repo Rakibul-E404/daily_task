@@ -65,77 +65,8 @@ class _EditPersonalProfileInfoScreenState extends State<EditPersonalProfileInfoS
     super.dispose();
   }
 
-  // Future<void> _updateProfile() async {
-  //   if (_isUpdating) return;
-  //
-  //   // Validate required fields
-  //   if (nameController.text.trim().isEmpty) {
-  //     _showErrorSnackbar('Name cannot be empty');
-  //     return;
-  //   }
-  //
-  //   if (phoneController.text.trim().isEmpty) {
-  //     _showErrorSnackbar('Phone number cannot be empty');
-  //     return;
-  //   }
-  //
-  //   setState(() {
-  //     _isUpdating = true;
-  //   });
-  //
-  //   try {
-  //     final token = await SecureStorageService.instance.getAccessToken();
-  //
-  //     if (token == null) {
-  //       _showErrorSnackbar('No access token found');
-  //       return;
-  //     }
-  //
-  //     // Prepare data for API - address field should be sent as 'location'
-  //     final Map<String, dynamic> requestBody = {
-  //       "name": nameController.text.trim(),
-  //       "phoneNumber": phoneController.text.trim(),
-  //       "location": addressController.text.trim(),  // ← FIXED: address -> location
-  //     };
-  //
-  //     print('📤 Updating profile with: $requestBody');
-  //
-  //     final response = await _networkCaller.putRequest(
-  //       AppUrl.updatePersonalInformation,
-  //       body: requestBody,
-  //       headers: {'Authorization': 'Bearer $token'},
-  //     );
-  //
-  //     print('📡 Response status: ${response.isSuccess}');
-  //     print('📡 Response body: ${response.jsonResponse}');
-  //
-  //     if (response.isSuccess) {
-  //       // Refresh the profile data in the controller
-  //       final profileController = Get.find<PersonalInformationController>();
-  //       await profileController.refreshData();
-  //
-  //       _showSuccessSnackbar('Profile updated successfully');
-  //
-  //       // Go back to profile screen
-  //       Get.back();
-  //     } else {
-  //       _showErrorSnackbar(response.errorMessage ?? 'Failed to update profile');
-  //     }
-  //   } catch (e) {
-  //     print('Error updating profile: $e');
-  //     _showErrorSnackbar('An error occurred: ${e.toString()}');
-  //   } finally {
-  //     if (mounted) {
-  //       setState(() {
-  //         _isUpdating = false;
-  //       });
-  //     }
-  //   }
-  // }
 
-
-
-  Future<void> _updateProfile() async {
+/**  Future<void> _updateProfile() async {
     if (_isUpdating) return;
 
     // Validate required fields
@@ -168,26 +99,11 @@ class _EditPersonalProfileInfoScreenState extends State<EditPersonalProfileInfoS
         "location": addressController.text.trim(),
       };
 
-      // Option 2: If above doesn't work, try with 'address'
-      // final Map<String, dynamic> requestBody = {
-      //   "name": nameController.text.trim(),
-      //   "phoneNumber": phoneController.text.trim(),
-      //   "address": addressController.text.trim(),
-      // };
-
-      // Option 3: Try with nested profileId object
-      // final Map<String, dynamic> requestBody = {
-      //   "name": nameController.text.trim(),
-      //   "phoneNumber": phoneController.text.trim(),
-      //   "profileId": {
-      //     "location": addressController.text.trim(),
-      //   }
-      // };
 
       print('📤 Updating profile with: $requestBody');
 
       final response = await _networkCaller.putRequest(
-        AppUrl.updatePersonalInformation,
+        AppUrl.updatePersonalInformationProfileData,
         body: requestBody,
         headers: {'Authorization': 'Bearer $token'},
       );
@@ -213,8 +129,112 @@ class _EditPersonalProfileInfoScreenState extends State<EditPersonalProfileInfoS
         });
       }
     }
+  }*/
+
+
+
+
+
+  Future<void> _updateProfile() async {
+    if (_isUpdating) return;
+
+    // Validate required fields
+    if (nameController.text.trim().isEmpty) {
+      _showErrorSnackbar('Name cannot be empty');
+      return;
+    }
+
+    if (phoneController.text.trim().isEmpty) {
+      _showErrorSnackbar('Phone number cannot be empty');
+      return;
+    }
+
+    setState(() {
+      _isUpdating = true;
+    });
+
+    try {
+      final token = await SecureStorageService.instance.getAccessToken();
+
+      if (token == null) {
+        _showErrorSnackbar('No access token found');
+        return;
+      }
+
+      // Try different request body formats
+      final Map<String, dynamic> requestBody = {
+        "name": nameController.text.trim(),
+        "phoneNumber": phoneController.text.trim(),
+        "location": addressController.text.trim(),
+      };
+
+      // Alternative: Try without phoneNumber if it's causing issues
+      // final Map<String, dynamic> requestBody = {
+      //   "name": nameController.text.trim(),
+      //   "location": addressController.text.trim(),
+      // };
+
+      print('📤 Updating profile with: $requestBody');
+
+      final response = await _networkCaller.putRequest(
+        AppUrl.updatePersonalInformationProfileData,
+        body: requestBody,
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      print('📡 Response status code: ${response.statusCode}');
+      print('📡 Response success: ${response.isSuccess}');
+      print('📡 Response body: ${response.jsonResponse}');
+
+      if (response.isSuccess) {
+        final profileController = Get.find<PersonalInformationController>();
+        await profileController.refreshData();
+
+        _showSuccessSnackbar('Profile updated successfully');
+        Get.back();
+      } else {
+        // Try alternative endpoint if this one fails
+        await _updateProfileAlternative(token);
+      }
+    } catch (e) {
+      print('Error: $e');
+      _showErrorSnackbar('Error: ${e.toString()}');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUpdating = false;
+        });
+      }
+    }
   }
 
+// Alternative update method with different endpoint
+  Future<void> _updateProfileAlternative(String token) async {
+    try {
+      // Try different endpoint
+      final Map<String, dynamic> requestBody = {
+        "name": nameController.text.trim(),
+        "location": addressController.text.trim(),
+      };
+
+      final response = await _networkCaller.putRequest(
+        AppUrl.updatePersonalInformationProfileData, // Use different endpoint
+        body: requestBody,
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      if (response.isSuccess) {
+        final profileController = Get.find<PersonalInformationController>();
+        await profileController.refreshData();
+        _showSuccessSnackbar('Profile updated successfully');
+        Get.back();
+      } else {
+        _showErrorSnackbar(response.errorMessage ?? 'Failed to update profile');
+      }
+    } catch (e) {
+      _showErrorSnackbar('Failed to update profile. Please try again.');
+    }
+  }
 
 
   void _showErrorSnackbar(String message) {
@@ -403,6 +423,61 @@ class LabeledTextField extends StatelessWidget {
   }
 }
 
+// /// ----------------------------
+// /// PROFILE AVATAR WIDGET
+// /// ----------------------------
+// class ProfileAvatar extends StatelessWidget {
+//   final bool showEdit;
+//
+//   const ProfileAvatar({super.key, this.showEdit = false});
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     // Get profile image from controller
+//     final profileController = Get.isRegistered<PersonalInformationController>()
+//         ? Get.find<PersonalInformationController>()
+//         : null;
+//
+//     final imageUrl = profileController?.userProfileImage.value ?? '';
+//
+//     return Stack(
+//       children: [
+//         CircleAvatar(
+//           radius: 60,
+//           backgroundImage: imageUrl.isNotEmpty && imageUrl.startsWith('http')
+//               ? NetworkImage(imageUrl)
+//               : const AssetImage('assets/images/dummy_user_image.png') as ImageProvider,
+//           onBackgroundImageError: (_, __) {},
+//         ),
+//         /// Edit icon shown only in edit screen
+//         if (showEdit)
+//           Positioned(
+//             bottom: 0,
+//             right: 0,
+//             child: GestureDetector(
+//               onTap: () {
+//                 // TODO: Implement image picker functionality
+//                 print('Edit profile image tapped');
+//               },
+//               child: Container(
+//                 padding: const EdgeInsets.all(5),
+//                 decoration: const BoxDecoration(
+//                   color: AppColors.primaryColor,
+//                   shape: BoxShape.circle,
+//                 ),
+//                 child: const Icon(CupertinoIcons.pencil_circle_fill, size: 25, color: Colors.white),
+//               ),
+//             ),
+//           ),
+//       ],
+//     );
+//   }
+// }
+
+
+
+
+
 /// ----------------------------
 /// PROFILE AVATAR WIDGET
 /// ----------------------------
@@ -413,43 +488,71 @@ class ProfileAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Get profile image from controller
     final profileController = Get.isRegistered<PersonalInformationController>()
         ? Get.find<PersonalInformationController>()
         : null;
 
     final imageUrl = profileController?.userProfileImage.value ?? '';
+    final isUploading = profileController?.isUploadingImage ?? false.obs;
 
-    return Stack(
-      children: [
-        CircleAvatar(
-          radius: 60,
-          backgroundImage: imageUrl.isNotEmpty && imageUrl.startsWith('http')
-              ? NetworkImage(imageUrl)
-              : const AssetImage('assets/images/dummy_user_image.png') as ImageProvider,
-          onBackgroundImageError: (_, __) {},
-        ),
-        /// Edit icon shown only in edit screen
-        if (showEdit)
-          Positioned(
-            bottom: 0,
-            right: 0,
-            child: GestureDetector(
-              onTap: () {
-                // TODO: Implement image picker functionality
-                print('Edit profile image tapped');
-              },
-              child: Container(
-                padding: const EdgeInsets.all(5),
-                decoration: const BoxDecoration(
-                  color: AppColors.primaryColor,
-                  shape: BoxShape.circle,
+    return Obx(() => Center(
+      child: Column(
+        children: [
+          Stack(
+            children: [
+              CircleAvatar(
+                radius: 60,
+                backgroundImage: imageUrl.isNotEmpty && imageUrl.startsWith('http')
+                    ? NetworkImage(imageUrl)
+                    : const AssetImage('assets/images/dummy_user_image.png') as ImageProvider,
+                onBackgroundImageError: (_, __) {},
+              ),
+              if (showEdit)
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: GestureDetector(
+                    onTap: isUploading.value ? null : () {
+                      profileController?.showImagePickerOptions();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: const BoxDecoration(
+                        color: AppColors.primaryColor,
+                        shape: BoxShape.circle,
+                      ),
+                      child: isUploading.value
+                          ? const SizedBox(
+                        width: 25,
+                        height: 25,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                          : const Icon(
+                        CupertinoIcons.pencil_circle_fill,
+                        size: 25,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
                 ),
-                child: const Icon(CupertinoIcons.pencil_circle_fill, size: 25, color: Colors.white),
+            ],
+          ),
+          if (isUploading.value)
+            const Padding(
+              padding: EdgeInsets.only(top: 8),
+              child: Text(
+                'Uploading...',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
+                ),
               ),
             ),
-          ),
-      ],
-    );
+        ],
+      ),
+    ));
   }
 }
