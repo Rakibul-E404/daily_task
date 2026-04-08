@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -20,7 +21,6 @@ class EditPersonalProfileInfoScreen extends StatefulWidget {
 class _EditPersonalProfileInfoScreenState extends State<EditPersonalProfileInfoScreen> {
   final NetworkCallerDio _networkCaller = NetworkCallerDio();
 
-  /// Controllers for all editable fields
   late TextEditingController nameController;
   late TextEditingController emailController;
   late TextEditingController phoneController;
@@ -63,37 +63,6 @@ class _EditPersonalProfileInfoScreenState extends State<EditPersonalProfileInfoS
     super.dispose();
   }
 
-  String _getUserFriendlyErrorMessage(int? statusCode, String? message) {
-    if (statusCode == 500) {
-      return 'Server error. Please try again later.';
-    }
-    if (statusCode == 502) {
-      return 'Server is temporarily unavailable. Please try again later.';
-    }
-    if (statusCode == 503) {
-      return 'Service unavailable. Please try again later.';
-    }
-    if (statusCode == 504) {
-      return 'Gateway timeout. Please try again later.';
-    }
-    if (statusCode == 400) {
-      return 'Invalid information. Please check your details.';
-    }
-    if (statusCode == 401) {
-      return 'Session expired. Please login again.';
-    }
-    if (statusCode == 403) {
-      return 'Access denied. Please check your permissions.';
-    }
-    if (statusCode == 404) {
-      return 'Service not found. Please contact support.';
-    }
-    if (message != null && message.isNotEmpty) {
-      return message;
-    }
-    return 'Failed to update profile. Please try again.';
-  }
-
   Future<void> _updateProfile() async {
     if (_isUpdating) return;
 
@@ -111,26 +80,36 @@ class _EditPersonalProfileInfoScreenState extends State<EditPersonalProfileInfoS
       _isUpdating = true;
     });
 
-    try {
-      final profileController = Get.find<PersonalInformationController>();
-      final token = await SecureStorageService.instance.getAccessToken();
+    final profileController = Get.find<PersonalInformationController>();
+    String? imageUrl;
 
+    // STEP 1: Upload image
+    try {
+      imageUrl = await profileController.uploadProfileImageIfChanged();
+      if (imageUrl != null) {
+        _showSuccessSnackbar('Profile Updated successfully');
+        Get.back();
+
+      }
+    } catch (e) {
+      print('Image upload error: $e');
+      _showErrorSnackbar('Profile Update failed');
+    }
+
+    // STEP 2: Update profile info
+    try {
+      final token = await SecureStorageService.instance.getAccessToken();
       if (token == null) {
-        _showErrorSnackbar('No access token found');
+        _showErrorSnackbar('No access token found. Please login again.');
         return;
       }
 
-      // Upload profile image if changed
-      final imageUrl = await profileController.uploadProfileImageIfChanged();
-
-      // Update profile data
       final Map<String, dynamic> requestBody = {
         "name": nameController.text.trim(),
         "phoneNumber": phoneController.text.trim(),
         "location": addressController.text.trim(),
+        "profileImage": imageUrl ?? "",
       };
-
-      print('📤 Updating profile with: $requestBody');
 
       final response = await _networkCaller.putRequest(
         AppUrl.updatePersonalInformationProfileData,
@@ -138,39 +117,23 @@ class _EditPersonalProfileInfoScreenState extends State<EditPersonalProfileInfoS
         headers: {'Authorization': 'Bearer $token'},
       );
 
-      print('📡 Response status code: ${response.statusCode}');
-      print('📡 Response success: ${response.isSuccess}');
-      print('📡 Response body: ${response.jsonResponse}');
-
       if (response.isSuccess) {
         await profileController.refreshData();
         _showSuccessSnackbar('Profile updated successfully');
         Get.back();
-      } else {
-        // Handle specific status codes
-        final errorMessage = _getUserFriendlyErrorMessage(
-          response.statusCode,
-          response.errorMessage,
+      }
+    } on DioException catch (dioError) {
+      if (dioError.response?.statusCode == 500) {
+        _showErrorSnackbar(
+          'Server error while updating profile info. Image may have been updated.',
         );
-
-        // Show different messages based on status code
-        if (response.statusCode == 500) {
-          _showErrorSnackbar(errorMessage);
-        } else {
-          _showErrorSnackbar(errorMessage);
-        }
+      } else {
+        _showErrorSnackbar('Network error: ${dioError.message}');
       }
     } catch (e) {
-      print('Error: $e');
-
-      // Check for socket/connection errors
-      if (e.toString().contains('SocketException') ||
-          e.toString().contains('Connection refused') ||
-          e.toString().contains('Failed host lookup')) {
-        _showErrorSnackbar('No internet connection. Please check your network.');
-      } else {
-        _showErrorSnackbar('An error occurred. Please try again.');
-      }
+      _showErrorSnackbar(
+        'Unexpected error while updating profile. Image may have been updated.',
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -179,7 +142,6 @@ class _EditPersonalProfileInfoScreenState extends State<EditPersonalProfileInfoS
       }
     }
   }
-
 
   void _showErrorSnackbar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -196,7 +158,7 @@ class _EditPersonalProfileInfoScreenState extends State<EditPersonalProfileInfoS
       SnackBar(
         content: Text(message),
         backgroundColor: Colors.green,
-        duration: const Duration(seconds: 2),
+        duration: const Duration(seconds: 3),
       ),
     );
   }
@@ -228,48 +190,41 @@ class _EditPersonalProfileInfoScreenState extends State<EditPersonalProfileInfoS
                         children: const [ProfileAvatar(showEdit: true)],
                       ),
                       const SizedBox(height: 30),
-
                       LabeledTextField(
                         label: 'Name',
                         controller: nameController,
                       ),
                       const SizedBox(height: 16),
-
                       LabeledTextField(
                         label: 'Email',
                         controller: emailController,
                         enabled: false,
                       ),
                       const SizedBox(height: 16),
-
                       LabeledTextField(
                         label: 'Phone number',
                         controller: phoneController,
                         keyboardType: TextInputType.phone,
                       ),
                       const SizedBox(height: 16),
-
                       LabeledTextField(
                         label: 'Address',
                         controller: addressController,
                         hintText: 'Enter your address',
                       ),
                       const SizedBox(height: 16),
-
                       LabeledTextField(
                         label: 'Gender',
                         controller: genderController,
                         enabled: false,
                       ),
                       const SizedBox(height: 16),
-
                       LabeledTextField(
                         label: 'Date of Birth',
                         controller: dobController,
                         enabled: false,
                       ),
                       const SizedBox(height: 16),
-
                       LabeledTextField(
                         label: 'Age',
                         controller: ageController,
@@ -281,7 +236,6 @@ class _EditPersonalProfileInfoScreenState extends State<EditPersonalProfileInfoS
               ),
             ),
           ),
-
           Padding(
             padding: const EdgeInsets.all(16),
             child: _isUpdating
@@ -302,9 +256,6 @@ class _EditPersonalProfileInfoScreenState extends State<EditPersonalProfileInfoS
   }
 }
 
-/// ----------------------------
-/// LABELED TEXT FIELD (EDIT MODE)
-/// ----------------------------
 class LabeledTextField extends StatelessWidget {
   final String label;
   final TextEditingController controller;
@@ -363,9 +314,6 @@ class LabeledTextField extends StatelessWidget {
   }
 }
 
-/// ----------------------------
-/// PROFILE AVATAR WIDGET
-/// ----------------------------
 class ProfileAvatar extends StatelessWidget {
   final bool showEdit;
 
@@ -389,11 +337,11 @@ class ProfileAvatar extends StatelessWidget {
                 CircleAvatar(
                   radius: 60,
                   backgroundImage: imageUrl.isNotEmpty
+                      ? (imageUrl.startsWith('http') || imageUrl.startsWith('assets')
                       ? (imageUrl.startsWith('http')
                       ? NetworkImage(imageUrl)
-                      : (imageUrl.startsWith('/')
-                      ? FileImage(File(imageUrl)) as ImageProvider
-                      : const AssetImage('assets/images/dummy_user_image.png') as ImageProvider))
+                      : const AssetImage('assets/images/dummy_user_image.png') as ImageProvider)
+                      : FileImage(File(imageUrl)) as ImageProvider)
                       : const AssetImage('assets/images/dummy_user_image.png') as ImageProvider,
                   onBackgroundImageError: (_, __) {},
                 ),
@@ -402,7 +350,9 @@ class ProfileAvatar extends StatelessWidget {
                     bottom: 0,
                     right: 0,
                     child: GestureDetector(
-                      onTap: isUploading.value ? null : () {
+                      onTap: isUploading.value
+                          ? null
+                          : () {
                         profileController?.showImagePickerOptions();
                       },
                       child: Container(
