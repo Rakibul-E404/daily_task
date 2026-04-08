@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -20,6 +21,8 @@ class PersonalInformationController extends GetxController {
   var isUploadingImage = false.obs;
   var errorMessage = RxString('');
   var isFirstLoad = true.obs;
+  var isNetworkError = false.obs;
+  var isServerError = false.obs;
 
   // User data
   var userName = ''.obs;
@@ -78,6 +81,49 @@ class PersonalInformationController extends GetxController {
     }
   }
 
+  String _getUserFriendlyErrorMessage(dynamic error, {int? statusCode}) {
+    // Server error status codes
+    if (statusCode == 502) {
+      return 'Server is temporarily unavailable. Please try again later.';
+    }
+    if (statusCode == 503) {
+      return 'Service unavailable. Please try again later.';
+    }
+    if (statusCode == 504) {
+      return 'Gateway timeout. Please try again later.';
+    }
+    if (statusCode == 500) {
+      return 'Server error. Please try again later.';
+    }
+    if (statusCode == 404) {
+      return 'Service not found. Please contact support.';
+    }
+    if (statusCode == 403) {
+      return 'Access denied. Please check your permissions.';
+    }
+    if (statusCode == 401) {
+      return 'Session expired. Please login again.';
+    }
+
+    // Network/Connection errors
+    if (error.toString().contains('Failed host lookup') ||
+        error.toString().contains('SocketException') ||
+        error.toString().contains('No address associated with hostname')) {
+      return 'Unable to connect to the server. Please check your internet connection.';
+    }
+
+    if (error.toString().contains('Connection refused') ||
+        error.toString().contains('Connection timed out')) {
+      return 'Connection timeout. Please check your internet connection.';
+    }
+
+    if (error.toString().contains('Network is unreachable')) {
+      return 'No internet connection. Please check your network settings.';
+    }
+
+    return 'An error occurred. Please try again later.';
+  }
+
   Future<void> fetchPersonalInformation({bool background = false, bool showLoading = false}) async {
     if (showLoading) {
       isLoading.value = true;
@@ -88,6 +134,8 @@ class PersonalInformationController extends GetxController {
     }
 
     errorMessage.value = '';
+    isNetworkError.value = false;
+    isServerError.value = false;
 
     try {
       final token = await SecureStorageService.instance.getAccessToken();
@@ -106,9 +154,13 @@ class PersonalInformationController extends GetxController {
         headers: {'Authorization': 'Bearer $token'},
       );
 
+      print('📡 Response status code: ${response.statusCode}');
       print('📡 Response success: ${response.isSuccess}');
 
       if (response.isSuccess && response.jsonResponse != null) {
+        isNetworkError.value = false;
+        isServerError.value = false;
+
         final attributes = response.jsonResponse?['data']?['attributes'];
         final result = attributes?['result'];
 
@@ -163,12 +215,24 @@ class PersonalInformationController extends GetxController {
           print('✅ Data updated from API: $name');
         }
       } else {
-        errorMessage.value = response.errorMessage ?? 'Failed to load data';
+        // Handle specific status codes
+        if (response.statusCode == 502 || response.statusCode == 503 ||
+            response.statusCode == 504 || response.statusCode == 500) {
+          isServerError.value = true;
+          isNetworkError.value = true;
+          errorMessage.value = _getUserFriendlyErrorMessage(null, statusCode: response.statusCode);
+        } else {
+          errorMessage.value = response.errorMessage ?? 'Failed to load data';
+        }
         print('❌ API call failed: ${response.errorMessage}');
       }
+    } on SocketException catch (e) {
+      print('SocketException: $e');
+      isNetworkError.value = true;
+      errorMessage.value = _getUserFriendlyErrorMessage(e);
     } catch (e) {
-      errorMessage.value = e.toString();
       print('Error fetching personal information: $e');
+      errorMessage.value = _getUserFriendlyErrorMessage(e);
     } finally {
       if (showLoading) {
         isLoading.value = false;
@@ -183,6 +247,8 @@ class PersonalInformationController extends GetxController {
   Future<void> refreshData() async {
     print('🔄 Manual refresh triggered');
     isRefreshing.value = true;
+    isNetworkError.value = false;
+    isServerError.value = false;
 
     try {
       final token = await SecureStorageService.instance.getAccessToken();
@@ -199,6 +265,9 @@ class PersonalInformationController extends GetxController {
       );
 
       if (response.isSuccess && response.jsonResponse != null) {
+        isNetworkError.value = false;
+        isServerError.value = false;
+
         final attributes = response.jsonResponse?['data']?['attributes'];
         final result = attributes?['result'];
 
@@ -237,12 +306,34 @@ class PersonalInformationController extends GetxController {
 
           print('✅ Refresh successful');
         }
+      } else {
+        if (response.statusCode == 502 || response.statusCode == 503 ||
+            response.statusCode == 504 || response.statusCode == 500) {
+          isServerError.value = true;
+          isNetworkError.value = true;
+          errorMessage.value = _getUserFriendlyErrorMessage(null, statusCode: response.statusCode);
+        } else {
+          errorMessage.value = response.errorMessage ?? 'Failed to refresh';
+        }
       }
+    } on SocketException catch (e) {
+      print('SocketException during refresh: $e');
+      isNetworkError.value = true;
+      errorMessage.value = _getUserFriendlyErrorMessage(e);
     } catch (e) {
       print('Refresh error: $e');
+      errorMessage.value = _getUserFriendlyErrorMessage(e);
     } finally {
       isRefreshing.value = false;
     }
+  }
+
+  Future<void> retryFetch() async {
+    print('🔄 Retry fetch triggered');
+    isNetworkError.value = false;
+    isServerError.value = false;
+    errorMessage.value = '';
+    await fetchPersonalInformation(showLoading: true);
   }
 
   Future<void> forceRefresh() async {
@@ -309,13 +400,30 @@ class PersonalInformationController extends GetxController {
     if (hasImageChanges.value && tempProfileImageFile.value != null) {
       isUploadingImage.value = true;
       try {
-        final imageUrl = await _imageUploadService.uploadProfileImage(tempProfileImageFile.value!);
+        final imageUrl = await _imageUploadService
+            .uploadProfileImage(tempProfileImageFile.value!);
+
         if (imageUrl != null) {
-          userProfileImage.value = imageUrl;
+          final cleanedUrl = _getImageUrl(imageUrl);
+
+          // 🔥 Clear old cache
+          await CachedNetworkImage.evictFromCache(cleanedUrl);
+
+          userProfileImage.value = cleanedUrl;
           tempProfileImageFile.value = null;
           hasImageChanges.value = false;
-          return imageUrl;
+
+          return cleanedUrl;
         }
+        return null;
+      } catch (e) {
+        Get.snackbar(
+          'Error',
+          'Failed to upload image',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
         return null;
       } finally {
         isUploadingImage.value = false;
@@ -433,16 +541,21 @@ class PersonalInformationController extends GetxController {
   // ==================== HELPER METHODS ====================
 
   String _getImageUrl(String? imagePath) {
-    if (imagePath == null || imagePath.isEmpty) {
-      return '';  // Return empty string instead of dummy image
+    if (imagePath == null || imagePath.trim().isEmpty) {
+      return '';
     }
-    if (imagePath.startsWith('http')) {
-      return imagePath;
+
+    // Clean spaces
+    String cleanPath = imagePath.trim().replaceAll(RegExp(r'\s+'), '');
+
+    if (cleanPath.startsWith('http')) {
+      return cleanPath;
     }
-    String cleanPath = imagePath;
+
     if (cleanPath.startsWith('/')) {
       cleanPath = cleanPath.substring(1);
     }
+
     return '${AppUrl.imageBaseUrl}/$cleanPath';
   }
 
@@ -477,3 +590,6 @@ class PersonalInformationController extends GetxController {
     }
   }
 }
+
+
+

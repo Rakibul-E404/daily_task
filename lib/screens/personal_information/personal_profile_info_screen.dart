@@ -1,4 +1,4 @@
-
+import 'dart:io';
 import 'package:askfemi/screens/personal_information/personal_Infromation_screen_controller.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -27,19 +27,78 @@ class PersonalInformationScreen extends StatelessWidget {
         title: Text('Personal Information', style: AppTextStyles.largeHeading),
       ),
       body: Obx(() {
+        // Show network error UI
+        if (controller.isNetworkError.value) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    controller.isServerError.value ? Icons.cloud_off_outlined : Icons.wifi_off_outlined,
+                    size: 80,
+                    color: Colors.grey.shade400,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    controller.isServerError.value ? 'Server Error' : 'No Internet Connection',
+                    style: AppTextStyles.largeHeading.copyWith(
+                      fontSize: 20,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    controller.errorMessage.value,
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.smallText.copyWith(
+                      fontSize: 14,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () => controller.retryFetch(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'Retry',
+                      style: AppTextStyles.defaultTextStyle.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+
         if (controller.isLoading.value) {
           return const Center(
             child: CircularProgressIndicator(),
           );
         }
 
-        if (controller.errorMessage.value.isNotEmpty) {
+        if (controller.errorMessage.value.isNotEmpty && !controller.isNetworkError.value) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  Icons.error_outline,
+                  Icons.wifi_off_outlined,
                   size: 64,
                   color: Colors.grey.shade400,
                 ),
@@ -51,7 +110,23 @@ class PersonalInformationScreen extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
-
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => controller.retryFetch(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    'Retry',
+                    style: AppTextStyles.defaultTextStyle.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
               ],
             ),
           );
@@ -145,42 +220,108 @@ class ProfileAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          width: 130,
-          height: 130,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
+    return Center(
+      child: Column(
+        children: [
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.primaryColor.withOpacity(0.1),
+            ),
+            child: ClipOval(
+              child: _buildAvatarContent(),
+            ),
           ),
-          child: ClipOval(
-            child: imageUrl.startsWith('http')
-                ? Image.network(
-              imageUrl,
-              width: 100,
-              height: 100,
-              fit: BoxFit.cover,
-            )
-                : null,
-            // Image.asset(
-            //   imageUrl,
-            //   width: 100,
-            //   height: 100,
-            //   fit: BoxFit.cover,
-            //   errorBuilder: (context, error, stackTrace) {
-            //     return const Icon(
-            //       Icons.person,
-            //       size: 50,
-            //       color: Colors.grey,
-            //     );
-            //   },
-            // ),
+          const SizedBox(height: 12),
+          Text(
+            userName.isEmpty ? 'User' : userName,
+            style: AppTextStyles.defaultTextStyle.copyWith(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAvatarContent() {
+    // If imageUrl is empty, show person icon
+    if (imageUrl.isEmpty) {
+      return Center(
+        child: Icon(
+          Icons.person,
+          size: 60,
+          color: AppColors.primaryColor,
         ),
-      ],
+      );
+    }
+
+    // If it's a network image
+    if (imageUrl.startsWith('http')) {
+      return Image.network(
+        imageUrl,
+        width: 120,
+        height: 120,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Center(
+            child: Icon(
+              Icons.person,
+              size: 60,
+              color: AppColors.primaryColor,
+            ),
+          );
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Center(
+            child: SizedBox(
+              width: 30,
+              height: 30,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: AppColors.primaryColor,
+              ),
+            ),
+          );
+        },
+      );
+    }
+
+    // If it's a local file path (temp image from gallery/camera)
+    if (imageUrl.startsWith('/')) {
+      return Image.file(
+        File(imageUrl),
+        width: 120,
+        height: 120,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Center(
+            child: Icon(
+              Icons.person,
+              size: 60,
+              color: AppColors.primaryColor,
+            ),
+          );
+        },
+      );
+    }
+
+    // Fallback for any other case - show person icon
+    return Center(
+      child: Icon(
+        Icons.person,
+        size: 60,
+        color: AppColors.primaryColor,
+      ),
     );
   }
 }
+
+
 
 /// ===============================================================
 /// REUSABLE WIDGETS
@@ -223,11 +364,17 @@ class InfoRow extends StatelessWidget {
 class LabeledTextField extends StatelessWidget {
   final String label;
   final TextEditingController controller;
+  final bool enabled;
+  final TextInputType keyboardType;
+  final String? hintText;
 
   const LabeledTextField({
     super.key,
     required this.label,
     required this.controller,
+    this.enabled = true,
+    this.keyboardType = TextInputType.text,
+    this.hintText,
   });
 
   @override
@@ -251,12 +398,19 @@ class LabeledTextField extends StatelessWidget {
           const SizedBox(height: 8),
           TextField(
             controller: controller,
+            enabled: enabled,
+            keyboardType: keyboardType,
             style: AppTextStyles.defaultTextStyle.copyWith(
               fontWeight: FontWeight.w600,
             ),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               isDense: true,
               border: InputBorder.none,
+              hintText: hintText,
+              hintStyle: TextStyle(
+                color: Colors.grey.shade400,
+                fontSize: 14,
+              ),
             ),
           ),
         ],
@@ -264,29 +418,6 @@ class LabeledTextField extends StatelessWidget {
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

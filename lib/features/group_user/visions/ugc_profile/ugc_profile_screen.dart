@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:askfemi/auth/sign_in/singn_in_screen.dart';
 import 'package:askfemi/features/individual_user/views/notification/notification_style_screen.dart';
 import 'package:askfemi/features/individual_user/views/subscription/subscription_screen.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -10,13 +12,10 @@ import '../../../../screens/personal_information/personal_profile_info_screen.da
 import '../../../../screens/settings/settings_screen.dart';
 import '../../../../utils/app_colors.dart';
 import '../../../../utils/app_texts_style.dart';
+import '../../../../utils/network/app_url.dart';
 import '../../../../utils/network/secure_storage_service.dart';
 import '../../../../utils/temp/cache.dart';
 import '../../../individual_user/views/choose_support_mode/choose_support_mode_screen.dart';
-
-
-
-
 
 class UgcProfileScreen extends StatelessWidget {
   const UgcProfileScreen({super.key});
@@ -68,7 +67,7 @@ class UgcProfileScreen extends StatelessWidget {
                         ),
                         child: Row(
                           children: [
-                            // Profile Image with Crown Icon
+                            // ✅ FIXED: Profile Image with proper cached image support + URL trimming
                             Stack(
                               children: [
                                 Container(
@@ -76,13 +75,10 @@ class UgcProfileScreen extends StatelessWidget {
                                   height: 80,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    image: DecorationImage(
-                                      image: controller.userProfileImage.value.isNotEmpty &&
-                                          controller.userProfileImage.value.startsWith('http')
-                                          ? NetworkImage(controller.userProfileImage.value)
-                                          : const AssetImage("assets/images/dummy_user_image.png") as ImageProvider,
-                                      fit: BoxFit.cover,
-                                    ),
+                                    color: Colors.grey.shade200,
+                                  ),
+                                  child: ClipOval(
+                                    child: _buildProfileImage(controller),
                                   ),
                                 ),
                                 if (controller.isAccountSecondary.value)
@@ -303,6 +299,56 @@ class UgcProfileScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildProfileImage(PersonalInformationController controller) {
+    final imageUrl = controller.userProfileImage.value;
+
+    final hasTemp = controller.hasImageChanges.value &&
+        controller.tempProfileImageFile.value != null;
+
+    // ✅ 1. Local image (after picking)
+    if (hasTemp && controller.tempProfileImageFile.value != null) {
+      final file = controller.tempProfileImageFile.value!;
+      if (file.existsSync()) {
+        return Image.file(
+          file,
+          width: 80,
+          height: 80,
+          fit: BoxFit.cover,
+        );
+      }
+    }
+
+    // ✅ 2. Cached network image
+    if (imageUrl.isNotEmpty) {
+      return CachedNetworkImage(
+        imageUrl: imageUrl,
+        width: 80,
+        height: 80,
+        fit: BoxFit.cover,
+        cacheKey: imageUrl,
+
+        placeholder: (context, url) => const Center(
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+
+        errorWidget: (context, url, error) {
+          print('❌ Image error: $error');
+          print('❌ URL: $url');
+          return const Icon(Icons.person, size: 40, color: Colors.grey);
+        },
+      );
+    }
+
+    // ✅ 3. Default fallback
+    return const Icon(Icons.person, size: 40, color: Colors.grey);
+  }
+
+
+
   void _showLogoutDialog(BuildContext context, PersonalInformationController controller) {
     showDialog(
       context: context,
@@ -344,7 +390,7 @@ class UgcProfileScreen extends StatelessWidget {
               onPressed: () async {
                 await SecureStorageService.instance.clearAll();
                 await CacheService.clearCache();
-                Get.offAll(() =>  SignInScreen());
+                Get.offAll(() => SignInScreen());
               },
               child: Text(
                 "Logout",

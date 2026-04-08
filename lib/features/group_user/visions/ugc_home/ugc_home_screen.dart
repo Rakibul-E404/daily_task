@@ -1,6 +1,7 @@
 import 'package:askfemi/features/group_user/visions/ugc_home/ugc_task_details/ugc_task_details_screen.dart';
 import 'package:askfemi/features/group_user/visions/ugc_home/ugc_task_details/ugc_task_model/ugc_task_model.dart';
 import 'package:askfemi/features/individual_user/widget/dotted_line_widget.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -371,18 +372,22 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
                   child: profileController.userProfileImage.value.isNotEmpty &&
                       profileController.userProfileImage.value.startsWith('http')
                       ? ClipOval(
-                    child: Image.network(
-                      profileController.userProfileImage.value,
+
+                    child: CachedNetworkImage(
+                      imageUrl: profileController.userProfileImage.value,
                       width: screenWidth * 0.1,
                       height: screenWidth * 0.1,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Icon(
-                          Icons.person,
-                          size: screenWidth * 0.06,
-                          color: AppColors.primaryColor,
-                        );
-                      },
+
+                      placeholder: (context, url) => Center(
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+
+                      errorWidget: (context, url, error) => Icon(
+                        Icons.person,
+                        size: screenWidth * 0.06,
+                        color: AppColors.primaryColor,
+                      ),
                     ),
                   )
                       : Icon(
