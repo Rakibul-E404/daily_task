@@ -147,6 +147,14 @@ class _UgcPersonalTaskCreateScreenState extends State<UgcPersonalTaskCreateScree
   }
 
   Future<void> _createTask() async {
+    // First, save any unsaved subtasks that are currently being edited
+    for (int i = 0; i < _subTasks.length; i++) {
+      final currentText = _subtaskControllers[i].text.trim();
+      if (currentText.isNotEmpty && _subTasks[i].title != currentText) {
+        _subTasks[i] = _subTasks[i].copyWith(title: currentText);
+      }
+    }
+
     if (_titleController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -165,6 +173,17 @@ class _UgcPersonalTaskCreateScreenState extends State<UgcPersonalTaskCreateScree
         ),
       );
       return;
+    }
+
+    // Also save the currently focused subtask if any
+    for (int i = 0; i < _subtaskFocusNodes.length; i++) {
+      if (_subtaskFocusNodes[i].hasFocus) {
+        final currentText = _subtaskControllers[i].text.trim();
+        if (currentText.isNotEmpty) {
+          _subTasks[i] = _subTasks[i].copyWith(title: currentText);
+        }
+        _subtaskFocusNodes[i].unfocus();
+      }
     }
 
     final List<UgcSubTask> validSubtasks = _subTasks
@@ -197,6 +216,7 @@ class _UgcPersonalTaskCreateScreenState extends State<UgcPersonalTaskCreateScree
       );
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -381,12 +401,26 @@ class _UgcPersonalTaskCreateScreenState extends State<UgcPersonalTaskCreateScree
                                   focusNode: _subtaskFocusNodes[index],
                                   maxLines: null,
                                   minLines: 1,
+                                  onEditingComplete: () {
+                                    // Auto-save when user presses "done" on keyboard
+                                    if (_subtaskControllers[index].text.trim().isNotEmpty) {
+                                      _saveSubTask(index);
+                                    }
+                                  },
+                                  onTapOutside: (event) {
+                                    // Auto-save when user taps outside
+                                    if (_subtaskControllers[index].text.trim().isNotEmpty) {
+                                      _saveSubTask(index);
+                                    }
+                                  },
                                   decoration: const InputDecoration(
                                     hintText: 'Enter Sub Task Details',
                                     border: InputBorder.none,
                                     hintStyle: TextStyle(color: AppColors.grey),
                                   ),
                                 ),
+
+
                               ),
                               ValueListenableBuilder<TextEditingValue>(
                                 valueListenable: _subtaskControllers[index],
