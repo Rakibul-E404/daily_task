@@ -38,7 +38,6 @@ class _EditPersonalProfileInfoScreenState extends State<EditPersonalProfileInfoS
   }
 
   void _initializeControllers() {
-    // Get existing data from PersonalInformationController
     final profileController = Get.isRegistered<PersonalInformationController>()
         ? Get.find<PersonalInformationController>()
         : Get.put(PersonalInformationController());
@@ -54,7 +53,6 @@ class _EditPersonalProfileInfoScreenState extends State<EditPersonalProfileInfoS
 
   @override
   void dispose() {
-    /// Always dispose controllers
     nameController.dispose();
     emailController.dispose();
     phoneController.dispose();
@@ -65,12 +63,40 @@ class _EditPersonalProfileInfoScreenState extends State<EditPersonalProfileInfoS
     super.dispose();
   }
 
-
+  String _getUserFriendlyErrorMessage(int? statusCode, String? message) {
+    if (statusCode == 500) {
+      return 'Server error. Please try again later.';
+    }
+    if (statusCode == 502) {
+      return 'Server is temporarily unavailable. Please try again later.';
+    }
+    if (statusCode == 503) {
+      return 'Service unavailable. Please try again later.';
+    }
+    if (statusCode == 504) {
+      return 'Gateway timeout. Please try again later.';
+    }
+    if (statusCode == 400) {
+      return 'Invalid information. Please check your details.';
+    }
+    if (statusCode == 401) {
+      return 'Session expired. Please login again.';
+    }
+    if (statusCode == 403) {
+      return 'Access denied. Please check your permissions.';
+    }
+    if (statusCode == 404) {
+      return 'Service not found. Please contact support.';
+    }
+    if (message != null && message.isNotEmpty) {
+      return message;
+    }
+    return 'Failed to update profile. Please try again.';
+  }
 
   Future<void> _updateProfile() async {
     if (_isUpdating) return;
 
-    // Validate required fields
     if (nameController.text.trim().isEmpty) {
       _showErrorSnackbar('Name cannot be empty');
       return;
@@ -94,10 +120,10 @@ class _EditPersonalProfileInfoScreenState extends State<EditPersonalProfileInfoS
         return;
       }
 
-      // First, upload profile image if changed
+      // Upload profile image if changed
       final imageUrl = await profileController.uploadProfileImageIfChanged();
 
-      // Then update profile data
+      // Update profile data
       final Map<String, dynamic> requestBody = {
         "name": nameController.text.trim(),
         "phoneNumber": phoneController.text.trim(),
@@ -112,18 +138,39 @@ class _EditPersonalProfileInfoScreenState extends State<EditPersonalProfileInfoS
         headers: {'Authorization': 'Bearer $token'},
       );
 
-      print('📡 Response: ${response.statusCode} - ${response.jsonResponse}');
+      print('📡 Response status code: ${response.statusCode}');
+      print('📡 Response success: ${response.isSuccess}');
+      print('📡 Response body: ${response.jsonResponse}');
 
       if (response.isSuccess) {
         await profileController.refreshData();
         _showSuccessSnackbar('Profile updated successfully');
         Get.back();
       } else {
-        _showErrorSnackbar(response.errorMessage ?? 'Failed to update profile');
+        // Handle specific status codes
+        final errorMessage = _getUserFriendlyErrorMessage(
+          response.statusCode,
+          response.errorMessage,
+        );
+
+        // Show different messages based on status code
+        if (response.statusCode == 500) {
+          _showErrorSnackbar(errorMessage);
+        } else {
+          _showErrorSnackbar(errorMessage);
+        }
       }
     } catch (e) {
       print('Error: $e');
-      _showErrorSnackbar('Error: ${e.toString()}');
+
+      // Check for socket/connection errors
+      if (e.toString().contains('SocketException') ||
+          e.toString().contains('Connection refused') ||
+          e.toString().contains('Failed host lookup')) {
+        _showErrorSnackbar('No internet connection. Please check your network.');
+      } else {
+        _showErrorSnackbar('An error occurred. Please try again.');
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -134,42 +181,12 @@ class _EditPersonalProfileInfoScreenState extends State<EditPersonalProfileInfoS
   }
 
 
-
-// Alternative update method with different endpoint
-  Future<void> _updateProfileAlternative(String token) async {
-    try {
-      // Try different endpoint
-      final Map<String, dynamic> requestBody = {
-        "name": nameController.text.trim(),
-        "location": addressController.text.trim(),
-      };
-
-      final response = await _networkCaller.putRequest(
-        AppUrl.updatePersonalInformationProfileData, // Use different endpoint
-        body: requestBody,
-        headers: {'Authorization': 'Bearer $token'},
-      );
-
-      if (response.isSuccess) {
-        final profileController = Get.find<PersonalInformationController>();
-        await profileController.refreshData();
-        _showSuccessSnackbar('Profile updated successfully');
-        Get.back();
-      } else {
-        _showErrorSnackbar(response.errorMessage ?? 'Failed to update profile');
-      }
-    } catch (e) {
-      _showErrorSnackbar('Failed to update profile. Please try again.');
-    }
-  }
-
-
   void _showErrorSnackbar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
         backgroundColor: Colors.red,
-        duration: const Duration(seconds: 2),
+        duration: const Duration(seconds: 3),
       ),
     );
   }
@@ -196,7 +213,6 @@ class _EditPersonalProfileInfoScreenState extends State<EditPersonalProfileInfoS
       ),
       body: Column(
         children: [
-          /// Scrollable form
           Expanded(
             child: SingleChildScrollView(
               child: Card(
@@ -207,14 +223,12 @@ class _EditPersonalProfileInfoScreenState extends State<EditPersonalProfileInfoS
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
-                      /// Profile avatar with edit icon
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: const [ProfileAvatar(showEdit: true)],
                       ),
                       const SizedBox(height: 30),
 
-                      /// Editable fields
                       LabeledTextField(
                         label: 'Name',
                         controller: nameController,
@@ -224,7 +238,7 @@ class _EditPersonalProfileInfoScreenState extends State<EditPersonalProfileInfoS
                       LabeledTextField(
                         label: 'Email',
                         controller: emailController,
-                        enabled: false, // Email usually not editable
+                        enabled: false,
                       ),
                       const SizedBox(height: 16),
 
@@ -268,7 +282,6 @@ class _EditPersonalProfileInfoScreenState extends State<EditPersonalProfileInfoS
             ),
           ),
 
-          /// Update button with loading state
           Padding(
             padding: const EdgeInsets.all(16),
             child: _isUpdating
@@ -350,8 +363,6 @@ class LabeledTextField extends StatelessWidget {
   }
 }
 
-
-
 /// ----------------------------
 /// PROFILE AVATAR WIDGET
 /// ----------------------------
@@ -378,11 +389,11 @@ class ProfileAvatar extends StatelessWidget {
                 CircleAvatar(
                   radius: 60,
                   backgroundImage: imageUrl.isNotEmpty
-                      ? (imageUrl.startsWith('http') || imageUrl.startsWith('assets')
                       ? (imageUrl.startsWith('http')
                       ? NetworkImage(imageUrl)
-                      : const AssetImage('assets/images/dummy_user_image.png') as ImageProvider)
-                      : FileImage(File(imageUrl)) as ImageProvider)
+                      : (imageUrl.startsWith('/')
+                      ? FileImage(File(imageUrl)) as ImageProvider
+                      : const AssetImage('assets/images/dummy_user_image.png') as ImageProvider))
                       : const AssetImage('assets/images/dummy_user_image.png') as ImageProvider,
                   onBackgroundImageError: (_, __) {},
                 ),
@@ -436,5 +447,3 @@ class ProfileAvatar extends StatelessWidget {
     });
   }
 }
-
-
