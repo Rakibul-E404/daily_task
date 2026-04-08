@@ -11,6 +11,8 @@ class AppUrl {
   static const String updatePersonalInformationProfileImage =
       '$baseUrl/users/profile-picture';
 
+  static const String createPersonalTask = '$baseUrl/tasks';
+
   ///-------------------
   ///--- UGC -----------
   ///-------------------

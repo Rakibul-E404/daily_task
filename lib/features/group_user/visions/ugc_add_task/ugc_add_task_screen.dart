@@ -1,4 +1,4 @@
-import 'package:askfemi/features/group_user/visions/ugc_add_task/ugc_personal_task_screen.dart';
+import 'package:askfemi/features/group_user/visions/ugc_add_task/ugc_personal_task_create_screen.dart';
 import 'package:askfemi/features/group_user/visions/ugc_add_task/ugc_single_or_collaborative_task_screen.dart';
 import 'package:askfemi/screens/personal_information/personal_Infromation_screen_controller.dart';
 import 'package:askfemi/utils/app_colors.dart';
@@ -95,7 +95,7 @@ class UgcAddTaskScreen extends StatelessWidget {
               svgIcon: SvgPicture.asset('assets/icons/personal_task.svg'),
               isOutlined: true,
               onPressed: () {
-                Get.to(() => const UgcPersonalTaskScreen());
+                Get.to(() => const UgcPersonalTaskCreateScreen());
               },
             ),
             const SizedBox(height: 60),
@@ -189,7 +189,7 @@ class CreateTaskCard extends StatelessWidget {
               child: isOutlined
                   ? OutlinedButton(
                 onPressed: onPressed ?? () {
-                  Get.to(() => const UgcPersonalTaskScreen());
+                  Get.to(() => const UgcPersonalTaskCreateScreen());
                 },
                 style: OutlinedButton.styleFrom(
                   shape: RoundedRectangleBorder(
