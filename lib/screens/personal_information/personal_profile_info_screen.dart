@@ -85,7 +85,6 @@ class PersonalInformationScreen extends StatelessWidget {
           );
         }
 
-
         if (controller.isLoading.value) {
           return const Center(
             child: CircularProgressIndicator(),
@@ -136,52 +135,56 @@ class PersonalInformationScreen extends StatelessWidget {
           children: [
             /// SCROLLABLE CONTENT
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Card(
-                  color: AppColors.backgroundColor,
-                  margin: const EdgeInsets.all(16),
-                  elevation: 1,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ProfileAvatar(
-                          imageUrl: controller.userProfileImage.value,
-                          userName: controller.userName.value,
-                        ),
-                        const SizedBox(height: 30),
+              child: RefreshIndicator(
+                onRefresh: () => controller.forceRefresh(),
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Card(
+                    color: AppColors.backgroundColor,
+                    margin: const EdgeInsets.all(16),
+                    elevation: 1,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ProfileAvatar(
+                            imageUrl: controller.userProfileImage.value,
+                            userName: controller.userName.value,
+                          ),
+                          const SizedBox(height: 30),
 
-                        InfoRow(
-                          label: 'Name',
-                          value: controller.userName.value.isEmpty ? 'Not specified' : controller.userName.value,
-                        ),
-                        InfoRow(
-                          label: 'Email',
-                          value: controller.userEmail.value.isEmpty ? 'Not specified' : controller.userEmail.value,
-                        ),
-                        InfoRow(
-                          label: 'Phone number',
-                          value: controller.userPhoneNumber.value.isEmpty ? 'Not specified' : controller.userPhoneNumber.value,
-                        ),
-                        InfoRow(
-                          label: 'Address',
-                          value: controller.userAddress.value.isEmpty ? 'Not specified' : controller.userAddress.value,
-                        ),
-                        InfoRow(
-                          label: 'Gender',
-                          value: controller.userGender.value.isEmpty ? 'Not specified' : controller.userGender.value,
-                        ),
-                        InfoRow(
-                          label: 'Date of Birth',
-                          value: controller.userDateOfBirth.value.isEmpty ? 'Not specified' : controller.userDateOfBirth.value,
-                        ),
-                        InfoRow(
-                          label: 'Age',
-                          value: controller.userAge.value.isEmpty ? 'Not specified' : controller.userAge.value,
-                        ),
-                      ],
+                          InfoRow(
+                            label: 'Name',
+                            value: controller.userName.value.isEmpty ? 'Not specified' : controller.userName.value,
+                          ),
+                          InfoRow(
+                            label: 'Email',
+                            value: controller.userEmail.value.isEmpty ? 'Not specified' : controller.userEmail.value,
+                          ),
+                          InfoRow(
+                            label: 'Phone number',
+                            value: controller.userPhoneNumber.value.isEmpty ? 'Not specified' : controller.userPhoneNumber.value,
+                          ),
+                          InfoRow(
+                            label: 'Address',
+                            value: controller.userAddress.value.isEmpty ? 'Not specified' : controller.userAddress.value,
+                          ),
+                          InfoRow(
+                            label: 'Gender',
+                            value: controller.userGender.value.isEmpty ? 'Not specified' : controller.userGender.value,
+                          ),
+                          InfoRow(
+                            label: 'Date of Birth',
+                            value: controller.userDateOfBirth.value.isEmpty ? 'Not specified' : controller.userDateOfBirth.value,
+                          ),
+                          InfoRow(
+                            label: 'Age',
+                            value: controller.userAge.value.isEmpty ? 'Not specified' : controller.userAge.value,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -193,8 +196,10 @@ class PersonalInformationScreen extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
               child: EditUpdateButton(
                 title: 'Edit Profile',
-                onPressed: () {
-                  Get.to(() => const EditPersonalProfileInfoScreen());
+                onPressed: () async {
+                  await Get.to(() => const EditPersonalProfileInfoScreen());
+                  // Refresh data when coming back from edit screen
+                  await controller.forceRefresh();
                 },
               ),
             ),
@@ -248,7 +253,6 @@ class ProfileAvatar extends StatelessWidget {
   }
 
   Widget _buildAvatarContent() {
-    // If imageUrl is empty, show person icon
     if (imageUrl.isEmpty) {
       return Center(
         child: Icon(
@@ -259,7 +263,6 @@ class ProfileAvatar extends StatelessWidget {
       );
     }
 
-    // If it's a network image
     if (imageUrl.startsWith('http')) {
       return Image.network(
         imageUrl,
@@ -291,7 +294,6 @@ class ProfileAvatar extends StatelessWidget {
       );
     }
 
-    // If it's a local file path (temp image from gallery/camera)
     if (imageUrl.startsWith('/')) {
       return Image.file(
         File(imageUrl),
@@ -310,7 +312,6 @@ class ProfileAvatar extends StatelessWidget {
       );
     }
 
-    // Fallback for any other case - show person icon
     return Center(
       child: Icon(
         Icons.person,
@@ -320,8 +321,6 @@ class ProfileAvatar extends StatelessWidget {
     );
   }
 }
-
-
 
 /// ===============================================================
 /// REUSABLE WIDGETS
@@ -418,6 +417,3 @@ class LabeledTextField extends StatelessWidget {
     );
   }
 }
-
-
-
