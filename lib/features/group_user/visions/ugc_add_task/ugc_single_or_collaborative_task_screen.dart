@@ -72,27 +72,6 @@ class _UgcSingleOrCollaborativeTaskScreenState
     });
   }
 
-  void _toggleMembersVisibility() {
-    setState(() {
-      _showMembers = !_showMembers;
-    });
-  }
-
-  // void _showAddMemberDialog() {
-  //   showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AddMemberDialog(
-  //         availableMembers: availableMembers,
-  //         onMembersAdded: (selectedMembers) {
-  //           _handleMembersAdded(selectedMembers);
-  //         },
-  //       );
-  //     },
-  //   );
-  // }
-
-
 
   void _showAddMemberDialog() {
     showDialog(
@@ -790,29 +769,6 @@ class __MemberChipInternalState extends State<_MemberChipInternal> {
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                   ),
-                  // Row(
-                  //   mainAxisSize: MainAxisSize.min,
-                  //   children: [
-                  //     if (widget.role.toLowerCase() == 'primary')
-                  //       Padding(
-                  //         padding: const EdgeInsets.only(right: 2),
-                  //         child: SvgPicture.asset(
-                  //           'assets/icons/crown.svg',
-                  //           width: 10,
-                  //           height: 10,
-                  //         ),
-                  //       ),
-                  //     Text(
-                  //       widget.role,
-                  //       style: const TextStyle(fontSize: 9, color: Colors.grey),
-                  //       overflow: TextOverflow.ellipsis,
-                  //       maxLines: 1,
-                  //     ),
-                  //   ],
-                  // ),
-
-
-                  // In the Row that displays the role
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -850,25 +806,6 @@ class __MemberChipInternalState extends State<_MemberChipInternal> {
   }
 }
 
-// // Dialog Widget with crown icon for Primary role
-// class AddMemberDialog extends StatefulWidget {
-//   final List<Map<String, dynamic>> availableMembers;
-//   final Function(List<Map<String, dynamic>>) onMembersAdded;
-//
-//   const AddMemberDialog({
-//     super.key,
-//     required this.availableMembers,
-//     required this.onMembersAdded,
-//   });
-//
-//   @override
-//   State<AddMemberDialog> createState() => _AddMemberDialogState();
-// }
-
-
-
-
-// Dialog Widget with dynamic title based on task type
 class AddMemberDialog extends StatefulWidget {
   final List<Map<String, dynamic>> availableMembers;
   final Function(List<Map<String, dynamic>>) onMembersAdded;
@@ -1106,6 +1043,4 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
     );
   }
 }
-
-
 
