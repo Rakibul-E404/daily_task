@@ -338,8 +338,20 @@ class PersonalInformationController extends GetxController {
 
   Future<void> forceRefresh() async {
     print('🔄 Force refresh - clearing cache');
+    resetImageChanges();
     await CacheService.clearCache();
     await fetchPersonalInformation(showLoading: true);
+
+    userName.refresh();
+    userEmail.refresh();
+    userPhoneNumber.refresh();
+    userAddress.refresh();
+    userGender.refresh();
+    userDateOfBirth.refresh();
+    userAge.refresh();
+    userProfileImage.refresh();
+    isAccountSecondary.refresh();
+
   }
 
   Future<void> backgroundRefresh() async {
@@ -394,6 +406,13 @@ class PersonalInformationController extends GetxController {
       );
     }
   }
+
+
+
+
+
+
+
 
   // Upload image when update profile is called
   Future<String?> uploadProfileImageIfChanged() async {
