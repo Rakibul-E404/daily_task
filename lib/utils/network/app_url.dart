@@ -12,6 +12,8 @@ class AppUrl {
       '$baseUrl/users/profile-picture';
 
   static const String createPersonalTask = '$baseUrl/tasks/v2';
+  static const String createCollaborativeTask = '$baseUrl/tasks/v2';
+  static const String createSingleAssignmentTask = '$baseUrl/tasks/v2';
 
   ///-------------------
   ///--- UGC -----------
