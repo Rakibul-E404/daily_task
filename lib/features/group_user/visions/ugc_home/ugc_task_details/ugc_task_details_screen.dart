@@ -6,7 +6,6 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../../../../utils/app_colors.dart';
 import '../../../../../utils/app_texts_style.dart';
-import '../../../widget/ugc_details_widget/ugc_support_allert_cards.dart';
 import '../../bottom_navigation/ugc_bottom_nav.dart';
 import 'ugs_task_details_screen_controller.dart';
 import 'ugc_edit_task_screen.dart';
@@ -14,7 +13,7 @@ import 'ugc_edit_task_screen.dart';
 class UgcTaskDetailsScreen extends StatelessWidget {
   const UgcTaskDetailsScreen({super.key});
 
-  void _confirmDeleteTask(BuildContext context, String taskId) {
+  void _confirmDeleteTask(BuildContext context, UgcTaskDetailsController controller, String taskId) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -51,7 +50,7 @@ class UgcTaskDetailsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              Row(
+              Obx(() => Row(
                 children: [
                   Expanded(
                     child: OutlinedButton(
@@ -75,17 +74,30 @@ class UgcTaskDetailsScreen extends StatelessWidget {
                   const SizedBox(width: 16),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: controller.isDeleting.value
+                          ? null
+                          : () async {
+                        final success = await controller.deleteTask(taskId);
                         Get.back();
-                        // TODO: Implement delete API call
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Task Deleted!'),
-                            duration: Duration(seconds: 1),
-                            backgroundColor: AppColors.black,
-                          ),
-                        );
-                        Get.offAll(() => UgcMainBottomNav());
+
+                        if (success) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Task deleted successfully!'),
+                              duration: Duration(seconds: 2),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                          Get.offAll(() => UgcMainBottomNav());
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(controller.errorMessage.value),
+                              duration: const Duration(seconds: 3),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryColor,
@@ -95,7 +107,16 @@ class UgcTaskDetailsScreen extends StatelessWidget {
                         ),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
-                      child: Text(
+                      child: controller.isDeleting.value
+                          ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                          : Text(
                         'Yes',
                         style: AppTextStyles.defaultTextStyle.copyWith(
                           color: AppColors.white,
@@ -104,12 +125,47 @@ class UgcTaskDetailsScreen extends StatelessWidget {
                     ),
                   ),
                 ],
-              ),
+              )),
             ],
           ),
         );
       },
     );
+  }
+
+  Future<void> _handleStatusUpdate(BuildContext context, UgcTaskDetailsController controller, UgcTask task) async {
+    String newStatus;
+    String successMessage;
+
+    if (task.status == TaskStatus.pending) {
+      newStatus = 'inProgress';
+      successMessage = 'Task started successfully!';
+    } else if (task.status == TaskStatus.inProgress) {
+      newStatus = 'completed';
+      successMessage = 'Task completed successfully!';
+    } else {
+      return;
+    }
+
+    final success = await controller.updateTaskStatus(task.id, newStatus);
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(successMessage),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(controller.errorMessage.value),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
   }
 
   @override
@@ -128,7 +184,6 @@ class UgcTaskDetailsScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         actions: [
-          // Only show edit/delete menu for personal tasks
           Obx(() {
             final task = controller.task.value;
             final isPersonalTask = task?.taskType == 'personal';
@@ -199,7 +254,7 @@ class UgcTaskDetailsScreen extends StatelessWidget {
                             Get.to(() => EditTaskScreen(originalTask: task));
                           } else if (value == 'delete') {
                             debugPrint("Delete tapped");
-                            _confirmDeleteTask(context, task.id);
+                            _confirmDeleteTask(context, controller, task.id);
                           }
                         });
                       },
@@ -271,15 +326,16 @@ class UgcTaskDetailsScreen extends StatelessWidget {
           );
         }
 
-        return _buildContent(context, task);
+        return _buildContent(context, task, controller);
       }),
     );
   }
 
-  Widget _buildContent(BuildContext context, UgcTask task) {
+  Widget _buildContent(BuildContext context, UgcTask task, UgcTaskDetailsController controller) {
     final isCompleted = task.status == TaskStatus.completed;
     final isGroupTask = task.groupMembers != null && task.groupMembers!.isNotEmpty;
     final isSelfTask = task.assignedBy == null;
+    final isPending = task.status == TaskStatus.pending;
 
     return SingleChildScrollView(
       physics: BouncingScrollPhysics(),
@@ -459,20 +515,14 @@ class UgcTaskDetailsScreen extends StatelessWidget {
               _buildSubTaskList(task),
             const SizedBox(height: 16),
 
-            /// Completed Button (only if pending/in progress)
+            /// Start/Complete Button (only if pending/in progress)
             if (!isCompleted)
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    UgcSupportAlertCards.show(
-                      context,
-                      type: UgcSupportAlertType.clam,
-                      onButtonTap: () {
-                        Get.to(() => UgcMainBottomNav());
-                      },
-                    );
-                  },
+                child: Obx(() => ElevatedButton(
+                  onPressed: controller.isUpdatingStatus.value
+                      ? null
+                      : () => _handleStatusUpdate(context, controller, task),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryColor,
                     foregroundColor: AppColors.white,
@@ -481,14 +531,23 @@ class UgcTaskDetailsScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: Text(
-                    'Completed',
+                  child: controller.isUpdatingStatus.value
+                      ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                      : Text(
+                    isPending ? 'Start' : 'Complete',
                     style: AppTextStyles.defaultTextStyle.copyWith(
                       color: AppColors.white,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                ),
+                )),
               ),
           ],
         ),

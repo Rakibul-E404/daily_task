@@ -10,6 +10,8 @@ class UgcTaskDetailsController extends GetxController {
 
   var task = Rx<UgcTask?>(null);
   var isLoading = false.obs;
+  var isUpdatingStatus = false.obs;
+  var isDeleting = false.obs;
   var errorMessage = RxString('');
 
   @override
@@ -19,7 +21,6 @@ class UgcTaskDetailsController extends GetxController {
   }
 
   void _getTaskIdAndFetch() {
-    // Safely get the taskId from arguments
     final arguments = Get.arguments;
 
     if (arguments == null) {
@@ -30,7 +31,6 @@ class UgcTaskDetailsController extends GetxController {
 
     String? taskId;
 
-    // Handle different argument types
     if (arguments is String) {
       taskId = arguments;
     } else if (arguments is Map) {
@@ -90,8 +90,104 @@ class UgcTaskDetailsController extends GetxController {
     }
   }
 
+  Future<bool> updateTaskStatus(String taskId, String status) async {
+    isUpdatingStatus.value = true;
+    errorMessage.value = '';
+
+    try {
+      final token = await SecureStorageService.instance.getAccessToken();
+
+      if (token == null) {
+        errorMessage.value = 'No access token found';
+        print('No access token found');
+        isUpdatingStatus.value = false;
+        return false;
+      }
+
+      final Map<String, dynamic> requestBody = {
+        "status": status,
+      };
+
+      print('📤 Updating task status to: $status');
+      print('📤 Request body: $requestBody');
+
+      final response = await _networkCaller.putRequest(
+        AppUrl.ugcTaskStatusUpdate(taskId, status),
+        body: requestBody,
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      print('📡 Response status code: ${response.statusCode}');
+      print('📡 Response success: ${response.isSuccess}');
+      print('📡 Response body: ${response.jsonResponse}');
+
+      if (response.isSuccess || response.statusCode == 200) {
+        await fetchTaskDetails(taskId);
+        isUpdatingStatus.value = false;
+        return true;
+      } else {
+        String error = response.errorMessage ?? 'Failed to update task status';
+        if (response.jsonResponse != null) {
+          error = response.jsonResponse?['message'] ?? error;
+        }
+        errorMessage.value = error;
+        isUpdatingStatus.value = false;
+        return false;
+      }
+    } catch (e) {
+      print('Error updating task status: $e');
+      errorMessage.value = 'An error occurred. Please try again.';
+      isUpdatingStatus.value = false;
+      return false;
+    }
+  }
+
+  Future<bool> deleteTask(String taskId) async {
+    isDeleting.value = true;
+    errorMessage.value = '';
+
+    try {
+      final token = await SecureStorageService.instance.getAccessToken();
+
+      if (token == null) {
+        errorMessage.value = 'No access token found';
+        print('No access token found');
+        isDeleting.value = false;
+        return false;
+      }
+
+      print('📤 Deleting task with ID: $taskId');
+
+      final response = await _networkCaller.deleteRequest(
+        AppUrl.deleteTask(taskId),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      print('📡 Response status code: ${response.statusCode}');
+      print('📡 Response success: ${response.isSuccess}');
+      print('📡 Response body: ${response.jsonResponse}');
+
+      if (response.isSuccess || response.statusCode == 200) {
+        isDeleting.value = false;
+        return true;
+      } else {
+        String error = response.errorMessage ?? 'Failed to delete task';
+        if (response.jsonResponse != null) {
+          error = response.jsonResponse?['message'] ?? error;
+        }
+        errorMessage.value = error;
+        isDeleting.value = false;
+        return false;
+      }
+    } catch (e) {
+      print('Error deleting task: $e');
+      errorMessage.value = 'An error occurred. Please try again.';
+      isDeleting.value = false;
+      return false;
+    }
+  }
+
   UgcTask _mapApiResponseToUgcTask(Map<String, dynamic> json) {
-    // Parse status
     TaskStatus taskStatus;
     final status = json['status']?.toString().toLowerCase() ?? 'pending';
     switch (status) {
@@ -105,7 +201,6 @@ class UgcTaskDetailsController extends GetxController {
         taskStatus = TaskStatus.pending;
     }
 
-    // Parse subtasks
     final List<UgcSubTask> ugcSubtasks = [];
     final subtasksList = json['subtasks'] as List?;
     if (subtasksList != null) {
@@ -125,7 +220,6 @@ class UgcTaskDetailsController extends GetxController {
       }
     }
 
-    // Determine assigned by and their image
     String? assignedBy;
     String? assignedByImage;
     final taskType = json['taskType']?.toString() ?? 'personal';
@@ -142,7 +236,6 @@ class UgcTaskDetailsController extends GetxController {
       }
     }
 
-    // Get group members for collaborative tasks
     List<String>? groupMembers;
     if (taskType == 'collaborative') {
       final assignedUsers = json['assignedUserIds'] as List?;
@@ -159,7 +252,6 @@ class UgcTaskDetailsController extends GetxController {
       }
     }
 
-    // Parse times
     DateTime createdAt = DateTime.now();
     if (json['createdAt'] != null) {
       createdAt = DateTime.tryParse(json['createdAt']) ?? DateTime.now();
@@ -181,7 +273,6 @@ class UgcTaskDetailsController extends GetxController {
       dueDate = DateTime.tryParse(json['dueDate']) ?? DateTime.now();
     }
 
-    // Get subtask progress
     final subtaskProgress = json['subtaskProgress'] ?? {};
     final totalSubtasks = subtaskProgress['total'] ?? json['totalSubtasks'] ?? 0;
     final completedSubtasks = subtaskProgress['completed'] ?? json['completedSubtasks'] ?? 0;
@@ -209,7 +300,7 @@ class UgcTaskDetailsController extends GetxController {
 
   String _getImageUrl(String? imagePath) {
     if (imagePath == null || imagePath.isEmpty) {
-      return "assets/images/dummy_user_image.png";
+      return "";
     }
     if (imagePath.startsWith('http')) {
       return imagePath;

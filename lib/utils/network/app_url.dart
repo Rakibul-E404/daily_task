@@ -25,6 +25,14 @@ class AppUrl {
     return '$baseUrl/tasks/$taskId';
   }
 
+  static String ugcTaskStatusUpdate(String taskId, String status) {
+    return '$baseUrl/tasks/$taskId/$status';
+  }
+
+  static String deleteTask(String taskId) {
+    return '$baseUrl/tasks/$taskId';
+  }
+
   static String getTaskStatusList({
     required String taskStatus,
     String? fromDate,
