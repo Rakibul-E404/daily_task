@@ -15,6 +15,13 @@ class AppUrl {
   static const String createCollaborativeTask = '$baseUrl/tasks/v2';
   static const String createSingleAssignmentTask = '$baseUrl/tasks/v2';
 
+  static String getPrivacyPolicyTermsConditionsAboutUs(String type) {
+    return '$baseUrl/settings?type=$type';
+  }
+
+  static const String changePassword = '$baseUrl/auth/change-password';
+  static const String deleteAccount = '$baseUrl/users/delete-my-account';
+
   ///-------------------
   ///--- UGC -----------
   ///-------------------
@@ -25,7 +32,8 @@ class AppUrl {
     return '$baseUrl/tasks/$taskId';
   }
 
-  static String getMemberList = '$baseUrl/children-business-users/my-family-members';
+  static String getMemberList =
+      '$baseUrl/children-business-users/my-family-members';
 
   static String ugcTaskStatusUpdate(String taskId) {
     return '$baseUrl/task-progress/$taskId/status';
@@ -56,10 +64,6 @@ class AppUrl {
 
     return url;
   }
-
-
-
-
 
   ///-------------------
   ///--- Individual ----

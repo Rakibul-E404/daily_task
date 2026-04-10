@@ -269,7 +269,7 @@ class ManualSignUpController extends GetxController {
         "role": "individual",
         "acceptTOC": true,
         "age": int.tryParse(age.value.trim()) ?? 0,
-        "dob": formattedDob,
+        "date": formattedDob,
         "gender": gender.value.toLowerCase(),
       };
 
