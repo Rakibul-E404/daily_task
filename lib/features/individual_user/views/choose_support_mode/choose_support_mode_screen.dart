@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:get/get.dart';
 import '../../../../utils/app_colors.dart';
 import '../../../../utils/app_texts_style.dart';
+import '../../../../utils/network/app_url.dart';
+import '../../../../utils/network/network_caller_dio.dart';
+import '../../../../utils/network/secure_storage_service.dart';
 import '../bottom_navigation/main_bottom_nav.dart';
 
 class ChooseSupportModeScreen extends StatefulWidget {
@@ -20,7 +22,152 @@ class ChooseSupportModeScreen extends StatefulWidget {
 }
 
 class _ChooseSupportModeScreenState extends State<ChooseSupportModeScreen> {
+  final NetworkCallerDio _networkCaller = NetworkCallerDio();
+
   String? selectedMode;
+  bool _isLoading = true;
+  bool _isSaving = false;
+  String _errorMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchSupportMode();
+  }
+
+  Future<void> _fetchSupportMode() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    try {
+      final token = await SecureStorageService.instance.getAccessToken();
+
+      if (token == null) {
+        setState(() {
+          _errorMessage = 'No access token found';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final response = await _networkCaller.getRequest(
+        AppUrl.getSupportMode,
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      print('📡 GET Response status code: ${response.statusCode}');
+      print('📡 GET Response success: ${response.isSuccess}');
+      print('📡 GET Response body: ${response.jsonResponse}');
+
+      if (response.isSuccess && response.jsonResponse != null) {
+        final attributes = response.jsonResponse?['data']?['attributes'];
+        if (attributes != null) {
+          final supportMode = attributes['supportMode'] ?? 'calm';
+          setState(() {
+            selectedMode = supportMode;
+            _isLoading = false;
+          });
+        } else {
+          setState(() {
+            _errorMessage = 'No data found';
+            _isLoading = false;
+          });
+        }
+      } else {
+        setState(() {
+          _errorMessage = response.errorMessage ?? 'Failed to load support mode';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error fetching support mode: $e');
+      setState(() {
+        _errorMessage = 'An error occurred. Please try again.';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _saveSupportMode() async {
+    if (selectedMode == null) return;
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      final token = await SecureStorageService.instance.getAccessToken();
+
+      if (token == null) {
+        _showErrorSnackbar('No access token found. Please login again.');
+        setState(() {
+          _isSaving = false;
+        });
+        return;
+      }
+
+      final Map<String, dynamic> requestBody = {
+        "supportMode": selectedMode,
+      };
+
+      print('📤 PUT Request - Saving support mode: $requestBody');
+
+      final response = await _networkCaller.putRequest(
+        AppUrl.updateSupportMode,
+        body: requestBody,
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      print('📡 PUT Response status code: ${response.statusCode}');
+      print('📡 PUT Response success: ${response.isSuccess}');
+      print('📡 PUT Response body: ${response.jsonResponse}');
+
+      if (response.isSuccess || response.statusCode == 200) {
+        _showSuccessSnackbar('Support mode saved successfully');
+
+        if (widget.fromProfile) {
+          Navigator.pop(context);
+        } else {
+          Get.offAll(const MainBottomNav());
+        }
+      } else {
+        String error = response.errorMessage ?? 'Failed to save support mode';
+        if (response.jsonResponse != null) {
+          error = response.jsonResponse?['message'] ?? error;
+        }
+        _showErrorSnackbar(error);
+      }
+    } catch (e) {
+      print('Error saving support mode: $e');
+      _showErrorSnackbar('An error occurred. Please try again.');
+    } finally {
+      setState(() {
+        _isSaving = false;
+      });
+    }
+  }
+
+  void _showErrorSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  void _showSuccessSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +178,7 @@ class _ChooseSupportModeScreenState extends State<ChooseSupportModeScreen> {
         surfaceTintColor: AppColors.transparent,
         elevation: 0,
         title: widget.fromProfile ?
-         Text("Support Mode",style: AppTextStyles.largeHeading,) : null,
+        Text("Support Mode",style: AppTextStyles.largeHeading,) : null,
         leading: widget.fromProfile ? IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
@@ -39,7 +186,40 @@ class _ChooseSupportModeScreenState extends State<ChooseSupportModeScreen> {
           },
         ) : null,
       ),
-      body: Padding(
+      body: _isLoading
+          ? const Center(
+        child: CircularProgressIndicator(
+          color: AppColors.primaryColor,
+        ),
+      )
+          : _errorMessage.isNotEmpty
+          ? Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 64,
+              color: Colors.red.shade300,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage,
+              style: TextStyle(color: Colors.red.shade400),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _fetchSupportMode,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryColor,
+              ),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      )
+          : Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0),
         child: Column(
           children: [
@@ -47,30 +227,30 @@ class _ChooseSupportModeScreenState extends State<ChooseSupportModeScreen> {
 
             // Title
             if (!widget.fromProfile)
-            const Text(
-              'Choose Your Support Style',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-                fontFamily: 'Plus Jakarta Sans',
+              const Text(
+                'Choose Your Support Style',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  fontFamily: 'Plus Jakarta Sans',
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
 
             const SizedBox(height: 12),
 
             // Subtitle
             if (!widget.fromProfile)
-            Text(
-              'How would you like Clarity to communicate with you?',
-              style: TextStyle(
-                fontSize: 14,
-                color: AppColors.grey,
-                fontFamily: 'Plus Jakarta Sans',
+              Text(
+                'How would you like Clarity to communicate with you?',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.grey,
+                  fontFamily: 'Plus Jakarta Sans',
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
 
             const SizedBox(height: 40),
 
@@ -81,8 +261,7 @@ class _ChooseSupportModeScreenState extends State<ChooseSupportModeScreen> {
                   children: [
                     _buildSupportCard(
                       mode: 'calm',
-                      icon:
-                      SvgPicture.asset(
+                      icon: SvgPicture.asset(
                         'assets/images/clam.svg',
                         width: 35,
                         height: 35,
@@ -93,8 +272,6 @@ class _ChooseSupportModeScreenState extends State<ChooseSupportModeScreen> {
                       quote: '"Take your time. Each small step matters."',
                       isSelected: selectedMode == 'calm',
                     ),
-
-
                     const SizedBox(height: 16),
                     _buildSupportCard(
                       mode: 'encouraging',
@@ -119,7 +296,7 @@ class _ChooseSupportModeScreenState extends State<ChooseSupportModeScreen> {
                       ),
                       title: 'Logical',
                       description:
-                      'Gentle guidance with peaceful reminders and soothing encouragement.',
+                      'Clear, structured guidance with practical advice and actionable steps.',
                       quote: null,
                       isSelected: selectedMode == 'logical',
                     ),
@@ -134,19 +311,8 @@ class _ChooseSupportModeScreenState extends State<ChooseSupportModeScreen> {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: selectedMode != null
-                    ? () {
-                  debugPrint('Selected mode: $selectedMode');
-
-                  if (widget.fromProfile) {
-                    // If coming from profile, just go back
-                    Navigator.pop(context);
-                    // You might want to save the preference here
-                  } else {
-                    // If coming from initial setup, go to main app
-                    Get.offAll(const MainBottomNav());
-                  }
-                }
+                onPressed: (selectedMode != null && !_isSaving)
+                    ? _saveSupportMode
                     : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryColor,
@@ -156,7 +322,16 @@ class _ChooseSupportModeScreenState extends State<ChooseSupportModeScreen> {
                   ),
                   elevation: 0,
                 ),
-                child: Text(
+                child: _isSaving
+                    ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+                    : Text(
                   widget.fromProfile ? 'Save Changes' : 'Get Started',
                   style: AppTextStyles.smallHeading.copyWith(
                     color: selectedMode != null ? AppColors.white : AppColors.lightGrey,
@@ -171,15 +346,6 @@ class _ChooseSupportModeScreenState extends State<ChooseSupportModeScreen> {
     );
   }
 
-/*  Widget _buildSupportCard({
-    required String mode,
-    required String emoji,
-    required String title,
-    required String description,
-    String? quote,
-    required bool isSelected,
-  })*/
-
   Widget _buildSupportCard({
     required String mode,
     required Widget icon,
@@ -187,9 +353,7 @@ class _ChooseSupportModeScreenState extends State<ChooseSupportModeScreen> {
     required String description,
     String? quote,
     required bool isSelected,
-  })
-
-  {
+  }) {
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -217,10 +381,10 @@ class _ChooseSupportModeScreenState extends State<ChooseSupportModeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Emoji and Title Row
+            // Icon and Title Row
             Row(
               children: [
-                // Emoji Circle
+                // Icon Circle
                 Container(
                   width: 44,
                   height: 44,
@@ -228,13 +392,7 @@ class _ChooseSupportModeScreenState extends State<ChooseSupportModeScreen> {
                     color: _getEmojiBackgroundColor(mode),
                     shape: BoxShape.circle,
                   ),
-                  child: Center(
-                    // child: Text(
-                    //   emoji,
-                    //   style: const TextStyle(fontSize: 24),
-                    // ),
-                    child: Center(child: icon),
-                  ),
+                  child: Center(child: icon),
                 ),
                 const SizedBox(width: 12),
                 // Title
@@ -285,7 +443,7 @@ class _ChooseSupportModeScreenState extends State<ChooseSupportModeScreen> {
   Color _getEmojiBackgroundColor(String mode) {
     switch (mode) {
       case 'calm':
-        return  AppColors.calmColor;
+        return AppColors.calmColor;
       case 'encouraging':
         return AppColors.encouragingColor;
       case 'logical':

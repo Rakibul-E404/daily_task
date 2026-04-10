@@ -6,10 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:shimmer/shimmer.dart';
+import '../../../../screens/notification/notification_screen.dart';
 import '../../../../screens/personal_information/personal_Infromation_screen_controller.dart';
 import '../../../../utils/app_colors.dart';
 import '../../../../utils/app_texts_style.dart';
-import '../../../individual_user/views/notification/notification_screen.dart';
 import '../../widget/ugc_home_widget/ugc_daily_progress_widget.dart';
 import 'controller/ugc_home_screen_controller.dart';
 

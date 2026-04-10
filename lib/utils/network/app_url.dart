@@ -14,6 +14,11 @@ class AppUrl {
   static const String createPersonalTask = '$baseUrl/tasks/v2';
   static const String createCollaborativeTask = '$baseUrl/tasks/v2';
   static const String createSingleAssignmentTask = '$baseUrl/tasks/v2';
+  static const String getSupportMode = '$baseUrl/users/support-mode';
+  static const String updateSupportMode = '$baseUrl/users/support-mode';
+  static const String getNotification = '$baseUrl/activitys/my';
+  static const String getNotificationStyle = '$baseUrl/users/notification-style';
+  static const String updateNotificationStyle = '$baseUrl/users/notification-style';
 
   static String getPrivacyPolicyTermsConditionsAboutUs(String type) {
     return '$baseUrl/settings?type=$type';
