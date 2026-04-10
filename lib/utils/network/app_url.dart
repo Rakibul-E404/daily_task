@@ -25,6 +25,8 @@ class AppUrl {
     return '$baseUrl/tasks/$taskId';
   }
 
+  static String getMemberList = '$baseUrl/children-business-users/my-family-members';
+
   static String ugcTaskStatusUpdate(String taskId, String status) {
     return '$baseUrl/tasks/$taskId/$status';
   }

@@ -21,15 +21,8 @@ class _UgcSingleOrCollaborativeTaskScreenState
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController dateTimeController = TextEditingController();
 
-  // List of members
+  // List of selected members
   List<Map<String, dynamic>> members = [];
-
-  // Available members for selection (these should come from API in real app)
-  List<Map<String, dynamic>> availableMembers = [
-    {'id': '69b78376417715d5b1aaf984', 'name': 'Child 1', 'role': 'Secondary'},
-    {'id': '69b783e4417715d5b1aaf998', 'name': 'Child 2', 'role': 'Secondary'},
-    {'id': '69b6709efc5f1759e82dd305', 'name': 'Parent', 'role': 'Primary'},
-  ];
 
   // Subtask related variables
   final List<UgcSubTask> _subTasks = [];
@@ -48,7 +41,6 @@ class _UgcSingleOrCollaborativeTaskScreenState
   @override
   void initState() {
     super.initState();
-    // Add one empty subtask by default
     _addNewSubTask();
   }
 
@@ -72,14 +64,32 @@ class _UgcSingleOrCollaborativeTaskScreenState
     });
   }
 
+  // Show Add Member Dialog - Fetches members from API when opened
+  void _showAddMemberDialog() async {
+    // Show loading indicator while fetching members
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
 
-  void _showAddMemberDialog() {
+    // Fetch family members from API
+    await _controller.fetchFamilyMembers();
+
+    // Close loading dialog
+    Navigator.of(context).pop();
+
+    // Show member selection dialog
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AddMemberDialog(
-          availableMembers: availableMembers,
-          isCollaborativeTask: _isCollaborativeTask, // Pass the current task type
+          availableMembers: _controller.availableMembers.toList(),
+          isCollaborativeTask: _isCollaborativeTask,
           onMembersAdded: (selectedMembers) {
             _handleMembersAdded(selectedMembers);
           },
@@ -88,7 +98,6 @@ class _UgcSingleOrCollaborativeTaskScreenState
     );
   }
 
-
   void _handleMembersAdded(List<Map<String, dynamic>> selectedMembers) {
     setState(() {
       for (var member in selectedMembers) {
@@ -96,8 +105,6 @@ class _UgcSingleOrCollaborativeTaskScreenState
           members.add(member);
         }
       }
-      availableMembers.removeWhere((member) =>
-          selectedMembers.any((selected) => selected['id'] == member['id']));
       _showMembers = true;
     });
 
@@ -105,7 +112,7 @@ class _UgcSingleOrCollaborativeTaskScreenState
       SnackBar(
         content: Text('${selectedMembers.length} member(s) added successfully'),
         backgroundColor: Colors.green,
-        duration: Duration(seconds: 2),
+        duration: const Duration(seconds: 2),
       ),
     );
   }
@@ -216,17 +223,11 @@ class _UgcSingleOrCollaborativeTaskScreenState
 
   void _handleRemove(String memberId) {
     setState(() {
-      final removedMember = members.firstWhere((member) => member['id'] == memberId);
       members.removeWhere((member) => member['id'] == memberId);
-
-      if (!availableMembers.any((m) => m['id'] == removedMember['id'])) {
-        availableMembers.add(removedMember);
-      }
     });
   }
 
   Future<void> _createTask() async {
-    // Save any unsaved subtasks
     for (int i = 0; i < _subTasks.length; i++) {
       final currentText = _subtaskControllers[i].text.trim();
       if (currentText.isNotEmpty && _subTasks[i].title != currentText) {
@@ -234,7 +235,6 @@ class _UgcSingleOrCollaborativeTaskScreenState
       }
     }
 
-    // Validation
     if (titleController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -255,7 +255,6 @@ class _UgcSingleOrCollaborativeTaskScreenState
       return;
     }
 
-    // For collaborative/single assignment, validate members
     if (members.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -266,7 +265,6 @@ class _UgcSingleOrCollaborativeTaskScreenState
       return;
     }
 
-    // Save focused subtask if any
     for (int i = 0; i < _subtaskFocusNodes.length; i++) {
       if (_subtaskFocusNodes[i].hasFocus) {
         final currentText = _subtaskControllers[i].text.trim();
@@ -281,7 +279,6 @@ class _UgcSingleOrCollaborativeTaskScreenState
         .where((task) => task.title.trim().isNotEmpty)
         .toList();
 
-    // Get assigned user IDs
     final List<String> assignedUserIds = members.map((member) => member['id'].toString()).toList();
 
     final success = await _controller.createCollaborativeTask(
@@ -351,13 +348,11 @@ class _UgcSingleOrCollaborativeTaskScreenState
             ),
             const SizedBox(height: 24),
 
-            /// Task Title
             _label('Task Title'),
             _inputField(controller: titleController),
 
             const SizedBox(height: 20),
 
-            /// Task Description
             _label('Task Description'),
             _inputField(
               controller: descriptionController,
@@ -366,7 +361,6 @@ class _UgcSingleOrCollaborativeTaskScreenState
 
             const SizedBox(height: 20),
 
-            /// Date Time
             _label('Task Date & Time'),
             const SizedBox(height: 12),
             TextField(
@@ -411,7 +405,6 @@ class _UgcSingleOrCollaborativeTaskScreenState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  /// Swappable Header
                   Row(
                     children: [
                       Text(
@@ -433,7 +426,6 @@ class _UgcSingleOrCollaborativeTaskScreenState
 
                   const SizedBox(height: 12),
 
-                  /// Members
                   if (_showMembers && members.isNotEmpty)
                     Wrap(
                       alignment: WrapAlignment.start,
@@ -448,6 +440,7 @@ class _UgcSingleOrCollaborativeTaskScreenState
                             name: member['name'],
                             role: member['role'],
                             onRemove: _handleRemove,
+                            imagePath: member['profileImage'],
                           ),
                         );
                       }).toList(),
@@ -468,7 +461,6 @@ class _UgcSingleOrCollaborativeTaskScreenState
 
                   const SizedBox(height: 12),
 
-                  /// Add Member Button
                   SizedBox(
                     width: double.infinity,
                     height: 44,
@@ -644,7 +636,6 @@ class _UgcSingleOrCollaborativeTaskScreenState
     );
   }
 
-  /// Helpers
   Widget _label(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -738,6 +729,9 @@ class __MemberChipInternalState extends State<_MemberChipInternal> {
 
   @override
   Widget build(BuildContext context) {
+    // ONLY show Primary badge if role is 'parent'
+    final bool showPrimary = widget.role == 'parent';
+
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 300),
       opacity: _isRemoving ? 0 : 1,
@@ -753,9 +747,12 @@ class __MemberChipInternalState extends State<_MemberChipInternal> {
           children: [
             CircleAvatar(
               radius: 12,
-              backgroundImage: widget.imagePath != null
-                  ? AssetImage(widget.imagePath!)
+              backgroundImage: widget.imagePath != null && widget.imagePath!.isNotEmpty
+                  ? (widget.imagePath!.startsWith('http')
+                  ? NetworkImage(widget.imagePath!)
+                  : AssetImage(widget.imagePath!) as ImageProvider)
                   : const AssetImage("assets/images/dummy_child_user_image.png") as ImageProvider,
+              onBackgroundImageError: (_, __) {},
             ),
             const SizedBox(width: 4),
             Flexible(
@@ -769,10 +766,10 @@ class __MemberChipInternalState extends State<_MemberChipInternal> {
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                   ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (widget.role.toLowerCase() == 'primary')
+                  if (showPrimary)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
                         Padding(
                           padding: const EdgeInsets.only(right: 2),
                           child: SvgPicture.asset(
@@ -781,16 +778,14 @@ class __MemberChipInternalState extends State<_MemberChipInternal> {
                             height: 10,
                           ),
                         ),
-                      Text(
-                        widget.role,
-                        style: const TextStyle(fontSize: 9, color: Colors.grey),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                    ],
-                  ),
-
-
+                        Text(
+                          'Primary',
+                          style: const TextStyle(fontSize: 9, color: Colors.grey),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ],
+                    ),
                 ],
               ),
             ),
@@ -806,16 +801,18 @@ class __MemberChipInternalState extends State<_MemberChipInternal> {
   }
 }
 
+// Add Member Dialog
+// Add Member Dialog
 class AddMemberDialog extends StatefulWidget {
   final List<Map<String, dynamic>> availableMembers;
   final Function(List<Map<String, dynamic>>) onMembersAdded;
-  final bool isCollaborativeTask; // Add this parameter
+  final bool isCollaborativeTask;
 
   const AddMemberDialog({
     super.key,
     required this.availableMembers,
     required this.onMembersAdded,
-    required this.isCollaborativeTask, // Required parameter
+    required this.isCollaborativeTask,
   });
 
   @override
@@ -835,7 +832,6 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
 
   @override
   Widget build(BuildContext context) {
-    // Dynamic title based on task type
     final String dialogTitle = widget.isCollaborativeTask
         ? 'Collaborative Task'
         : 'Single Assignment';
@@ -845,8 +841,10 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
         : 'Assign task to a member';
 
     return AlertDialog(
-      actionsPadding: const EdgeInsets.all(8),
+      actionsPadding: EdgeInsets.zero,
       backgroundColor: AppColors.backgroundColor,
+      titlePadding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+      contentPadding: EdgeInsets.zero,
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -879,161 +877,192 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
       ),
       content: SizedBox(
         width: double.maxFinite,
+        height: 400, // Fixed height for better scrollability
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // Search Bar
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.grey),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.search, size: 20, color: Colors.grey[600]),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextField(
-                      onChanged: (value) {
-                        setState(() {
-                          searchQuery = value;
-                        });
-                      },
-                      decoration: InputDecoration(
-                        hintText: 'Search Member',
-                        border: InputBorder.none,
-                        hintStyle: TextStyle(color: Colors.grey[500]),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.grey),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.search, size: 20, color: Colors.grey[600]),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextField(
+                        onChanged: (value) {
+                          setState(() {
+                            searchQuery = value;
+                          });
+                        },
+                        decoration: InputDecoration(
+                          hintText: 'Search Member',
+                          border: InputBorder.none,
+                          hintStyle: TextStyle(color: Colors.grey[500]),
+                        ),
+                        style: const TextStyle(fontSize: 14),
                       ),
-                      style: const TextStyle(fontSize: 14),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 16),
-            Divider(color: Colors.grey[300]),
-            const SizedBox(height: 8),
 
-            // Available Members List
-            SizedBox(
-              height: 250,
-              child: ListView.builder(
-                itemCount: filteredMembers.length,
-                itemBuilder: (context, index) {
-                  final member = filteredMembers[index];
-                  final isSelected = selectedMembers.any((m) => m['id'] == member['id']);
+            // Divider
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Divider(color: Colors.grey[300], height: 1),
+            ),
 
-                  return Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: CircleAvatar(
-                          radius: 20,
-                          backgroundColor: Colors.blue[100],
-                          backgroundImage: const AssetImage("assets/images/dummy_child_user_image.png"),
-                        ),
-                        title: Text(
-                          member['name'],
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        subtitle: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (member['role'].toLowerCase() == 'primary')
-                              Padding(
-                                padding: const EdgeInsets.only(right: 4),
-                                child: SvgPicture.asset(
-                                  'assets/icons/crown.svg',
-                                  width: 12,
-                                  height: 12,
-                                ),
-                              ),
-                            Text(
-                              member['role'],
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
+            // Available Members List with Scrollbar
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Scrollbar(
+                  thumbVisibility: true,
+                  thickness: 4,
+                  radius: const Radius.circular(8),
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: filteredMembers.length,
+                    itemBuilder: (context, index) {
+                      final member = filteredMembers[index];
+                      final isSelected = selectedMembers.any((m) => m['id'] == member['id']);
+                      final bool showPrimary = member['role'] == 'parent';
+
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            visualDensity: const VisualDensity(vertical: -2),
+                            leading: CircleAvatar(
+                              radius: 20,
+                              backgroundColor: Colors.blue[100],
+                              backgroundImage: member['profileImage'] != null && member['profileImage'].toString().isNotEmpty
+                                  ? (member['profileImage'].toString().startsWith('http')
+                                  ? NetworkImage(member['profileImage'])
+                                  : AssetImage(member['profileImage']) as ImageProvider)
+                                  : const AssetImage("assets/images/dummy_child_user_image.png") as ImageProvider,
+                              onBackgroundImageError: (_, __) {},
+                            ),
+                            title: Text(
+                              member['name'],
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
-                          ],
-                        ),
-                        trailing: Checkbox(
-                          value: isSelected,
-                          onChanged: (value) {
-                            setState(() {
-                              if (value == true) {
-                                selectedMembers.add(member);
-                              } else {
-                                selectedMembers.removeWhere((m) => m['id'] == member['id']);
-                              }
-                            });
-                          },
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
+                            subtitle: showPrimary
+                                ? Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 4),
+                                  child: SvgPicture.asset(
+                                    'assets/icons/crown.svg',
+                                    width: 12,
+                                    height: 12,
+                                  ),
+                                ),
+                                Text(
+                                  'Primary',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            )
+                                : null,
+                            trailing: Checkbox(
+                              value: isSelected,
+                              onChanged: (value) {
+                                setState(() {
+                                  if (value == true) {
+                                    selectedMembers.add(member);
+                                  } else {
+                                    selectedMembers.removeWhere((m) => m['id'] == member['id']);
+                                  }
+                                });
+                              },
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              activeColor: Colors.blueAccent,
+                            ),
                           ),
-                          activeColor: Colors.blueAccent,
-                        ),
-                      ),
-                      if (index < filteredMembers.length - 1)
-                        Divider(color: Colors.grey[200], height: 1),
-                    ],
-                  );
-                },
+                          if (index < filteredMembers.length - 1)
+                            Divider(color: Colors.grey[200], height: 1),
+                        ],
+                      );
+                    },
+                  ),
+                ),
               ),
             ),
           ],
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: Text(
-            'CANCEL',
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            if (selectedMembers.isNotEmpty) {
-              Navigator.of(context).pop();
-              widget.onMembersAdded(selectedMembers);
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    widget.isCollaborativeTask
-                        ? 'Please select at least one member'
-                        : 'Please select a member to assign',
+        Padding(
+          padding: const EdgeInsets.only(right: 8.0,bottom: 6),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text(
+                  'CANCEL',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
                   ),
-                  backgroundColor: Colors.orange,
-                  duration: const Duration(seconds: 2),
                 ),
-              );
-            }
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blueAccent,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          child: const Text(
-            'ADD',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w500,
-            ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  if (selectedMembers.isNotEmpty) {
+                    Navigator.of(context).pop();
+                    widget.onMembersAdded(selectedMembers);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          widget.isCollaborativeTask
+                              ? 'Please select at least one member'
+                              : 'Please select a member to assign',
+                        ),
+                        backgroundColor: Colors.orange,
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueAccent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  'ADD',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -1043,4 +1072,5 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
     );
   }
 }
+
 

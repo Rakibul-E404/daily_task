@@ -1,4 +1,3 @@
-// ugc_collaborative_task_controller.dart
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import '../../../../../utils/network/app_url.dart';
@@ -12,6 +11,9 @@ class UgcSingleCollaborativeTaskController extends GetxController {
   var isLoading = false.obs;
   var errorMessage = RxString('');
 
+  var availableMembers = <Map<String, dynamic>>[].obs;
+  var isLoadingMembers = false.obs;
+
   Future<bool> createCollaborativeTask({
     required String title,
     required String description,
@@ -20,7 +22,7 @@ class UgcSingleCollaborativeTaskController extends GetxController {
     required DateTime dueDate,
     required List<String> assignedUserIds,
     required List<UgcSubTask> subtasks,
-    required String taskType, // 'collaborative' or 'singleAssignment'
+    required String taskType,
   }) async {
     isLoading.value = true;
     errorMessage.value = '';
@@ -35,7 +37,6 @@ class UgcSingleCollaborativeTaskController extends GetxController {
         return false;
       }
 
-      // Format subtasks with order - only include non-empty subtasks
       final List<Map<String, dynamic>> formattedSubtasks = [];
       for (int i = 0; i < subtasks.length; i++) {
         final titleText = subtasks[i].title.trim();
@@ -47,11 +48,9 @@ class UgcSingleCollaborativeTaskController extends GetxController {
         }
       }
 
-      // Format dates to ISO string
       final String formattedStartTime = startDateTime.toIso8601String();
       final String formattedDueDate = dueDate.toIso8601String();
 
-      // Prepare request body
       final Map<String, dynamic> requestBody = {
         "title": title.trim(),
         "description": description.trim(),
@@ -64,14 +63,12 @@ class UgcSingleCollaborativeTaskController extends GetxController {
         "subtasks": formattedSubtasks,
       };
 
-      // Remove subtasks if empty to avoid sending empty array
       if (formattedSubtasks.isEmpty) {
         requestBody.remove('subtasks');
       }
 
       print('📤 Creating $taskType task: $requestBody');
 
-      // Choose the appropriate API endpoint based on task type
       final String apiUrl = taskType == 'collaborative'
           ? AppUrl.createCollaborativeTask
           : AppUrl.createSingleAssignmentTask;
@@ -84,61 +81,25 @@ class UgcSingleCollaborativeTaskController extends GetxController {
 
       print('📡 Response status code: ${response.statusCode}');
       print('📡 Response success: ${response.isSuccess}');
-      print('📡 Response body: ${response.jsonResponse}');
 
-      // Check for success (status code 200, 201, or success flag true)
       if (response.isSuccess || response.statusCode == 201) {
         isLoading.value = false;
         return true;
       } else {
-        // Extract error message from API response
         String error = 'Failed to create task';
-
         if (response.jsonResponse != null) {
           final jsonData = response.jsonResponse!;
-
           if (jsonData.containsKey('message')) {
             error = jsonData['message'].toString();
-          } else if (jsonData.containsKey('error')) {
-            final errorData = jsonData['error'];
-            if (errorData is List && errorData.isNotEmpty) {
-              if (errorData[0].containsKey('message')) {
-                error = errorData[0]['message'].toString();
-              }
-            } else if (errorData is Map && errorData.containsKey('message')) {
-              error = errorData['message'].toString();
-            }
           }
         }
-
         errorMessage.value = error;
         isLoading.value = false;
         return false;
       }
     } on DioException catch (e) {
       print('DioException: ${e.type} - ${e.message}');
-
-      String error = 'Network error. Please check your connection.';
-
-      if (e.response?.data != null) {
-        try {
-          final responseData = e.response?.data;
-          if (responseData is Map) {
-            if (responseData.containsKey('message')) {
-              error = responseData['message'].toString();
-            } else if (responseData.containsKey('error')) {
-              final errorData = responseData['error'];
-              if (errorData is List && errorData.isNotEmpty) {
-                if (errorData[0].containsKey('message')) {
-                  error = errorData[0]['message'].toString();
-                }
-              }
-            }
-          }
-        } catch (_) {}
-      }
-
-      errorMessage.value = error;
+      errorMessage.value = 'Network error. Please check your connection.';
       isLoading.value = false;
       return false;
     } catch (e) {
@@ -146,6 +107,90 @@ class UgcSingleCollaborativeTaskController extends GetxController {
       errorMessage.value = 'An error occurred. Please try again.';
       isLoading.value = false;
       return false;
+    }
+  }
+
+  // Helper method to get full image URL
+  String getImageUrl(String? imagePath) {
+    if (imagePath == null || imagePath.isEmpty) {
+      return '';
+    }
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+    String cleanPath = imagePath;
+    if (cleanPath.startsWith('/')) {
+      cleanPath = cleanPath.substring(1);
+    }
+    return '${AppUrl.imageBaseUrl}/$cleanPath';
+  }
+
+  // Fetch family members from API
+  Future<void> fetchFamilyMembers() async {
+    isLoadingMembers.value = true;
+
+    try {
+      final token = await SecureStorageService.instance.getAccessToken();
+
+      if (token == null) {
+        print('No access token found');
+        isLoadingMembers.value = false;
+        return;
+      }
+
+      final response = await _networkCaller.getRequest(
+        AppUrl.getMemberList,
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      print('📡 Family members response: ${response.isSuccess}');
+
+      if (response.isSuccess && response.jsonResponse != null) {
+        final attributes = response.jsonResponse?['data']?['attributes'];
+
+        if (attributes != null) {
+          final List<Map<String, dynamic>> members = [];
+
+          // Add parent if exists - ONLY parent gets Primary badge
+          final parent = attributes['parent'];
+          if (parent != null) {
+            String imageUrl = '';
+            if (parent['profileImage'] != null && parent['profileImage']['imageUrl'] != null) {
+              imageUrl = getImageUrl(parent['profileImage']['imageUrl']);
+            }
+            members.add({
+              'id': parent['_id'] ?? '',
+              'name': parent['name'] ?? '',
+              'role': 'parent', // Only parent has role 'parent'
+              'profileImage': imageUrl,
+            });
+          }
+
+          // Add siblings/children - NO badge for them
+          final siblings = attributes['siblings'] ?? [];
+          for (var sibling in siblings) {
+            String imageUrl = '';
+            if (sibling['profileImage'] != null && sibling['profileImage']['imageUrl'] != null) {
+              imageUrl = getImageUrl(sibling['profileImage']['imageUrl']);
+            }
+            members.add({
+              'id': sibling['childUserId'] ?? sibling['_id'] ?? '',
+              'name': sibling['name'] ?? '',
+              'role': 'sibling', // Siblings have no badge
+              'profileImage': imageUrl,
+            });
+          }
+
+          availableMembers.value = members;
+          print('✅ Fetched ${members.length} family members');
+        }
+      } else {
+        print('❌ Failed to fetch family members: ${response.errorMessage}');
+      }
+    } catch (e) {
+      print('Error fetching family members: $e');
+    } finally {
+      isLoadingMembers.value = false;
     }
   }
 }
