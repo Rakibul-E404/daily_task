@@ -147,7 +147,14 @@ class UgcTaskDetailsScreen extends StatelessWidget {
       return;
     }
 
-    final success = await controller.updateTaskStatus(task.id, newStatus);
+    bool success;
+
+    // Use different API based on task type
+    if (task.taskType == 'personal') {
+      success = await controller.updatePersonalTaskStatus(task.id, newStatus);
+    } else {
+      success = await controller.updateTaskStatus(task.id, newStatus);
+    }
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -336,6 +343,10 @@ class UgcTaskDetailsScreen extends StatelessWidget {
     final isGroupTask = task.groupMembers != null && task.groupMembers!.isNotEmpty;
     final isSelfTask = task.assignedBy == null;
     final isPending = task.status == TaskStatus.pending;
+    final isPersonalTask = task.taskType == 'personal';
+
+    // Show status update button for all non-completed tasks (both personal and non-personal)
+    final bool showStatusButton = !isCompleted;
 
     return SingleChildScrollView(
       physics: BouncingScrollPhysics(),
@@ -515,8 +526,8 @@ class UgcTaskDetailsScreen extends StatelessWidget {
               _buildSubTaskList(task),
             const SizedBox(height: 16),
 
-            /// Start/Complete Button (only if pending/in progress)
-            if (!isCompleted)
+            /// Status Update Button (Start/Complete) - Shows for all non-completed tasks
+            if (showStatusButton)
               SizedBox(
                 width: double.infinity,
                 child: Obx(() => ElevatedButton(

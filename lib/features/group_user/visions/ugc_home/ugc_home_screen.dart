@@ -31,7 +31,7 @@ class _UgcHomeScreenState extends State<UgcHomeScreen> {
   bool _isRefreshing = false;
   bool _hasTriggered = false;
 
-  final double _refreshThreshold = 150.0;
+  final double _refreshThreshold = 60.0;
 
   @override
   void initState() {

@@ -90,6 +90,7 @@ class UgcTaskDetailsController extends GetxController {
     }
   }
 
+  // Update task status for non-personal tasks (collaborative/singleAssignment)
   Future<bool> updateTaskStatus(String taskId, String status) async {
     isUpdatingStatus.value = true;
     errorMessage.value = '';
@@ -108,11 +109,11 @@ class UgcTaskDetailsController extends GetxController {
         "status": status,
       };
 
-      print('📤 Updating task status to: $status');
+      print('📤 Updating task status to: $status (Non-personal task)');
       print('📤 Request body: $requestBody');
 
       final response = await _networkCaller.putRequest(
-        AppUrl.ugcTaskStatusUpdate(taskId, status),
+        AppUrl.ugcTaskStatusUpdate(taskId),
         body: requestBody,
         headers: {'Authorization': 'Bearer $token'},
       );
@@ -136,6 +137,59 @@ class UgcTaskDetailsController extends GetxController {
       }
     } catch (e) {
       print('Error updating task status: $e');
+      errorMessage.value = 'An error occurred. Please try again.';
+      isUpdatingStatus.value = false;
+      return false;
+    }
+  }
+
+  // Update task status for personal tasks
+  Future<bool> updatePersonalTaskStatus(String taskId, String status) async {
+    isUpdatingStatus.value = true;
+    errorMessage.value = '';
+
+    try {
+      final token = await SecureStorageService.instance.getAccessToken();
+
+      if (token == null) {
+        errorMessage.value = 'No access token found';
+        print('No access token found');
+        isUpdatingStatus.value = false;
+        return false;
+      }
+
+      final Map<String, dynamic> requestBody = {
+        "status": status,
+      };
+
+      print('📤 Updating personal task status to: $status');
+      print('📤 Request body: $requestBody');
+
+      final response = await _networkCaller.putRequest(
+        AppUrl.ugcPersonalTaskStatusUpdate(taskId),
+        body: requestBody,
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      print('📡 Response status code: ${response.statusCode}');
+      print('📡 Response success: ${response.isSuccess}');
+      print('📡 Response body: ${response.jsonResponse}');
+
+      if (response.isSuccess || response.statusCode == 200) {
+        await fetchTaskDetails(taskId);
+        isUpdatingStatus.value = false;
+        return true;
+      } else {
+        String error = response.errorMessage ?? 'Failed to update task status';
+        if (response.jsonResponse != null) {
+          error = response.jsonResponse?['message'] ?? error;
+        }
+        errorMessage.value = error;
+        isUpdatingStatus.value = false;
+        return false;
+      }
+    } catch (e) {
+      print('Error updating personal task status: $e');
       errorMessage.value = 'An error occurred. Please try again.';
       isUpdatingStatus.value = false;
       return false;
@@ -312,3 +366,4 @@ class UgcTaskDetailsController extends GetxController {
     return '${AppUrl.imageBaseUrl}/$cleanPath';
   }
 }
+
