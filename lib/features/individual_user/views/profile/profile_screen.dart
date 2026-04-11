@@ -1,32 +1,34 @@
-import 'package:askfemi/auth/sign_in/singn_in_screen.dart';
-import 'package:askfemi/features/individual_user/views/subscription/subscription_screen.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import '../../../../screens/notification/notification_style_screen.dart';
-import '../../../../screens/personal_information/personal_Infromation_screen_controller.dart';
-import '../../../../screens/personal_information/personal_profile_info_screen.dart';
-import '../../../../screens/settings/settings_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import '../../../../utils/app_colors.dart';
-import '../../../../utils/app_texts_style.dart';
-import '../../../../utils/network/secure_storage_service.dart';
 import '../../../../utils/temp/cache.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../../../../utils/app_texts_style.dart';
+import 'package:askfemi/auth/sign_in/singn_in_screen.dart';
+import '../../../../screens/settings/settings_screen.dart';
+import '../../../../utils/network/secure_storage_service.dart';
 import '../choose_support_mode/choose_support_mode_screen.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../../../../screens/notification/notification_style_screen.dart';
+import '../../../../screens/personal_information/personal_profile_info_screen.dart';
+import '../../../../screens/personal_information/personal_Infromation_screen_controller.dart';
+import 'package:askfemi/features/individual_user/views/subscription/subscription_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final PersonalInformationController controller = Get.isRegistered<PersonalInformationController>()
+    final PersonalInformationController controller =
+        Get.isRegistered<PersonalInformationController>()
         ? Get.find<PersonalInformationController>()
         : Get.put(PersonalInformationController());
 
     // Trigger background refresh when screen is shown
     WidgetsBinding.instance.addPostFrameCallback((_) {
       controller.backgroundRefresh();
+      controller.fetchPreferredTime(); // Fetch preferred time
     });
 
     return SafeArea(
@@ -35,9 +37,7 @@ class ProfileScreen extends StatelessWidget {
         body: Obx(() {
           // Show loading only on first load with no data
           if (controller.isLoading.value && controller.userName.value.isEmpty) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           return SingleChildScrollView(
@@ -104,12 +104,16 @@ class ProfileScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                controller.userName.value.isEmpty ? 'User' : controller.userName.value,
+                                controller.userName.value.isEmpty
+                                    ? 'User'
+                                    : controller.userName.value,
                                 style: AppTextStyles.largeHeading,
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                controller.userEmail.value.isEmpty ? 'Not specified' : controller.userEmail.value,
+                                controller.userEmail.value.isEmpty
+                                    ? 'Not specified'
+                                    : controller.userEmail.value,
                                 style: AppTextStyles.smallText.copyWith(
                                   color: AppColors.black,
                                 ),
@@ -171,34 +175,51 @@ class ProfileScreen extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 16),
-                          // Time Picker Field
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 14,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.backgroundColor,
-                              border: Border.all(color: AppColors.grey, width: 1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: const [
-                                Text(
-                                  '07 : 00 AM',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Color(0xFF1A1A1A),
-                                    fontWeight: FontWeight.w500,
+                          // Time Picker Field - Now showing actual preferred time
+                          Obx(
+                            () => Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.backgroundColor,
+                                border: Border.all(
+                                  color: AppColors.grey,
+                                  width: 1,
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    controller.isLoadingPreferredTime.value
+                                        ? 'Loading...'
+                                        : (controller
+                                                  .preferredTime
+                                                  .value
+                                                  .isEmpty
+                                              ? 'Not set'
+                                              : _formatTo12HourFormat(
+                                                  controller
+                                                      .preferredTime
+                                                      .value,
+                                                )),
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: Color(0xFF1A1A1A),
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
-                                ),
-                                Icon(
-                                  Icons.access_time_outlined,
-                                  color: AppColors.iconColor,
-                                  size: 20,
-                                ),
-                              ],
+                                  const Icon(
+                                    Icons.access_time_outlined,
+                                    color: AppColors.iconColor,
+                                    size: 20,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],
@@ -247,6 +268,7 @@ class ProfileScreen extends StatelessWidget {
                             },
                           ),
                           _buildDivider(),
+
                           ///----------------
                           /// Support Mode
                           /// ---------------
@@ -255,7 +277,10 @@ class ProfileScreen extends StatelessWidget {
                             iconColor: AppColors.iconColor,
                             title: 'Support Mode',
                             onTap: () {
-                              Get.to(() => ChooseSupportModeScreen(fromProfile: true));
+                              Get.to(
+                                () =>
+                                    ChooseSupportModeScreen(fromProfile: true),
+                              );
                             },
                           ),
                           _buildDivider(),
@@ -302,21 +327,39 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  // Helper method to convert 24-hour format to 12-hour format
+  String _formatTo12HourFormat(String time24) {
+    if (time24.isEmpty) return 'Not set';
+
+    try {
+      final parts = time24.split(':');
+      if (parts.length != 2) return time24;
+
+      int hour = int.parse(parts[0]);
+      int minute = int.parse(parts[1]);
+
+      final period = hour >= 12 ? 'PM' : 'AM';
+      int hour12 = hour % 12;
+      if (hour12 == 0) hour12 = 12;
+
+      final minuteStr = minute.toString().padLeft(2, '0');
+      return '$hour12:$minuteStr $period';
+    } catch (e) {
+      return time24;
+    }
+  }
+
   Widget _buildProfileImage(PersonalInformationController controller) {
     final imageUrl = controller.userProfileImage.value;
-    final hasTemp = controller.hasImageChanges.value &&
+    final hasTemp =
+        controller.hasImageChanges.value &&
         controller.tempProfileImageFile.value != null;
 
     // 1. Local image (after picking from gallery/camera)
     if (hasTemp && controller.tempProfileImageFile.value != null) {
       final file = controller.tempProfileImageFile.value!;
       if (file.existsSync()) {
-        return Image.file(
-          file,
-          width: 80,
-          height: 80,
-          fit: BoxFit.cover,
-        );
+        return Image.file(file, width: 80, height: 80, fit: BoxFit.cover);
       }
     }
 
@@ -345,7 +388,10 @@ class ProfileScreen extends StatelessWidget {
     return const Icon(Icons.person, size: 40, color: Colors.grey);
   }
 
-  void _showLogoutDialog(BuildContext context, PersonalInformationController controller) {
+  void _showLogoutDialog(
+    BuildContext context,
+    PersonalInformationController controller,
+  ) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -386,7 +432,7 @@ class ProfileScreen extends StatelessWidget {
               onPressed: () async {
                 await SecureStorageService.instance.clearAll();
                 await CacheService.clearCache();
-                Get.offAll(() =>  SignInScreen());
+                Get.offAll(() => SignInScreen());
               },
               child: Text(
                 "Logout",
@@ -510,7 +556,11 @@ class ProfileScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // Diamond Icon
-            const Icon(Icons.diamond_outlined, color: Color(0xFFFFB74D), size: 30),
+            const Icon(
+              Icons.diamond_outlined,
+              color: Color(0xFFFFB74D),
+              size: 30,
+            ),
             const SizedBox(width: 12),
             // Title & Subtitle
             Expanded(
@@ -531,18 +581,26 @@ class ProfileScreen extends StatelessWidget {
                     children: [
                       const Text(
                         'Renewal date: 10/06/25',
-                        style: TextStyle(fontSize: 12, color: Color(0xFF8E8E8E)),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF8E8E8E),
+                        ),
                       ),
                       // Active Tag
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.green,
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
                           'Active',
-                          style: AppTextStyles.smallText.copyWith(color: AppColors.white),
+                          style: AppTextStyles.smallText.copyWith(
+                            color: AppColors.white,
+                          ),
                         ),
                       ),
                     ],

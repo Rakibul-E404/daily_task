@@ -1,6 +1,4 @@
-import 'dart:io';
 import 'package:askfemi/auth/sign_in/singn_in_screen.dart';
-import 'package:askfemi/features/individual_user/views/subscription/subscription_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -12,13 +10,34 @@ import '../../../../screens/personal_information/personal_profile_info_screen.da
 import '../../../../screens/settings/settings_screen.dart';
 import '../../../../utils/app_colors.dart';
 import '../../../../utils/app_texts_style.dart';
-import '../../../../utils/network/app_url.dart';
 import '../../../../utils/network/secure_storage_service.dart';
 import '../../../../utils/temp/cache.dart';
 import '../../../individual_user/views/choose_support_mode/choose_support_mode_screen.dart';
 
 class UgcProfileScreen extends StatelessWidget {
   const UgcProfileScreen({super.key});
+
+  // Helper method to convert 24-hour format to 12-hour format
+  String _formatTo12HourFormat(String time24) {
+    if (time24.isEmpty) return 'Not set';
+
+    try {
+      final parts = time24.split(':');
+      if (parts.length != 2) return time24;
+
+      int hour = int.parse(parts[0]);
+      int minute = int.parse(parts[1]);
+
+      final period = hour >= 12 ? 'PM' : 'AM';
+      int hour12 = hour % 12;
+      if (hour12 == 0) hour12 = 12;
+
+      final minuteStr = minute.toString().padLeft(2, '0');
+      return '$hour12:$minuteStr $period';
+    } catch (e) {
+      return time24;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +48,7 @@ class UgcProfileScreen extends StatelessWidget {
     // Trigger background refresh when screen is shown (no indicator)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       controller.backgroundRefresh();
+      controller.fetchPreferredTime(); // Fetch preferred time
     });
 
     return SafeArea(
@@ -67,7 +87,7 @@ class UgcProfileScreen extends StatelessWidget {
                         ),
                         child: Row(
                           children: [
-                            // ✅ FIXED: Profile Image with proper cached image support + URL trimming
+                            // Profile Image with proper cached image support + URL trimming
                             Stack(
                               children: [
                                 Container(
@@ -138,7 +158,7 @@ class UgcProfileScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
 
-                      // Preferred Time Card
+                      // Preferred Time Card - Updated with dynamic time
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
@@ -200,16 +220,20 @@ class UgcProfileScreen extends StatelessWidget {
                               ),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: const [
-                                  Text(
-                                    '07 : 00 AM',
-                                    style: TextStyle(
+                                children: [
+                                  Obx(() => Text(
+                                    controller.isLoadingPreferredTime.value
+                                        ? 'Loading...'
+                                        : (controller.preferredTime.value.isEmpty
+                                        ? 'Not set'
+                                        : _formatTo12HourFormat(controller.preferredTime.value)),
+                                    style: const TextStyle(
                                       fontSize: 16,
                                       color: Color(0xFF1A1A1A),
                                       fontWeight: FontWeight.w500,
                                     ),
-                                  ),
-                                  Icon(
+                                  )),
+                                  const Icon(
                                     Icons.access_time_outlined,
                                     color: Color(0xFF999999),
                                     size: 20,
@@ -305,7 +329,7 @@ class UgcProfileScreen extends StatelessWidget {
     final hasTemp = controller.hasImageChanges.value &&
         controller.tempProfileImageFile.value != null;
 
-    // ✅ 1. Local image (after picking)
+    // 1. Local image (after picking)
     if (hasTemp && controller.tempProfileImageFile.value != null) {
       final file = controller.tempProfileImageFile.value!;
       if (file.existsSync()) {
@@ -318,7 +342,7 @@ class UgcProfileScreen extends StatelessWidget {
       }
     }
 
-    // ✅ 2. Cached network image
+    // 2. Cached network image
     if (imageUrl.isNotEmpty) {
       return CachedNetworkImage(
         imageUrl: imageUrl,
@@ -326,7 +350,6 @@ class UgcProfileScreen extends StatelessWidget {
         height: 80,
         fit: BoxFit.cover,
         cacheKey: imageUrl,
-
         placeholder: (context, url) => const Center(
           child: SizedBox(
             width: 20,
@@ -334,7 +357,6 @@ class UgcProfileScreen extends StatelessWidget {
             child: CircularProgressIndicator(strokeWidth: 2),
           ),
         ),
-
         errorWidget: (context, url, error) {
           print('❌ Image error: $error');
           print('❌ URL: $url');
@@ -343,11 +365,9 @@ class UgcProfileScreen extends StatelessWidget {
       );
     }
 
-    // ✅ 3. Default fallback
+    // 3. Default fallback
     return const Icon(Icons.person, size: 40, color: Colors.grey);
   }
-
-
 
   void _showLogoutDialog(BuildContext context, PersonalInformationController controller) {
     showDialog(

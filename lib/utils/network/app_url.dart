@@ -19,6 +19,7 @@ class AppUrl {
   static const String getNotification = '$baseUrl/activitys/my';
   static const String getNotificationStyle = '$baseUrl/users/notification-style';
   static const String updateNotificationStyle = '$baseUrl/users/notification-style';
+  static const String getPreferredTime = '$baseUrl/users/preferred-time';
 
   static String getPrivacyPolicyTermsConditionsAboutUs(String type) {
     return '$baseUrl/settings?type=$type';

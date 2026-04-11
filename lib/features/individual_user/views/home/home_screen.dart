@@ -1,52 +1,134 @@
 import 'package:askfemi/features/individual_user/views/home/task_details/model/sub_task_model.dart';
 import 'package:askfemi/features/individual_user/views/home/task_details/model/task_model.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/src/extension_navigation.dart';
-import 'package:get/get_navigation/src/routes/transitions_type.dart';
+import 'package:get/get.dart';
 import '../../../../screens/notification/notification_screen.dart';
+import '../../../../screens/personal_information/personal_Infromation_screen_controller.dart';
 import '../../../../utils/app_colors.dart';
 import '../../../../utils/app_texts_style.dart';
 import '../../widget/build_task_card.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          /// Collapsible App Bar
-          _buildSliverAppBar(),
+  State<HomeScreen> createState() => _HomeScreenState();
+}
 
-          /// Daily Progress Section
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-              child: _buildDailyProgress(),
-            ),
-          ),
+class _HomeScreenState extends State<HomeScreen> {
+  late final PersonalInformationController profileController;
 
-          /// Pinned Tasks Header
-          _buildPinnedTasksHeader(),
+  double _pullDistance = 0;
+  bool _isRefreshing = false;
+  bool _hasTriggered = false;
+  final double _refreshThreshold = 60.0;
 
-          /// Tasks List
-          _buildTasksList(context),
-
-          /// Bottom Padding
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 16),
-          ),
-        ],
-      ),
-    );
+  @override
+  void initState() {
+    super.initState();
+    // This will load from cache first, then fetch from API in background
+    profileController = Get.isRegistered<PersonalInformationController>()
+        ? Get.find<PersonalInformationController>()
+        : Get.put(PersonalInformationController());
   }
 
-  Widget _buildSliverAppBar() {
+  @override
+  void dispose() {
+    // Don't delete the controller as it might be used elsewhere
+    super.dispose();
+  }
+
+  Future<void> _performSilentRefresh() async {
+    if (_isRefreshing) return;
+
+    _isRefreshing = true;
+
+    // This refreshes data in background (same as UgcHomeScreen)
+    await profileController.backgroundRefresh();
+
+    _isRefreshing = false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      // Show loading only on first load with no data
+      if (profileController.isLoading.value && profileController.userName.value.isEmpty) {
+        return const Scaffold(
+          backgroundColor: AppColors.backgroundColor,
+          body: Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+      }
+
+      return Scaffold(
+        backgroundColor: AppColors.backgroundColor,
+        body: NotificationListener<ScrollNotification>(
+          onNotification: (notification) {
+            if (notification is ScrollStartNotification) {
+              _pullDistance = 0;
+              _hasTriggered = false;
+            }
+
+            if (notification is ScrollUpdateNotification) {
+              if (notification.metrics.pixels <= 0 &&
+                  notification.metrics.extentBefore == 0) {
+                final pullOffset = notification.metrics.pixels.abs();
+                _pullDistance = pullOffset;
+
+                if (_pullDistance >= _refreshThreshold &&
+                    !_hasTriggered &&
+                    !_isRefreshing) {
+                  _hasTriggered = true;
+                  _performSilentRefresh();
+                }
+              }
+            }
+
+            if (notification is ScrollEndNotification) {
+              _pullDistance = 0;
+              _hasTriggered = false;
+            }
+
+            return false;
+          },
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics(),
+            ),
+            slivers: [
+              /// Collapsible App Bar with Profile Info (cached data shows instantly)
+              _buildSliverAppBar(profileController),
+
+              /// Daily Progress Section
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                  child: _buildDailyProgress(),
+                ),
+              ),
+
+              /// Pinned Tasks Header
+              _buildPinnedTasksHeader(),
+
+              /// Tasks List
+              _buildTasksList(context),
+
+              /// Bottom Padding
+              const SliverToBoxAdapter(
+                child: SizedBox(height: 16),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _buildSliverAppBar(PersonalInformationController profileController) {
     return SliverAppBar(
       expandedHeight: 80,
       floating: false,
@@ -57,7 +139,7 @@ class HomeScreen extends StatelessWidget {
       elevation: 0,
       automaticallyImplyLeading: false,
       flexibleSpace: FlexibleSpaceBar(
-        titlePadding: const EdgeInsets.only(left: 16, bottom: 16 ),
+        titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
         background: Container(
           color: AppColors.backgroundColor,
         ),
@@ -66,10 +148,37 @@ class HomeScreen extends StatelessWidget {
           children: [
             Row(
               children: [
-                const CircleAvatar(
-                  radius: 20,
-                  foregroundImage: AssetImage(
-                    "assets/images/dummy_user_image.png",
+                // Profile Image with CachedNetworkImage
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.primaryColor.withOpacity(0.1),
+                  ),
+                  child: profileController.userProfileImage.value.isNotEmpty &&
+                      profileController.userProfileImage.value.startsWith('http')
+                      ? ClipOval(
+                    child: CachedNetworkImage(
+                      imageUrl: profileController.userProfileImage.value,
+                      width: 40,
+                      height: 40,
+                      fit: BoxFit.cover,
+                      cacheKey: profileController.userProfileImage.value,
+                      placeholder: (context, url) => const Center(
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                      errorWidget: (context, url, error) => Icon(
+                        Icons.person,
+                        size: 24,
+                        color: AppColors.primaryColor,
+                      ),
+                    ),
+                  )
+                      : Icon(
+                    Icons.person,
+                    size: 24,
+                    color: AppColors.primaryColor,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -82,9 +191,9 @@ class HomeScreen extends StatelessWidget {
                       style: AppTextStyles.smallText,
                     ),
                     Text(
-                      'Rakibul',
+                      profileController.userName.value.isEmpty ? 'User' : profileController.userName.value,
                       style: AppTextStyles.defaultTextStyle.copyWith(
-                          fontWeight: FontWeight.bold
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
@@ -94,7 +203,7 @@ class HomeScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(right: 10.0, bottom: 8),
               child: InkWell(
-                onTap: ()=> Get.to(()=>NotificationScreen(),transition: Transition.fadeIn),
+                onTap: () => Get.to(() => const NotificationScreen(), transition: Transition.fadeIn),
                 child: SvgPicture.asset(
                   "assets/icons/notification_rounded.svg",
                   fit: BoxFit.fitHeight,
@@ -244,7 +353,7 @@ class HomeScreen extends StatelessWidget {
               Text(
                 'No tasks yet',
                 style: AppTextStyles.defaultTextStyle.copyWith(
-                  fontSize: 30
+                  fontSize: 30,
                 ),
               ),
               const SizedBox(height: 8),
@@ -263,23 +372,18 @@ class HomeScreen extends StatelessWidget {
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
               (context, index) {
-
-
             final taskIndex = index ~/ 2;
             return Column(
               children: [
                 AnimatedOpacity(
                   opacity: 1.0,
                   duration: Duration(milliseconds: 300 + (taskIndex * 100)),
-                  ///----------------------
-                  ///- Task Card
-                  ///----------------------
                   child: buildTaskCard(
                     context: context,
                     task: tasks[taskIndex],
                   ),
                 ),
-                SizedBox(height: 16,)
+                const SizedBox(height: 16),
               ],
             );
           },

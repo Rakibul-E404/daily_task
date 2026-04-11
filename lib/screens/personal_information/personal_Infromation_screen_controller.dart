@@ -35,9 +35,17 @@ class PersonalInformationController extends GetxController {
   var userProfileImage = ''.obs;
   var isAccountSecondary = false.obs;
 
+  // Preferred Time
+  var preferredTime = ''.obs;
+  var isLoadingPreferredTime = false.obs;
+
   // Temporary image file for preview before upload
   var tempProfileImageFile = Rx<File?>(null);
   var hasImageChanges = false.obs;
+
+  // Allowed MIME types and extensions
+  final List<String> _allowedExtensions = ['jpg', 'jpeg', 'png'];
+  final List<String> _allowedMimeTypes = ['image/jpeg', 'image/png', 'image/jpg'];
 
   @override
   void onInit() {
@@ -48,10 +56,15 @@ class PersonalInformationController extends GetxController {
   Future<void> _initializeData() async {
     final hasCache = _loadFromCache();
 
+    // Load cached preferred time
+    await loadCachedPreferredTime();
+
     if (!hasCache) {
       await fetchPersonalInformation(showLoading: true);
+      await fetchPreferredTime();
     } else {
       await fetchPersonalInformation(background: true);
+      await fetchPreferredTime();
     }
   }
 
@@ -79,6 +92,128 @@ class PersonalInformationController extends GetxController {
       print('Error loading cache: $e');
       return false;
     }
+  }
+
+  // Validate image file by extension and MIME type
+  Future<bool> _isValidImageFile(File file) async {
+    // Check file extension
+    final extension = file.path.split('.').last.toLowerCase();
+    if (!_allowedExtensions.contains(extension)) {
+      return false;
+    }
+
+    // Try to read file header to determine MIME type
+    try {
+      final List<int> fileHeader = await file.readAsBytes().then((bytes) => bytes.sublist(0, bytes.length > 12 ? 12 : bytes.length));
+
+      // Check PNG signature
+      if (fileHeader.length >= 8 &&
+          fileHeader[0] == 0x89 &&
+          fileHeader[1] == 0x50 &&
+          fileHeader[2] == 0x4E &&
+          fileHeader[3] == 0x47 &&
+          fileHeader[4] == 0x0D &&
+          fileHeader[5] == 0x0A &&
+          fileHeader[6] == 0x1A &&
+          fileHeader[7] == 0x0A) {
+        return true; // PNG
+      }
+
+      // Check JPEG signature (SOI marker)
+      if (fileHeader.length >= 2 && fileHeader[0] == 0xFF && fileHeader[1] == 0xD8) {
+        return true; // JPEG
+      }
+
+      return false;
+    } catch (e) {
+      print('Error reading file header: $e');
+      return false;
+    }
+  }
+
+  // Show error dialog for invalid image type
+  void _showInvalidImageTypeAlert() {
+    Get.dialog(
+      AlertDialog(
+        backgroundColor: AppColors.white,
+        title: Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
+            const SizedBox(width: 8),
+            const Text(
+              'Invalid Image Format',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 8),
+            const Text(
+              'Please select a valid image file.',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Supported formats:',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    children: _allowedExtensions.map((ext) {
+                      return Chip(
+                        label: Text(ext.toUpperCase()),
+                        backgroundColor: AppColors.primaryColor.withOpacity(0.1),
+                        side: BorderSide.none,
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.primaryColor,
+            ),
+            child: const Text(
+              'OK',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      barrierDismissible: true,
+    );
   }
 
   String _getUserFriendlyErrorMessage(dynamic error, {int? statusCode}) {
@@ -244,6 +379,59 @@ class PersonalInformationController extends GetxController {
     }
   }
 
+  // Fetch Preferred Time from API
+  Future<void> fetchPreferredTime() async {
+    isLoadingPreferredTime.value = true;
+
+    try {
+      final token = await SecureStorageService.instance.getAccessToken();
+
+      if (token == null) {
+        print('No access token found for preferred time');
+        isLoadingPreferredTime.value = false;
+        return;
+      }
+
+      print('🌐 Making API request to: ${AppUrl.getPreferredTime}');
+
+      final response = await _networkCaller.getRequest(
+        AppUrl.getPreferredTime,
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      print('📡 Response status code: ${response.statusCode}');
+      print('📡 Response success: ${response.isSuccess}');
+
+      if (response.isSuccess && response.jsonResponse != null) {
+        final attributes = response.jsonResponse?['data']?['attributes'];
+        final preferredTimeValue = attributes?['preferredTime'] ?? '';
+
+        preferredTime.value = preferredTimeValue;
+        print('✅ Preferred time fetched: $preferredTimeValue');
+
+        // Cache the preferred time
+        await CacheService.savePreferredTime(preferredTimeValue);
+      } else {
+        print('❌ Failed to fetch preferred time: ${response.errorMessage}');
+        preferredTime.value = '';
+      }
+    } catch (e) {
+      print('Error fetching preferred time: $e');
+      preferredTime.value = '';
+    } finally {
+      isLoadingPreferredTime.value = false;
+    }
+  }
+
+  // Load cached preferred time
+  Future<void> loadCachedPreferredTime() async {
+    final cachedTime = await CacheService.getPreferredTime();
+    if (cachedTime != null && cachedTime.isNotEmpty) {
+      preferredTime.value = cachedTime;
+      print('📦 Loaded preferred time from cache: $cachedTime');
+    }
+  }
+
   Future<void> refreshData() async {
     print('🔄 Manual refresh triggered');
     isRefreshing.value = true;
@@ -316,6 +504,10 @@ class PersonalInformationController extends GetxController {
           errorMessage.value = response.errorMessage ?? 'Failed to refresh';
         }
       }
+
+      // Also refresh preferred time
+      await fetchPreferredTime();
+
     } on SocketException catch (e) {
       print('SocketException during refresh: $e');
       isNetworkError.value = true;
@@ -334,6 +526,7 @@ class PersonalInformationController extends GetxController {
     isServerError.value = false;
     errorMessage.value = '';
     await fetchPersonalInformation(showLoading: true);
+    await fetchPreferredTime();
   }
 
   Future<void> forceRefresh() async {
@@ -341,6 +534,7 @@ class PersonalInformationController extends GetxController {
     resetImageChanges();
     await CacheService.clearCache();
     await fetchPersonalInformation(showLoading: true);
+    await fetchPreferredTime();
 
     userName.refresh();
     userEmail.refresh();
@@ -351,15 +545,16 @@ class PersonalInformationController extends GetxController {
     userAge.refresh();
     userProfileImage.refresh();
     isAccountSecondary.refresh();
-
+    preferredTime.refresh();
   }
 
   Future<void> backgroundRefresh() async {
     print('🔄 Background refresh');
     await fetchPersonalInformation(background: true);
+    await fetchPreferredTime();
   }
 
-  // ==================== IMAGE PICKER (No auto-upload) ====================
+  // ==================== IMAGE PICKER WITH MIME TYPE VALIDATION ====================
 
   Future<void> pickImageFromGallery() async {
     try {
@@ -369,7 +564,16 @@ class PersonalInformationController extends GetxController {
       );
 
       if (image != null) {
-        tempProfileImageFile.value = File(image.path);
+        final file = File(image.path);
+
+        // Validate image type
+        final isValid = await _isValidImageFile(file);
+        if (!isValid) {
+          _showInvalidImageTypeAlert();
+          return;
+        }
+
+        tempProfileImageFile.value = file;
         hasImageChanges.value = true;
       }
     } catch (e) {
@@ -392,7 +596,16 @@ class PersonalInformationController extends GetxController {
       );
 
       if (image != null) {
-        tempProfileImageFile.value = File(image.path);
+        final file = File(image.path);
+
+        // Validate image type
+        final isValid = await _isValidImageFile(file);
+        if (!isValid) {
+          _showInvalidImageTypeAlert();
+          return;
+        }
+
+        tempProfileImageFile.value = file;
         hasImageChanges.value = true;
       }
     } catch (e) {
@@ -407,13 +620,6 @@ class PersonalInformationController extends GetxController {
     }
   }
 
-
-
-
-
-
-
-
   // Upload image when update profile is called
   Future<String?> uploadProfileImageIfChanged() async {
     if (hasImageChanges.value && tempProfileImageFile.value != null) {
@@ -425,12 +631,30 @@ class PersonalInformationController extends GetxController {
         if (imageUrl != null) {
           final cleanedUrl = _getImageUrl(imageUrl);
 
-          // 🔥 Clear old cache
+          // Clear old cached image
+          if (userProfileImage.value.isNotEmpty) {
+            await CachedNetworkImage.evictFromCache(userProfileImage.value);
+          }
+
+          // Clear cache for new image
           await CachedNetworkImage.evictFromCache(cleanedUrl);
 
           userProfileImage.value = cleanedUrl;
           tempProfileImageFile.value = null;
           hasImageChanges.value = false;
+
+          // Update cache with new image URL
+          await CacheService.saveUserProfile({
+            'name': userName.value,
+            'email': userEmail.value,
+            'phoneNumber': userPhoneNumber.value,
+            'address': userAddress.value,
+            'gender': userGender.value,
+            'dateOfBirth': userDateOfBirth.value,
+            'age': userAge.value,
+            'profileImage': cleanedUrl,
+            'isAccountSecondary': isAccountSecondary.value,
+          });
 
           return cleanedUrl;
         }
@@ -470,6 +694,28 @@ class PersonalInformationController extends GetxController {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.primaryColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.info_outline, size: 16, color: AppColors.primaryColor),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Supported formats: ${_allowedExtensions.join(', ').toUpperCase()}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.primaryColor,
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 20),
@@ -609,6 +855,3 @@ class PersonalInformationController extends GetxController {
     }
   }
 }
-
-
-
