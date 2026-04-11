@@ -3,11 +3,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
-import '../../../../screens/notification/notification_screen.dart';
-import '../../../../screens/personal_information/personal_Infromation_screen_controller.dart';
-import '../../../../utils/app_colors.dart';
-import '../../../../utils/app_texts_style.dart';
-import '../../widget/build_task_card.dart';
+import '../../../../../screens/notification/notification_screen.dart';
+import '../../../../../screens/personal_information/personal_Infromation_screen_controller.dart';
+import '../../../../../utils/app_colors.dart';
+import '../../../../../utils/app_texts_style.dart';
+import '../../../widget/build_task_card.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -29,12 +29,10 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize Profile Controller
     profileController = Get.isRegistered<PersonalInformationController>()
         ? Get.find<PersonalInformationController>()
         : Get.put(PersonalInformationController());
 
-    // Initialize Task Controller
     taskController = Get.isRegistered<TaskController>()
         ? Get.find<TaskController>()
         : Get.put(TaskController());
@@ -113,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
               parent: AlwaysScrollableScrollPhysics(),
             ),
             slivers: [
-              /// Collapsible App Bar with Profile Info (cached data shows instantly)
+              /// Collapsible App Bar with Profile Info
               _buildSliverAppBar(profileController),
 
               /// Daily Progress Section
@@ -264,10 +262,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     fontFamily: 'Plus Jakarta Sans',
                   ),
                 ),
-                Chip(
+                Obx(() => Chip(
                   padding: const EdgeInsets.only(left: 5, right: 5),
                   label: Text(
-                    '${taskController.completedTasks.value} / ${taskController.totalTasks.value}',
+                    '${taskController.completedTasks} / ${taskController.totalTasks}',
                     style: TextStyle(
                       color: AppColors.black,
                       fontSize: 12,
@@ -280,14 +278,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     borderRadius: BorderRadius.circular(4),
                   ),
                   side: const BorderSide(width: 0, color: Colors.transparent),
-                ),
+                )),
               ],
             ),
             const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
-                  child: LinearProgressIndicator(
+                  child: Obx(() => LinearProgressIndicator(
                     value: taskController.totalTasks.value > 0
                         ? taskController.completedTasks.value / taskController.totalTasks.value
                         : 0,
@@ -297,20 +295,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     borderRadius: BorderRadius.circular(2),
                     minHeight: 12,
-                  ),
+                  )),
                 ),
                 const SizedBox(width: 12),
               ],
             ),
             const SizedBox(height: 8),
-            Text(
+            Obx(() => Text(
               '${taskController.getActiveTasksCount()} tasks remaining. You\'ve got this!',
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey[600],
                 fontFamily: 'Plus Jakarta Sans',
               ),
-            ),
+            )),
           ],
         ),
       ),
@@ -338,9 +336,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: Colors.black87,
                 ),
               ),
-              Chip(
+              Obx(() => Chip(
                 label: Text(
-                  '${taskController.getActiveTasksCount()} / ${taskController.totalTasks.value} active',
+                  '${taskController.getActiveTasksCount()} / ${taskController.totalTasks} active',
                   style: TextStyle(
                     color: AppColors.black,
                     fontSize: 12,
@@ -352,7 +350,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(4),
                 ),
                 side: const BorderSide(width: 0, color: Colors.transparent),
-              ),
+              )),
             ],
           ),
         ),
@@ -370,7 +368,7 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SvgPicture.asset(
-                'assets/images/empty_task.svg',
+                'assets/images/app_open_home_screen_image.svg',
                 height: 200,
               ),
               const SizedBox(height: 24),
@@ -409,8 +407,8 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SvgPicture.asset(
-                'assets/images/app_open_home_screen_image.svg',
-                height: 300,
+                'assets/images/empty_task.svg',
+                height: 200,
               ),
               const SizedBox(height: 24),
               Text(

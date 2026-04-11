@@ -1,3 +1,4 @@
+/**
 import 'package:askfemi/utils/app_texts_style.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -259,7 +260,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             isCompleted: false,
             duration: '1 hour',
           ),
-        ],
+        ], id: '',
       ),
       Task(
         title: 'Write Weekly Report',
@@ -287,7 +288,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             isCompleted: true,
             duration: '1 hour',
           ),
-        ],
+        ], id: '',
       ),
       Task(
         title: 'Complete Math Homework',
@@ -325,7 +326,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             isCompleted: true,
             duration: '10 min',
           ),
-        ],
+        ], id: '',
       ),
       Task(
         title: 'Prepare Presentation',
@@ -368,7 +369,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             isCompleted: false,
             duration: '15 min',
           ),
-        ],
+        ], id: '',
       ),
       Task(
         title: 'Team Meeting',
@@ -380,7 +381,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         completedTime: DateTime(2026, 1, 30, 16, 15),
         totalSubtasks: 0,
         completedSubtasks: 0,
-        subtasks: const [],
+        subtasks: const [], id: '',
       ),
       Task(
         title: 'Code Review',
@@ -408,7 +409,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             isCompleted: true,
             duration: '25 min',
           ),
-        ],
+        ], id: '',
       ),
       Task(
         title: 'Write Documentation',
@@ -441,7 +442,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             isCompleted: false,
             duration: '30 min',
           ),
-        ],
+        ], id: '',
       ),
       Task(
         title: 'Client Call',
@@ -453,8 +454,293 @@ class _HistoryScreenState extends State<HistoryScreen> {
         completedTime: DateTime(2026, 1, 30, 13, 45),
         totalSubtasks: 0,
         completedSubtasks: 0,
-        subtasks: const [],
+        subtasks: const [], id: '',
       ),
     ];
+  }
+}*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import 'package:askfemi/utils/app_texts_style.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+import '../../../../screens/widget/history_calender_widget.dart';
+import '../../../../utils/app_colors.dart';
+import '../../widget/build_task_card.dart';
+import '../home/task_details/model/task_model.dart';
+import 'history_screen_controller.dart';
+
+class HistoryScreen extends StatefulWidget {
+  final TaskStatus? filterStatus;
+
+  const HistoryScreen({super.key, this.filterStatus});
+
+  @override
+  State<HistoryScreen> createState() => _HistoryScreenState();
+}
+
+class _HistoryScreenState extends State<HistoryScreen> {
+  late final HistoryController historyController;
+  bool _showCalendar = false;
+
+  @override
+  void initState() {
+    super.initState();
+    historyController = Get.isRegistered<HistoryController>()
+        ? Get.find<HistoryController>()
+        : Get.put(HistoryController());
+
+    // Apply filter status if provided
+    if (widget.filterStatus != null) {
+      historyController.selectedStatus.value = widget.filterStatus;
+    }
+  }
+
+  void _handleDateSelection(DateTime fromDate, DateTime toDate) {
+    historyController.applyFilters(
+      status: historyController.selectedStatus.value,
+      fromDate: fromDate,
+      toDate: toDate,
+    );
+    setState(() {
+      _showCalendar = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.backgroundColor,
+      appBar: AppBar(
+        backgroundColor: AppColors.backgroundColor,
+        elevation: 0,
+        surfaceTintColor: Colors.white,
+        automaticallyImplyLeading: false,
+        title:  Text(
+          'Task History',
+          style: AppTextStyles.largeHeading,
+        ),
+        actions: [
+          // Current Date Text Button (shows today's date)
+          TextButton(
+            onPressed: () => historyController.resetToCurrentDate(),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Text(
+              DateFormat('dd MMM yyyy').format(DateTime.now()),
+              style: TextStyle(
+                fontSize: 14,
+                fontFamily: 'Plus Jakarta Sans',
+                color: AppColors.primaryColor,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          // Calendar Icon Button
+          IconButton(
+            onPressed: () {
+              setState(() {
+                _showCalendar = !_showCalendar;
+              });
+            },
+            icon: const Icon(CupertinoIcons.calendar_today),
+          ),
+        ],
+      ),
+      body: Obx(() {
+        // Show loading only on first load with no data
+        if (historyController.isLoading.value && historyController.tasks.isEmpty) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        return Padding(
+          padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Show selected date range
+              if (historyController.selectedFromDate.value != null &&
+                  historyController.selectedToDate.value != null &&
+                  !_showCalendar)
+                _buildDateRangeIndicator(),
+
+              const SizedBox(height: 16),
+
+              // Show calendar if toggled
+              if (_showCalendar)
+                HistoryCalendarWidget(
+                  initialFromDate: historyController.selectedFromDate.value,
+                  initialToDate: historyController.selectedToDate.value,
+                  onDateSelected: _handleDateSelection,
+                  onClose: () {
+                    setState(() {
+                      _showCalendar = false;
+                    });
+                  },
+                ),
+
+              // Task list (hidden when calendar is shown)
+              if (!_showCalendar)
+                Expanded(child: _buildTaskList()),
+            ],
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildDateRangeIndicator() {
+    final format = DateFormat('dd MMM');
+    final fromDate = historyController.selectedFromDate.value!;
+    final toDate = historyController.selectedToDate.value!;
+
+    // Check if it's a single day selection
+    final isSingleDay = fromDate.year == toDate.year &&
+        fromDate.month == toDate.month &&
+        fromDate.day == toDate.day;
+
+    return Row(
+      children: [
+        if (isSingleDay)
+          Text(
+            format.format(fromDate),
+            style: TextStyle(
+              fontSize: 14,
+              fontFamily: 'Plus Jakarta Sans',
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
+          )
+        else
+          Text(
+            '${format.format(fromDate)} - ${format.format(toDate)}',
+            style: TextStyle(
+              fontSize: 14,
+              fontFamily: 'Plus Jakarta Sans',
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildTaskList() {
+    // Show error state
+    if (historyController.errorMessage.value.isNotEmpty && historyController.tasks.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SvgPicture.asset('assets/images/empty_task.svg'),
+            const SizedBox(height: 16),
+            Text(
+              'Error loading history',
+              style: TextStyle(
+                fontSize: 20,
+                fontFamily: 'Plus Jakarta Sans',
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              historyController.errorMessage.value,
+              style: TextStyle(
+                fontSize: 14,
+                fontFamily: 'Plus Jakarta Sans',
+                color: Colors.grey[500],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => historyController.retryFetch(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryColor,
+              ),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // If no tasks, show empty state
+    if (historyController.tasks.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SvgPicture.asset('assets/images/empty_task.svg'),
+            const SizedBox(height: 16),
+            Text(
+              'No tasks history found',
+              style: TextStyle(
+                fontSize: 20,
+                fontFamily: 'Plus Jakarta Sans',
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return NotificationListener<ScrollNotification>(
+      onNotification: (notification) {
+        if (notification is ScrollEndNotification) {
+          if (notification.metrics.pixels >=
+              notification.metrics.maxScrollExtent - 200) {
+            historyController.loadMoreTasks();
+          }
+        }
+        return false;
+      },
+      child: ListView.separated(
+        controller: ScrollController(),
+        physics: const BouncingScrollPhysics(),
+        itemCount: historyController.tasks.length +
+            (historyController.isLoadingMore.value ? 1 : 0),
+        separatorBuilder: (context, index) => const SizedBox(height: 16),
+        itemBuilder: (context, index) {
+          if (index == historyController.tasks.length) {
+            return const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+          final task = historyController.tasks[index];
+          return buildTaskCard(context: context, task: task);
+        },
+      ),
+    );
   }
 }

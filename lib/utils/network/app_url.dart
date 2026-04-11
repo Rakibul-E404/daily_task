@@ -11,6 +11,9 @@ class AppUrl {
   static const String updatePersonalInformationProfileImage =
       '$baseUrl/users/profile-picture';
 
+
+  static const String getHomeScreenTask = '$baseUrl/tasks/v2';
+
   static const String createPersonalTask = '$baseUrl/tasks/v2';
   static const String createCollaborativeTask = '$baseUrl/tasks/v2';
   static const String createSingleAssignmentTask = '$baseUrl/tasks/v2';
@@ -32,7 +35,8 @@ class AppUrl {
   ///--- UGC -----------
   ///-------------------
   static const String getUgcDailyProgress = '$baseUrl/tasks/daily-progress/v2';
-  static const String getUgcHomeScreenTask = '$baseUrl/tasks?page=1&limit=10';
+  // static const String getUgcHomeScreenTask = '$baseUrl/tasks?page=1&limit=10';
+  static const String getUgcHomeScreenTask = '$baseUrl/tasks/v2';
 
   static String getUgcTaskDetails(String taskId) {
     return '$baseUrl/tasks/$taskId';
@@ -78,4 +82,8 @@ class AppUrl {
   static const String signUpIndevidual = '$baseUrl/auth/register/v2';
   static const String verifyEmail = '$baseUrl/auth/verify-email';
   static const String resendVerificationCode = '$baseUrl/auth/resend-otp';
+
+  static const String getUserIndividualTaskHistory = '$baseUrl/tasks/history';
+
+
 }
