@@ -427,7 +427,7 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
                         // TODO: Handle completion logic
                         SupportAlertCards.show(
                           context,
-                          type: SupportAlertType.clam,
+                          type: SupportAlertType.calm100,
                           onButtonTap: () {
                             Get.to(() => MainBottomNav());
                           }

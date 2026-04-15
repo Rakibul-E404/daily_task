@@ -35,12 +35,13 @@ class AppUrl {
   }
 
   static const String changePassword = '$baseUrl/auth/change-password';
+  static const String logOut = '$baseUrl/auth/logout';
   static const String deleteAccount = '$baseUrl/users/delete-my-account';
 
   ///-------------------
   ///--- UGC -----------
   ///-------------------
-  static const String getUgcDailyProgress = '$baseUrl/tasks/daily-progress/v2';
+  static const String getUgcDailyProgress = '$baseUrl/tasks/daily-progress/v3';
 
   // static const String getUgcHomeScreenTask = '$baseUrl/tasks?page=1&limit=10';
   static const String getUgcHomeScreenTask = '$baseUrl/tasks/v2';
@@ -57,11 +58,11 @@ class AppUrl {
       '$baseUrl/children-business-users/my-family-members';
 
   static String ugcTaskStatusUpdate(String taskId) {
-    return '$baseUrl/task-progress/$taskId/status';
+    return '$baseUrl/task-progress/$taskId/status/v4 ';
   }
 
   static String ugcPersonalTaskStatusUpdate(String taskId) {
-    return '$baseUrl/tasks/$taskId/status';
+    return '$baseUrl/tasks/$taskId/status/v4';
   }
 
   static String deleteTask(String taskId) {
