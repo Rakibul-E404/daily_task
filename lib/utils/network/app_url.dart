@@ -11,7 +11,6 @@ class AppUrl {
   static const String updatePersonalInformationProfileImage =
       '$baseUrl/users/profile-picture';
 
-
   static const String getHomeScreenTask = '$baseUrl/tasks/v2';
 
   static const String createPersonalTask = '$baseUrl/tasks/v2';
@@ -20,8 +19,15 @@ class AppUrl {
   static const String getSupportMode = '$baseUrl/users/support-mode';
   static const String updateSupportMode = '$baseUrl/users/support-mode';
   static const String getNotification = '$baseUrl/activitys/my';
-  static const String getNotificationStyle = '$baseUrl/users/notification-style';
-  static const String updateNotificationStyle = '$baseUrl/users/notification-style';
+
+  static String markSingleNotification(String notificationId) {
+    return '$baseUrl/activitys/$notificationId/read';
+  }
+
+  static const String getNotificationStyle =
+      '$baseUrl/users/notification-style';
+  static const String updateNotificationStyle =
+      '$baseUrl/users/notification-style';
   static const String getPreferredTime = '$baseUrl/users/preferred-time';
 
   static String getPrivacyPolicyTermsConditionsAboutUs(String type) {
@@ -35,10 +41,15 @@ class AppUrl {
   ///--- UGC -----------
   ///-------------------
   static const String getUgcDailyProgress = '$baseUrl/tasks/daily-progress/v2';
+
   // static const String getUgcHomeScreenTask = '$baseUrl/tasks?page=1&limit=10';
   static const String getUgcHomeScreenTask = '$baseUrl/tasks/v2';
 
   static String getUgcTaskDetails(String taskId) {
+    return '$baseUrl/tasks/$taskId';
+  }
+
+  static String getIndividualTaskDetails(String taskId) {
     return '$baseUrl/tasks/$taskId';
   }
 
@@ -84,6 +95,4 @@ class AppUrl {
   static const String resendVerificationCode = '$baseUrl/auth/resend-otp';
 
   static const String getUserIndividualTaskHistory = '$baseUrl/tasks/history';
-
-
 }

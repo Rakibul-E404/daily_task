@@ -413,80 +413,10 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
 
                 const SizedBox(height: 20),
                 // if (!isCompleted) // Use the isCompleted variable
-                  subTaskProgress(widget.task),
+                //   subTaskProgress(widget.task),
                 const SizedBox(height: 20),
                 // if (!isCompleted) // Use the isCompleted variable
                   subTaskList(widget.task),
-
-                /// 🔹 Add Subtask Input
-                if (!isCompleted) // Use the isCompleted variable
-                  TextField(
-                    controller: _subtaskController, // Added controller
-                    focusNode: _subtaskFocusNode,
-                    decoration: InputDecoration(
-                      hintText: 'Add a subtask...',
-                      filled: true,
-                      fillColor: Colors.grey[50],
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: AppColors.grey, width: 1),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: AppColors.grey, width: 1),
-                      ),
-                    ),
-                  ),
-
-                const SizedBox(height: 16),
-
-                /// 🔹 Add Task Button - Now conditionally enabled
-                if (!isCompleted) // Use the isCompleted variable
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: isAddButtonEnabled
-                          ? () {
-                              // TODO: Add subtask logic
-                        debugPrint('Adding subtask: ${_subtaskController.text}');
-                              _subtaskController.clear(); // Clear after adding
-                              _subtaskFocusNode
-                                  .unfocus(); // Remove keyboard focus
-                            }
-                          : null, // Disabled when empty
-                      icon: Icon(
-                        Icons.add,
-                        size: 20,
-                        color: isAddButtonEnabled
-                            ? AppColors.white
-                            : AppColors.grey,
-                      ),
-                      label: Text(
-                        'Add Task',
-                        style: AppTextStyles.defaultTextStyle.copyWith(
-                          color: isAddButtonEnabled
-                              ? AppColors.white
-                              : AppColors.grey,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isAddButtonEnabled
-                            ? AppColors.primaryColor
-                            : Colors.grey[300], // Different color when disabled
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                const SizedBox(height: 24),
 
                 /// 🔹 Completed Button (only if pending/in progress)
                 if (!isCompleted)

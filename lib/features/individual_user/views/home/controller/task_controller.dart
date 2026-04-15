@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../../utils/network/app_url.dart';
 import '../../../../../utils/network/network_caller_dio.dart';
