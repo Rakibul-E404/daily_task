@@ -34,6 +34,13 @@ class AppUrl {
     return '$baseUrl/settings?type=$type';
   }
 
+
+  static String getTaskDetails(String taskId) {
+    return '$baseUrl/tasks/$taskId';
+  }
+  static String taskStatusUpdate(String taskId) {
+    return '$baseUrl/tasks/$taskId/status/v4';
+  }
   static String updateSubTaskStatus(String taskId, String subtaskId) {
     return '$baseUrl/sub-task-progress/$taskId/subtasks/$subtaskId/toggle-status';
   }
@@ -62,7 +69,7 @@ class AppUrl {
       '$baseUrl/children-business-users/my-family-members';
 
   static String ugcTaskStatusUpdate(String taskId) {
-    return '$baseUrl/task-progress/$taskId/status/v4 ';
+    return '$baseUrl/tasks/$taskId/status/v4';
   }
 
   static String ugcPersonalTaskStatusUpdate(String taskId) {
@@ -100,4 +107,7 @@ class AppUrl {
   static const String resendVerificationCode = '$baseUrl/auth/resend-otp';
 
   static const String getUserIndividualTaskHistory = '$baseUrl/tasks/history';
+
+
+
 }
