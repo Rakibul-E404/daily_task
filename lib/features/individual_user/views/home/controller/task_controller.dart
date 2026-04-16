@@ -201,6 +201,7 @@ class TaskController extends GetxController {
     if (json['subtasks'] != null && json['subtasks'] is List) {
       subtasks = (json['subtasks'] as List).map((subtaskJson) {
         return SubTask(
+          id: subtaskJson['_id']?.toString(),
           title: subtaskJson['title'] ?? '',
           isCompleted: subtaskJson['isCompleted'] ?? false,
           duration: subtaskJson['duration']?.toString(),

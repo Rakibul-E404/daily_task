@@ -353,7 +353,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
       if (task != null) {
         Get.to(
-              () => TaskDetailsScreen(task: task),
+              () => TaskDetailsScreen(),
           transition: Transition.fadeIn,
         );
       } else {
