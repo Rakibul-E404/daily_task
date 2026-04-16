@@ -34,6 +34,10 @@ class AppUrl {
     return '$baseUrl/settings?type=$type';
   }
 
+  static String updateSubTaskStatus(String taskId, String subtaskId) {
+    return '$baseUrl/sub-task-progress/$taskId/subtasks/$subtaskId/toggle-status';
+  }
+
   static const String changePassword = '$baseUrl/auth/change-password';
   static const String logOut = '$baseUrl/auth/logout';
   static const String deleteAccount = '$baseUrl/users/delete-my-account';

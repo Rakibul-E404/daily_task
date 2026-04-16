@@ -488,6 +488,7 @@ _AlertConfig _alertConfig(SupportAlertType type) {
 
 
 
+/*
 import 'package:flutter/material.dart';
 
 /// ============================================================================
@@ -677,14 +678,19 @@ _AlertConfig _alertConfig(SupportAlertType type) {
         backgroundColor: Colors.green.shade200, // Green
       );
 
-  // ==================== 100% COMPLETED ALERTS ====================
+  ///
+  ///
+  /// ==================== 100% COMPLETED ALERTS ====================
+  ///
+  ///
+
     case SupportAlertType.calm100:
       return _AlertConfig(
         message:
         "You've completed all your tasks for today.\nTake a moment to breathe — you did well.",
         buttonText: "Well done",
         imagePath: "assets/icons/task_completed_popup.gif",
-        backgroundColor: const Color(0xFF8FB6FF), // Blue
+        backgroundColor:  Colors.brown, // Blue
       );
 
     case SupportAlertType.encouraging100:
@@ -692,7 +698,7 @@ _AlertConfig _alertConfig(SupportAlertType type) {
         message: "Congratulations! 🏆\n100% Complete!",
         buttonText: "Celebrate!",
         imagePath: "assets/icons/task_completed_popup.gif",
-        backgroundColor: Colors.orange.shade200, // Orange
+        backgroundColor: Colors.orange, // Orange
       );
 
     case SupportAlertType.logical100:
@@ -700,8 +706,237 @@ _AlertConfig _alertConfig(SupportAlertType type) {
         message: "Task Complete ✓\nAll items finished",
         buttonText: "Well Done",
         imagePath: "assets/icons/task_completed_popup.gif",
-        backgroundColor: Colors.green.shade200, // Green
+        backgroundColor: Colors.green, // Green
       );
   }
 }
 
+*/
+
+
+
+import 'package:flutter/material.dart';
+
+/// ============================================================================
+/// 🎯 SUPPORT ALERT CARDS - 50% & 100% VARIANTS
+/// ============================================================================
+/// Usage:
+///   SupportAlertCards.show(context, type: SupportAlertType.calm50);
+///   SupportAlertCards.show(context, type: SupportAlertType.calm100);
+/// ============================================================================
+
+/// 1️⃣ Alert Types (50% and 100% variants)
+enum SupportAlertType {
+  // 50% Halfway Alerts
+  calm50,
+  encouraging50,
+  logical50,
+
+  // 100% Completed Alerts
+  calm100,
+  encouraging100,
+  logical100,
+}
+
+/// 2️⃣ Main Alert Class (PUBLIC API)
+class SupportAlertCards {
+  static void show(
+      BuildContext context, {
+        required SupportAlertType type,
+        VoidCallback? onButtonTap,
+      }) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => _SupportAlertDialog(
+        type: type,
+        onButtonTap: onButtonTap,
+      ),
+    );
+  }
+}
+
+/// 3️⃣ Internal Dialog UI (UPDATED with dynamic card color)
+class _SupportAlertDialog extends StatelessWidget {
+  final SupportAlertType type;
+  final VoidCallback? onButtonTap;
+
+  const _SupportAlertDialog({
+    required this.type,
+    this.onButtonTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final config = _alertConfig(type);
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.all(20),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: config.cardColor, // ✅ NOW USING DYNAMIC CARD COLOR
+          borderRadius: BorderRadius.circular(28),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Drag indicator
+            Container(
+              height: 5,
+              width: 40,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            ///  ==========
+            /// --- gif ---
+            /// ===========
+            Container(
+              height: 150,
+              width: 150,
+              decoration: BoxDecoration(
+                color: config.imageBackgroundColor, // ✅ Circle background color
+                shape: BoxShape.circle,
+              ),
+              child: ClipOval(
+                child: Image.asset(
+                  config.imagePath,
+                  fit: BoxFit.contain,
+                  gaplessPlayback: true,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Message
+            Text(
+              config.message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+                height: 1.2,
+              ),
+            ),
+
+            const SizedBox(height: 28),
+
+            // Action Button
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.thumb_up),
+                label: Text(config.buttonText),
+                onPressed: () {
+                  Navigator.pop(context);
+                  onButtonTap?.call();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF6AA8FF),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 0,
+                  textStyle: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 4️⃣ Alert Configuration (EDIT ONLY HERE)
+class _AlertConfig {
+  final String message;
+  final String buttonText;
+  final String imagePath;
+  final Color imageBackgroundColor; // Color for the circle behind GIF
+  final Color cardColor; // Color for the entire card background
+
+  _AlertConfig({
+    required this.message,
+    required this.buttonText,
+    required this.imagePath,
+    required this.imageBackgroundColor,
+    required this.cardColor,
+  });
+}
+
+/// 5️⃣ Alert Content by Type (STATIC DATA - EDIT ONLY HERE)
+_AlertConfig _alertConfig(SupportAlertType type) {
+  switch (type) {
+  // ==================== 50% HALFWAY ALERTS ====================
+    case SupportAlertType.calm50:
+      return _AlertConfig(
+        message: "Good job! 🎉\nYou're halfway there.\nTake it step by step — you’re doing just fine.",
+        buttonText: "Continue",
+        imagePath: "assets/icons/calm50.gif",
+        imageBackgroundColor: const Color(0xFFffffff),
+        cardColor: const Color(0xFFeaf4ff),
+      );
+
+    case SupportAlertType.encouraging50:
+      return _AlertConfig(
+        message: "Great job! 🎉\nYou’ve completed 50% of your work\nkeep going!",
+        buttonText: "Keep Going",
+        imagePath: "assets/icons/encouraging50.gif",
+        imageBackgroundColor: const Color(0xFFffffff),
+        cardColor: const Color(0xFFe1d2ff),
+      );
+
+    case SupportAlertType.logical50:
+      return _AlertConfig(
+        message: "Progress Update 📊\n50% of the assigned work has been completed.",
+        buttonText: "Got it",
+        imagePath: "assets/icons/logical50.gif",
+        imageBackgroundColor: const Color(0xFFffffff),
+        cardColor: const Color(0xFF7ce9b2),
+      );
+
+  /// ==================== ===================== ====================
+  /// ==================== 100% COMPLETED ALERTS ====================
+  /// ==================== ===================== ====================
+    case SupportAlertType.calm100:
+      return _AlertConfig(
+        message: "You’ve completed all your tasks\nfor today.Take a moment to\nbreathe you did well.",
+        buttonText: "Well done",
+        imagePath: "assets/icons/task_completed_popup.gif",
+        imageBackgroundColor: const Color(0xFF80abff),
+        cardColor: const Color(0xFFeaf4ff),
+      );
+
+    case SupportAlertType.encouraging100:
+      return _AlertConfig(
+        message: "Amazing work! 🎉\nYou completed all your tasks\ntoday. Keep the momentum\ngoing!",
+        buttonText: "Celebrate!",
+        imagePath: "assets/icons/task_completed_popup.gif",
+        imageBackgroundColor: const Color(0xFF80abff),
+        cardColor: const Color(0xFFe1d2ff),
+      );
+
+    case SupportAlertType.logical100:
+      return _AlertConfig(
+        message: "All scheduled tasks have been\ncompleted. Today's productivity\ngoal has been achieved.",
+        buttonText: "Well Done",
+        imagePath: "assets/icons/task_completed_popup.gif",
+        imageBackgroundColor: const Color(0xFF80abff),
+        cardColor: const Color(0xFF7ce9b2),
+      );
+  }
+}
