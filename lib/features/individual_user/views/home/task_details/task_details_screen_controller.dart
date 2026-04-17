@@ -87,7 +87,6 @@ class TaskDetailsScreenController extends GetxController {
   Future<void> toggleSubtaskStatus(String taskId, String subtaskId, bool isCompleted, int subtaskIndex) async {
     if (isTogglingSubtask.value) return;
 
-    // ✅ Validate subtaskId
     if (subtaskId.isEmpty) {
       print('❌ Subtask ID is empty!');
       ScaffoldMessenger.of(Get.context!).showSnackBar(
@@ -134,7 +133,6 @@ class TaskDetailsScreenController extends GetxController {
       print('📡 Response success: ${response.isSuccess}');
 
       if (response.isSuccess || response.statusCode == 200) {
-        // Update local task data
         final currentTask = task.value;
         if (currentTask != null) {
           final updatedSubtasks = List<SubTask>.from(currentTask.subtasks);
@@ -152,13 +150,6 @@ class TaskDetailsScreenController extends GetxController {
           task.value = updatedTask;
         }
 
-        ScaffoldMessenger.of(Get.context!).showSnackBar(
-          SnackBar(
-            content: Text(isCompleted ? 'Subtask completed!' : 'Subtask uncompleted'),
-            duration: const Duration(seconds: 1),
-            backgroundColor: Colors.green,
-          ),
-        );
       } else {
         String error = response.errorMessage ?? 'Failed to update subtask';
         if (response.jsonResponse != null) {
@@ -189,6 +180,7 @@ class TaskDetailsScreenController extends GetxController {
     }
   }
 
+  // ✅ FIXED: Updated to use correct URL without version suffix
   Future<bool> updateTaskStatus(String taskId, String status) async {
     isUpdatingStatus.value = true;
     errorMessage.value = '';
@@ -209,8 +201,12 @@ class TaskDetailsScreenController extends GetxController {
       print('📤 Updating task status to: $status');
       print('📤 Request body: $requestBody');
 
+      // ✅ FIXED: Use direct URL construction without version suffix
+      final url = '${AppUrl.baseUrl}/tasks/$taskId/status';
+      print('📤 URL: $url');
+
       final response = await _networkCaller.putRequest(
-        AppUrl.taskStatusUpdate(taskId),
+        url,
         body: requestBody,
         headers: {'Authorization': 'Bearer $token'},
       );
@@ -352,7 +348,7 @@ class TaskDetailsScreenController extends GetxController {
     if (json['subtasks'] != null && json['subtasks'] is List) {
       subtasks = (json['subtasks'] as List).map((subtaskJson) {
         return SubTask(
-          id: subtaskJson['_id']?.toString() ?? '', // ✅ Extract subtask ID
+          id: subtaskJson['_id']?.toString() ?? '',
           title: subtaskJson['title'] ?? '',
           isCompleted: subtaskJson['isCompleted'] ?? false,
           duration: subtaskJson['duration']?.toString(),

@@ -10,10 +10,8 @@ import 'edit_task_screen.dart';
 import 'model/task_model.dart';
 import 'package:askfemi/features/individual_user/views/home/task_details/task_details_screen_controller.dart';
 
-
-
 class TaskDetailsScreen extends StatefulWidget {
-  final String? taskId;  // ✅ Only pass taskId, not the whole Task object
+  final String? taskId;
 
   const TaskDetailsScreen({super.key, this.taskId});
 
@@ -23,13 +21,13 @@ class TaskDetailsScreen extends StatefulWidget {
 
 class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
   late final TaskDetailsScreenController controller;
+  bool _isMarkingSubtasks = false;
 
   @override
   void initState() {
     super.initState();
     controller = Get.put(TaskDetailsScreenController());
 
-    // ✅ Always fetch fresh data using taskId
     if (widget.taskId != null && widget.taskId!.isNotEmpty) {
       controller.fetchTaskDetails(widget.taskId!);
     }
@@ -167,48 +165,85 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
     final currentTask = controller.task.value;
     if (currentTask == null) return;
 
-    String newStatus;
-    String successMessage;
-
     if (currentTask.status == TaskStatus.pending) {
-      newStatus = 'inProgress';
-      successMessage = 'Task started successfully!';
+      // Start task
+      final success = await controller.updateTaskStatus(currentTask.id, 'inProgress');
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Task started successfully!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
     } else if (currentTask.status == TaskStatus.inProgress) {
-      newStatus = 'completed';
-      successMessage = 'Task completed successfully!';
-    } else {
-      return;
-    }
+      // Check if there are any incomplete subtasks
+      final incompleteSubtasks = currentTask.subtasks
+          .where((subtask) => !subtask.isCompleted)
+          .toList();
 
-    final success = await controller.updateTaskStatus(currentTask.id, newStatus);
+      if (incompleteSubtasks.isNotEmpty) {
+        // Show loading indicator while marking subtasks
+        setState(() => _isMarkingSubtasks = true);
 
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(successMessage),
-          backgroundColor: Colors.green,
-          duration: const Duration(seconds: 2),
-        ),
-      );
+        print('📤 Found ${incompleteSubtasks.length} incomplete subtasks, marking them as completed...');
 
-      Future.delayed(const Duration(milliseconds: 500), () {
-        controller.showSupportAlertIfNeeded(context);
-      });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(controller.errorMessage.value),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
-        ),
-      );
+        // Mark all incomplete subtasks as completed
+        for (int i = 0; i < currentTask.subtasks.length; i++) {
+          final subtask = currentTask.subtasks[i];
+          if (!subtask.isCompleted) {
+            await controller.toggleSubtaskStatus(
+              currentTask.id,
+              subtask.id!,
+              true,
+              i,
+            );
+            await Future.delayed(const Duration(milliseconds: 50));
+          }
+        }
+
+        // ✅ Refresh the screen by fetching updated task details
+        await controller.fetchTaskDetails(currentTask.id);
+
+        setState(() => _isMarkingSubtasks = false);
+        // Don't mark task as completed yet - user needs to tap Complete again
+        return;
+      } else {
+        // All subtasks are completed, now mark task as completed
+        final success = await controller.updateTaskStatus(currentTask.id, 'completed');
+
+        if (success) {
+          // ✅ Refresh the screen after completion
+          await controller.fetchTaskDetails(currentTask.id);
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Task completed successfully!'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+
+          Future.delayed(const Duration(milliseconds: 500), () {
+            controller.showSupportAlertIfNeeded(context);
+          });
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(controller.errorMessage.value),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      // Show loading state
       if (controller.isLoading.value && controller.task.value == null) {
         return const Scaffold(
           backgroundColor: AppColors.white,
@@ -218,7 +253,6 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
         );
       }
 
-      // Show error state
       if (controller.errorMessage.value.isNotEmpty && controller.task.value == null) {
         return Scaffold(
           backgroundColor: AppColors.white,
@@ -268,6 +302,15 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
   Widget _buildContent(BuildContext context, Task task) {
     final isCompleted = task.status == TaskStatus.completed;
     final isPending = task.status == TaskStatus.pending;
+    final isInProgress = task.status == TaskStatus.inProgress;
+
+    // Check if all subtasks are completed (for inProgress tasks)
+    final allSubtasksCompleted = task.subtasks.isNotEmpty
+        ? task.subtasks.every((subtask) => subtask.isCompleted)
+        : true;
+
+    // Subtasks can only be checked when task is IN PROGRESS (not completed)
+    final isCheckboxEnabled = isInProgress && !controller.isTogglingSubtask.value && !_isMarkingSubtasks;
 
     return Scaffold(
       backgroundColor: AppColors.white,
@@ -517,42 +560,75 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
               const SizedBox(height: 20),
 
               /// Subtask List with Circular Checkboxes
-              if (task.subtasks.isNotEmpty) _buildSubTaskList(task),
+              if (task.subtasks.isNotEmpty) _buildSubTaskList(task, isCheckboxEnabled),
               const SizedBox(height: 16),
 
-              /// Completed Button
+              /// Info message for pending tasks (subtasks cannot be checked)
+              if (isPending && task.subtasks.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.notice.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.notice.withValues(alpha: 0.1)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.info_outline, color: AppColors.notice.withValues(alpha: 0.7), size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            "Click 'Start' to begin working on subtasks",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.orange.shade800,
+                              fontFamily: 'Plus Jakarta Sans',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+              /// Start/Complete Button
               if (!isCompleted)
                 SizedBox(
                   width: double.infinity,
-                  child: Obx(() => ElevatedButton(
-                    onPressed: controller.isUpdatingStatus.value
-                        ? null
-                        : _handleStatusUpdate,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryColor,
-                      foregroundColor: AppColors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  child: Obx(() {
+                    String buttonText = isPending ? 'Start' : 'Complete';
+                    bool isButtonEnabled = !controller.isUpdatingStatus.value && !_isMarkingSubtasks;
+
+                    return ElevatedButton(
+                      onPressed: isButtonEnabled ? _handleStatusUpdate : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryColor,
+                        foregroundColor: AppColors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                    ),
-                    child: controller.isUpdatingStatus.value
-                        ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
+                      child: (controller.isUpdatingStatus.value || _isMarkingSubtasks)
+                          ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                          : Text(
+                        buttonText,
+                        style: AppTextStyles.defaultTextStyle.copyWith(
+                          color: AppColors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    )
-                        : Text(
-                      isPending ? 'Start' : 'Complete',
-                      style: AppTextStyles.defaultTextStyle.copyWith(
-                        color: AppColors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  )),
+                    );
+                  }),
                 ),
             ],
           ),
@@ -601,7 +677,7 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
     );
   }
 
-  Widget _buildSubTaskList(Task task) {
+  Widget _buildSubTaskList(Task task, bool isCheckboxEnabled) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -623,14 +699,14 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
             child: Row(
               children: [
                 GestureDetector(
-                  onTap: controller.isTogglingSubtask.value
-                      ? null
-                      : () => controller.toggleSubtaskStatus(
+                  onTap: isCheckboxEnabled
+                      ? () => controller.toggleSubtaskStatus(
                     task.id,
-                    subtask.id!, // ✅ Now passing the subtask ID
+                    subtask.id!,
                     !isChecked,
                     index,
-                  ),
+                  )
+                      : null,
                   child: Container(
                     width: 24,
                     height: 24,
