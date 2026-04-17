@@ -677,6 +677,83 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
     );
   }
 
+  // Widget _buildSubTaskList(Task task, bool isCheckboxEnabled) {
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       Text(
+  //         'Subtask item (${task.subtasks.length})',
+  //         style: AppTextStyles.defaultTextStyle.copyWith(
+  //           fontWeight: FontWeight.w600,
+  //           fontSize: 20,
+  //         ),
+  //       ),
+  //       const SizedBox(height: 12),
+  //       ...task.subtasks.asMap().entries.map((entry) {
+  //         final index = entry.key;
+  //         final subtask = entry.value;
+  //         final isChecked = subtask.isCompleted;
+  //
+  //         return Obx(() => Padding(
+  //           padding: const EdgeInsets.only(bottom: 12),
+  //           child: Row(
+  //             children: [
+  //               GestureDetector(
+  //                 onTap: isCheckboxEnabled
+  //                     ? () => controller.toggleSubtaskStatus(
+  //                   task.id,
+  //                   subtask.id!,
+  //                   !isChecked,
+  //                   index,
+  //                 )
+  //                     : null,
+  //                 child: Container(
+  //                   width: 24,
+  //                   height: 24,
+  //                   decoration: BoxDecoration(
+  //                     shape: BoxShape.circle,
+  //                     color: isChecked ? AppColors.green : Colors.transparent,
+  //                     border: Border.all(
+  //                       color: isChecked ? AppColors.green : Colors.grey.shade400,
+  //                       width: 2,
+  //                     ),
+  //                   ),
+  //                   child: isChecked
+  //                       ? const Icon(Icons.check, size: 14, color: Colors.white)
+  //                       : null,
+  //                 ),
+  //               ),
+  //               const SizedBox(width: 12),
+  //               Expanded(
+  //                 child: Text(
+  //                   subtask.title,
+  //                   style: TextStyle(
+  //                     fontSize: 20,
+  //                     decoration: isChecked ? TextDecoration.lineThrough : null,
+  //                     color: isChecked ? Colors.grey.shade500 : Colors.black87,
+  //                   ),
+  //                 ),
+  //               ),
+  //               if (controller.isTogglingSubtask.value &&
+  //                   controller.currentTogglingSubtaskIndex.value == index)
+  //                 const SizedBox(
+  //                   width: 20,
+  //                   height: 20,
+  //                   child: CircularProgressIndicator(
+  //                     strokeWidth: 2,
+  //                     color: AppColors.primaryColor,
+  //                   ),
+  //                 ),
+  //             ],
+  //           ),
+  //         ));
+  //       }).toList(),
+  //     ],
+  //   );
+  // }
+
+
+
   Widget _buildSubTaskList(Task task, bool isCheckboxEnabled) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -696,61 +773,86 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
 
           return Obx(() => Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: Row(
-              children: [
-                GestureDetector(
-                  onTap: isCheckboxEnabled
-                      ? () => controller.toggleSubtaskStatus(
-                    task.id,
-                    subtask.id!,
-                    !isChecked,
-                    index,
-                  )
-                      : null,
-                  child: Container(
-                    width: 24,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isChecked ? AppColors.green : Colors.transparent,
-                      border: Border.all(
-                        color: isChecked ? AppColors.green : Colors.grey.shade400,
-                        width: 2,
+            child: Container(
+              // ✅ White card with border
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.grey.shade300,
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.shade100,
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  children: [
+                    // ✅ Circular Checkbox - FIXED: Added behavior: HitTestBehavior.opaque
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque, // 🔥 Fixes tap on transparent areas
+                      onTap: isCheckboxEnabled
+                          ? () => controller.toggleSubtaskStatus(
+                        task.id,
+                        subtask.id!,
+                        !isChecked,
+                        index,
+                      )
+                          : null,
+                      child: Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isChecked ? AppColors.green : Colors.transparent,
+                          border: Border.all(
+                            color: isChecked ? AppColors.green : Colors.grey.shade400,
+                            width: 2,
+                          ),
+                        ),
+                        child: isChecked
+                            ? const Icon(Icons.check, size: 14, color: Colors.white)
+                            : null,
                       ),
                     ),
-                    child: isChecked
-                        ? const Icon(Icons.check, size: 14, color: Colors.white)
-                        : null,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    subtask.title,
-                    style: TextStyle(
-                      fontSize: 20,
-                      decoration: isChecked ? TextDecoration.lineThrough : null,
-                      color: isChecked ? Colors.grey.shade500 : Colors.black87,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        subtask.title,
+                        style: TextStyle(
+                          fontSize: 16, // ✅ Adjusted for card layout
+                          decoration: isChecked ? TextDecoration.lineThrough : null,
+                          color: isChecked ? Colors.grey.shade500 : Colors.black87,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
-                  ),
+                    if (controller.isTogglingSubtask.value &&
+                        controller.currentTogglingSubtaskIndex.value == index)
+                      const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.primaryColor,
+                        ),
+                      ),
+                  ],
                 ),
-                if (controller.isTogglingSubtask.value &&
-                    controller.currentTogglingSubtaskIndex.value == index)
-                  const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppColors.primaryColor,
-                    ),
-                  ),
-              ],
+              ),
             ),
           ));
         }).toList(),
       ],
     );
   }
+
 
   String _formatDateTime(DateTime dateTime) {
     final now = DateTime.now();
