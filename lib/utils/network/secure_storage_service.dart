@@ -124,6 +124,38 @@ class SecureStorageService {
     }
   }
 
+
+
+
+
+
+
+  // Add these methods to your SecureStorageService class
+
+  static const String _keySubscriptionStatus = 'subscription_status';
+
+  Future<void> saveSubscriptionStatus(bool isSubscribed) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_keySubscriptionStatus, isSubscribed);
+      print('✅ Subscription status saved: $isSubscribed');
+    } catch (e) {
+      print('Error saving subscription status: $e');
+    }
+  }
+
+  Future<bool?> getSubscriptionStatus() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getBool(_keySubscriptionStatus);
+    } catch (e) {
+      print('Error getting subscription status: $e');
+      return null;
+    }
+  }
+
+
+
   Future<void> clearTemporaryData(String key) async {
     try {
       final prefs = await SharedPreferences.getInstance();

@@ -116,6 +116,7 @@ class AppUrl {
 
 
   static const String getUserIndividualTaskHistory = '$baseUrl/tasks/history';
+  static const String getSubscription = '$baseUrl/subscription-plan/paginate?isActive=true&subscriptionType=individual';
 
 
 
