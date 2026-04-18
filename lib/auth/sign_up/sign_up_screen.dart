@@ -206,7 +206,7 @@ class SignUpScreen extends StatelessWidget {
                       ///==================================
                       DropdownSearch<String>(
                         items: (filter, infiniteScrollProps) async {
-                          return ["Male", "Female", "Other"];
+                          return ["Male", "Female"];
                         },
                         onChanged: (value) {
                           if (value != null) {

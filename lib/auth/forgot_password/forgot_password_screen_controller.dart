@@ -15,6 +15,9 @@ class ForgotPasswordController extends GetxController {
   var resetToken = RxString('');
   var userEmail = RxString('');
 
+  // Temp variable to track the flow for verification screen
+  var authFlow = AuthFlowModel.forgotPassword;
+
   @override
   void onClose() {
     emailController.dispose();
@@ -95,6 +98,12 @@ class ForgotPasswordController extends GetxController {
             userEmail.value
         );
 
+        // Store the auth flow for verification screen
+        await SecureStorageService.instance.saveTemporaryData(
+            'auth_flow',
+            'forgot_password'
+        );
+
         Get.snackbar(
           'Success',
           response.jsonResponse?['message'] ?? 'OTP sent successfully!',
@@ -104,7 +113,7 @@ class ForgotPasswordController extends GetxController {
           duration: const Duration(seconds: 2),
         );
 
-        // Navigate to verification screen with email and token
+        // Navigate to verification screen with email, token and auth flow
         Get.to(
               () => const VerifyEmailScreen(),
           arguments: {
@@ -146,5 +155,9 @@ class ForgotPasswordController extends GetxController {
 
   String getEmail() {
     return userEmail.value;
+  }
+
+  AuthFlowModel getAuthFlow() {
+    return authFlow;
   }
 }
