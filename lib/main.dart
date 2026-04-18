@@ -1,3 +1,4 @@
+import 'package:askfemi/auth/forgot_password/forgot_password_screen.dart';
 import 'package:askfemi/features/group_user/visions/bottom_navigation/ugc_bottom_nav.dart';
 import 'package:askfemi/features/group_user/visions/ugc_task_status/ugc_task_status_screen.dart';
 import 'package:askfemi/screens/splash/splash_screen.dart';
@@ -26,8 +27,7 @@ class TaskManagement extends StatelessWidget {
     return GetMaterialApp(
       title: 'Task Management',
       home:  const  SplashScreen(),
-      // home: UgcTaskStatusScreen(),
-      // home: UgcMainBottomNav(),
+      // home: ForgotPasswordScreen(),
       debugShowCheckedModeBanner: false,
     );
   }

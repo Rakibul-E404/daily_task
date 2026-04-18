@@ -68,38 +68,13 @@ class SignUpScreen extends StatelessWidget {
 
                       const SizedBox(height: 24),
 
-                      /// Error message
-                      Obx(() {
-                        if (controller.errorMessage.value.isNotEmpty) {
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 16),
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.red.shade50,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.red.shade200),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(Icons.error_outline, color: Colors.red.shade700, size: 20),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    controller.errorMessage.value,
-                                    style: TextStyle(color: Colors.red.shade700, fontSize: 14),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      }),
+
 
                       ///==================================
                       ///============ User Name
                       ///==================================
                       TextField(
+                        maxLength: 18,
                         onChanged: (value) => controller.updateName(value),
                         decoration: InputDecoration(
                           focusedBorder: OutlineInputBorder(
@@ -137,7 +112,7 @@ class SignUpScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 14),
 
                       ///==================================
                       ///============ E-mail
@@ -415,7 +390,54 @@ class SignUpScreen extends StatelessWidget {
                           ),
                         ),
                       )),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 10),
+
+                      /// Error message
+                      Obx(() {
+                        if (controller.errorMessage.value.isNotEmpty) {
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.red.shade50,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.red.shade200),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.error_outline, color: Colors.red.shade700, size: 20),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    controller.errorMessage.value,
+                                    style: TextStyle(color: Colors.red.shade700, fontSize: 14),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      }),
+
+                      /// Password requirements
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(left: 4, top: 4),
+                            child: Text(
+                              "• At least 8 characters\n• One uppercase letter\n• One number\n• One special character",
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontFamily: 'Plus Jakarta Sans',
+                                color: Colors.grey[600],
+                                height: 1.5,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
 
                       ///=========================
                       /// Terms & Conditions Checkbox

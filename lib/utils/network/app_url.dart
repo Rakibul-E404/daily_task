@@ -3,6 +3,17 @@ class AppUrl {
 
   static const String baseUrl = 'https://newsheakh6733.sobhoy.com/api/v1';
   static const String imageBaseUrl = 'https://newsheakh6733.sobhoy.com';
+
+  /// ============================================
+  /// =================== Auth ===================
+  /// ============================================
+  static const String signUpIndevidual = '$baseUrl/auth/register/v2';
+  static const String verifyEmail = '$baseUrl/auth/verify-email';
+  static const String forgotPassword = '$baseUrl/auth/forgot-password';
+  static const String resetPassword = '$baseUrl/auth/reset-password';
+  static const String resendVerificationCode = '$baseUrl/auth/resend-otp';
+
+
   static const String loginIndividualAndChildren =
       '$baseUrl/auth/login/individual-user';
   static const String getPersonalInformation = '$baseUrl/users/profile/v2';
@@ -102,9 +113,7 @@ class AppUrl {
   ///--- Individual ----
   ///-------------------
 
-  static const String signUpIndevidual = '$baseUrl/auth/register/v2';
-  static const String verifyEmail = '$baseUrl/auth/verify-email';
-  static const String resendVerificationCode = '$baseUrl/auth/resend-otp';
+
 
   static const String getUserIndividualTaskHistory = '$baseUrl/tasks/history';
 

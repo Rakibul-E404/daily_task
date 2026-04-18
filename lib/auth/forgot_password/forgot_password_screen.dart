@@ -1,19 +1,13 @@
-import 'package:askfemi/auth/model/auth_flow_model.dart';
-import 'package:askfemi/auth/verify/verify_email_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:get/get.dart';
 import '../../utils/app_colors.dart';
+import 'forgot_password_screen_controller.dart';
 
 class ForgotPasswordScreen extends StatelessWidget {
-  ForgotPasswordScreen({super.key}) {
-    // Initialize the ValueNotifier
-    _obscurePassword = ValueNotifier<bool>(true);
-  }
+  ForgotPasswordScreen({super.key});
 
-  // Use ValueNotifier for password visibility
-  late final ValueNotifier<bool> _obscurePassword;
+  final ForgotPasswordController controller = Get.put(ForgotPasswordController());
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +48,7 @@ class ForgotPasswordScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               const Text(
-                "Please enter your phone email to reset password.",
+                "Please enter your email to reset password.",
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.normal,
@@ -67,10 +61,15 @@ class ForgotPasswordScreen extends StatelessWidget {
               ///========= E-mail ===========
               ///===============================
               TextField(
+                controller: controller.emailController,
                 decoration: InputDecoration(
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide(color: AppColors.grey, width: 2.0),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: AppColors.grey, width: 1.0),
                   ),
                   prefixIcon: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -102,26 +101,46 @@ class ForgotPasswordScreen extends StatelessWidget {
               ),
 
               const SizedBox(height: 20),
+
+              /// Error message display
+              Obx(() => controller.errorMessage.value.isNotEmpty
+                  ? Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text(
+                  controller.errorMessage.value,
+                  style: const TextStyle(
+                    color: Colors.red,
+                    fontSize: 12,
+                    fontFamily: 'Plus Jakarta Sans',
+                  ),
+                ),
+              )
+                  : const SizedBox.shrink()),
+
               ///=======================
-              /// sign in button
+              /// Send OTP button
               /// ========================
               SizedBox(
                 width: double.infinity,
                 height: 50,
-                child: ElevatedButton(
+                child: Obx(() => ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  onPressed: () {
-                    Get.to(
-                          () => VerifyEmailScreen(),
-                      arguments: AuthFlowModel.forgotPassword, // 👈 pass this
-                    );
-                  },
-                  child: const Text(
+                  onPressed: controller.isLoading.value ? null : () => controller.sendResetOtp(),
+                  child: controller.isLoading.value
+                      ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                      : const Text(
                     'Send OTP',
                     style: TextStyle(
                       fontFamily: 'Plus Jakarta Sans',
@@ -130,9 +149,8 @@ class ForgotPasswordScreen extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                ),
+                )),
               ),
-
             ],
           ),
         ),

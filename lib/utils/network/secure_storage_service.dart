@@ -51,6 +51,7 @@ class SecureStorageService {
 
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SecureStorageService {
   // Singleton instance
@@ -98,4 +99,39 @@ class SecureStorageService {
   Future<void> clearAll() async {
     await _storage.deleteAll();
   }
+
+
+
+  // Add these methods to your SecureStorageService class
+
+  Future<void> saveTemporaryData(String key, String value) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(key, value);
+      print('✅ Temporary data saved for key: $key');
+    } catch (e) {
+      print('Error saving temporary data: $e');
+    }
+  }
+
+  Future<String?> getTemporaryData(String key) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(key);
+    } catch (e) {
+      print('Error getting temporary data: $e');
+      return null;
+    }
+  }
+
+  Future<void> clearTemporaryData(String key) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(key);
+      print('✅ Temporary data cleared for key: $key');
+    } catch (e) {
+      print('Error clearing temporary data: $e');
+    }
+  }
+
 }
