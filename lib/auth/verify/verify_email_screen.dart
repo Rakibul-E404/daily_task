@@ -296,14 +296,14 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
         await SecureStorageService.instance.clearTemporaryData('reset_password_email');
         await SecureStorageService.instance.clearTemporaryData('auth_flow');
 
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Email verified successfully!"),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
+        // if (mounted) {
+        //   ScaffoldMessenger.of(context).showSnackBar(
+        //     const SnackBar(
+        //       content: Text("Email verified successfully!"),
+        //       backgroundColor: Colors.green,
+        //     ),
+        //   );
+        // }
 
         // Navigate based on auth flow
         if (isForgotPassword) {
