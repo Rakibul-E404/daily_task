@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import '../../../../auth/sign_in/singn_in_screen.dart';
 import '../../../../utils/app_colors.dart';
+import '../../../../utils/logout_controller.dart';
 import '../subscription/subscription_screen.dart';
 import '../../../../screens/personal_information/personal_Infromation_screen_controller.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -517,10 +518,15 @@ class _AppOpenHomeScreenState extends State<AppOpenHomeScreen> {
   }
 
   void _showLogoutDialog(BuildContext context, PersonalInformationController controller) {
+    final logoutController = Get.isRegistered<LogoutController>()
+        ? Get.find<LogoutController>()
+        : Get.put(LogoutController());
+
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
-        return AlertDialog(
+        return Obx(() => AlertDialog(
           title: const Text("Confirm Logout"),
           content: const Text("Are you sure you want to logout?"),
           backgroundColor: AppColors.backgroundColor,
@@ -536,7 +542,7 @@ class _AppOpenHomeScreenState extends State<AppOpenHomeScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              onPressed: () {
+              onPressed: logoutController.isLoading.value ? null : () {
                 Get.back();
               },
               child: Text(
@@ -554,12 +560,22 @@ class _AppOpenHomeScreenState extends State<AppOpenHomeScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              onPressed: () async {
-                await SecureStorageService.instance.clearAll();
-                await CacheService.clearCache();
-                Get.offAll(() => SignInScreen());
+              onPressed: logoutController.isLoading.value ? null : () async {
+                // Close the dialog first
+                Get.back();
+                // ✅ FIXED: Actually call the logout method
+                await logoutController.logout();
               },
-              child: Text(
+              child: logoutController.isLoading.value
+                  ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+                  : Text(
                 "Logout",
                 style: AppTextStyles.defaultTextStyle.copyWith(
                   color: AppColors.red,
@@ -568,7 +584,7 @@ class _AppOpenHomeScreenState extends State<AppOpenHomeScreen> {
               ),
             ),
           ],
-        );
+        ));
       },
     );
   }

@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import '../../utils/app_colors.dart';
 import 'splash_screen_controller.dart';
@@ -45,6 +46,12 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 }
+
+
+
+
+
+
 
 
 

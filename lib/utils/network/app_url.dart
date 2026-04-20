@@ -57,7 +57,7 @@ class AppUrl {
   }
 
   static const String changePassword = '$baseUrl/auth/change-password';
-  static const String logOut = '$baseUrl/auth/logout';
+  static const String logOut = '$baseUrl/auth/logout/v2';
   static const String deleteAccount = '$baseUrl/users/delete-my-account';
 
   ///-------------------

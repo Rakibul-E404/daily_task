@@ -1,7 +1,7 @@
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';  // Add this import
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import '../../features/individual_user/widget/date_input_field.dart';
