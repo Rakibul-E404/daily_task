@@ -16,7 +16,7 @@ class MainBottomNav extends StatefulWidget {
 class _MainBottomNavState extends State<MainBottomNav> {
   int _selectedIndex = 0;
 
-  // Screens list
+  /// Screens list
   final List<Widget> _screens = [
     const HomeScreen(),
     const AddTaskScreen(),
@@ -24,7 +24,7 @@ class _MainBottomNavState extends State<MainBottomNav> {
     const ProfileScreen(),
   ];
 
-  // Custom navigation items data
+  /// Custom navigation items data
   final List<Map<String, dynamic>> _navItems = [
     {
       'icon': 'assets/icons/home_inactive.svg',
@@ -58,7 +58,7 @@ class _MainBottomNavState extends State<MainBottomNav> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
-      body: IndexedStack( // 👈 THIS IS THE KEY CHANGE
+      body: IndexedStack(
         index: _selectedIndex,
         children: _screens,
       ),
@@ -98,8 +98,6 @@ class _MainBottomNavState extends State<MainBottomNav> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        // You don't have 'isIcon' in your data, so this condition is always false
-                        // Remove the 'if (isIcon)' check unless you plan to mix Icons and SVGs
                         SvgPicture.asset(
                           isSelected ? item['activeIcon'] : item['icon'],
                           width: 30,
