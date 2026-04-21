@@ -52,6 +52,9 @@ class AppUrl {
   static String taskStatusUpdate(String taskId) {
     return '$baseUrl/tasks/$taskId/status/v5';
   }
+  static String taskStatusStart(String taskId) {
+    return '$baseUrl/tasks/$taskId/status';
+  }
   static String updateSubTaskStatus(String taskId, String subtaskId) {
     return '$baseUrl/sub-task-progress/$taskId/subtasks/$subtaskId/toggle-status';
   }

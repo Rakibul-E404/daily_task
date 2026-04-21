@@ -465,7 +465,7 @@ class UgcHomeController extends GetxController {
       print('📤 Updating task status to: $status');
       print('📤 Request body: $requestBody');
 
-      final url = '${AppUrl.baseUrl}/tasks/$taskId/status';
+      final url = '${AppUrl.baseUrl}/tasks/$taskId/status/v4';
       print('📤 URL: $url');
 
       final response = await _networkCaller.putRequest(
