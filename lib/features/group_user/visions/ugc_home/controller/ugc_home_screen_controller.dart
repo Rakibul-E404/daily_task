@@ -17,315 +17,6 @@ class UgcHomeController extends GetxController {
   var isLoadingTasks = false.obs;
   var hasMoreTasks = true.obs;
   var errorMessage = RxString('');
-
-  // Pagination
-  int _currentPage = 1;
-  final int _limit = 10;
-
-  // ✅ FIX: Guard flag to prevent concurrent/duplicate loadMore calls
-  bool _isLoadingMore = false;
-
-  @override
-  void onInit() {
-    super.onInit();
-    fetchInitialData();
-  }
-
-  Future<void> fetchInitialData() async {
-    await Future.wait([
-      fetchDailyProgress(),
-      fetchTasks(),
-    ]);
-  }
-
-  Future<void> fetchDailyProgress() async {
-    isLoadingProgress.value = true;
-    errorMessage.value = '';
-
-    try {
-      final token = await SecureStorageService.instance.getAccessToken();
-
-      if (token == null) {
-        print('No access token found');
-        return;
-      }
-
-      final response = await _networkCaller.getRequest(
-        AppUrl.getUgcDailyProgress,
-        headers: {'Authorization': 'Bearer $token'},
-      );
-
-      if (response.isSuccess && response.jsonResponse != null) {
-        final data = response.jsonResponse?['data']?['attributes'];
-        if (data != null) {
-          dailyProgress.value = DailyProgressData.fromJson(data);
-        }
-      }
-    } catch (e) {
-      errorMessage.value = e.toString();
-      print('Error fetching daily progress: $e');
-    } finally {
-      isLoadingProgress.value = false;
-    }
-  }
-
-  Future<void> fetchTasks({bool isLoadMore = false}) async {
-    // ✅ FIX: Early return guards — prevent fetching if already in progress
-    if (isLoadMore && !hasMoreTasks.value) return;
-    if (isLoadMore && _isLoadingMore) return;
-
-    if (isLoadMore) {
-      _isLoadingMore = true;
-      _currentPage++;
-    } else {
-      _currentPage = 1; // ✅ FIX: Reset page when doing a fresh fetch
-      isLoadingTasks.value = true;
-    }
-
-    try {
-      final token = await SecureStorageService.instance.getAccessToken();
-
-      if (token == null) {
-        print('No access token found');
-        return;
-      }
-
-      final response = await _networkCaller.getRequest(
-        '${AppUrl.getUgcHomeScreenTask}?page=$_currentPage&limit=$_limit',
-        headers: {'Authorization': 'Bearer $token'},
-      );
-
-      if (response.isSuccess && response.jsonResponse != null) {
-        final attributes = response.jsonResponse?['data']?['attributes'];
-
-        if (attributes != null && attributes is List) {
-          final newTasks = <UgcTask>[];
-          for (var taskJson in attributes) {
-            final task = _mapApiResponseToUgcTask(taskJson);
-            newTasks.add(task);
-          }
-
-          if (isLoadMore) {
-            // ✅ FIX: Deduplicate before adding — prevents duplicates if
-            // the listener fires twice before the first response returns
-            final existingIds = tasks.map((t) => t.id).toSet();
-            final uniqueNewTasks =
-            newTasks.where((t) => !existingIds.contains(t.id)).toList();
-            tasks.addAll(uniqueNewTasks);
-          } else {
-            tasks.value = newTasks;
-          }
-
-          // If we got fewer items than the limit, there are no more pages
-          hasMoreTasks.value = newTasks.length == _limit;
-        }
-      }
-    } catch (e) {
-      // ✅ FIX: Revert page increment on failure so next retry uses correct page
-      if (isLoadMore) _currentPage--;
-      errorMessage.value = e.toString();
-      print('Error fetching tasks: $e');
-    } finally {
-      if (isLoadMore) {
-        _isLoadingMore = false; // ✅ FIX: Release the guard
-      } else {
-        isLoadingTasks.value = false;
-      }
-    }
-  }
-
-  // Helper method to get full image URL
-  String getImageUrl(String? imagePath) {
-    if (imagePath == null || imagePath.isEmpty) {
-      return "assets/images/dummy_user_image.png";
-    }
-
-    if (imagePath.startsWith('http')) {
-      return imagePath;
-    }
-
-    String cleanPath = imagePath;
-    if (cleanPath.startsWith('/')) {
-      cleanPath = cleanPath.substring(1);
-    }
-
-    return '${AppUrl.imageBaseUrl}/$cleanPath';
-  }
-
-  UgcTask _mapApiResponseToUgcTask(Map<String, dynamic> json) {
-    // Parse status
-    TaskStatus taskStatus;
-    final status = json['status']?.toString().toLowerCase() ?? 'pending';
-    switch (status) {
-      case 'completed':
-        taskStatus = TaskStatus.completed;
-        break;
-      case 'inprogress':
-        taskStatus = TaskStatus.inProgress;
-        break;
-      default:
-        taskStatus = TaskStatus.pending;
-    }
-
-    // Parse subtasks
-    final List<UgcSubTask> ugcSubtasks = [];
-    final subtasksList = json['subtasks'] as List?;
-    if (subtasksList != null) {
-      for (var subtaskJson in subtasksList) {
-        final myCompletion = subtaskJson['myCompletion'] ?? {};
-        ugcSubtasks.add(
-          UgcSubTask(
-            id: subtaskJson['_id'] ?? '',
-            title: subtaskJson['title'] ?? '',
-            isCompleted: myCompletion['isCompleted'] ??
-                subtaskJson['isCompleted'] ??
-                false,
-            duration: subtaskJson['duration']?.toString(),
-            completedAt: myCompletion['completedAt'] != null
-                ? DateTime.tryParse(myCompletion['completedAt'])
-                : null,
-          ),
-        );
-      }
-    }
-
-    // Determine assigned by and their image
-    String? assignedBy;
-    String? assignedByImage;
-    final taskType = json['taskType']?.toString() ?? 'personal';
-    final createdBy = json['createdById'];
-
-    if (taskType == 'personal') {
-      assignedBy = null;
-      assignedByImage = null;
-    } else if (createdBy != null && createdBy['name'] != null) {
-      assignedBy = createdBy['name'];
-      final profileImage = createdBy['profileImage'];
-      if (profileImage != null && profileImage['imageUrl'] != null) {
-        assignedByImage = getImageUrl(profileImage['imageUrl']);
-      }
-    }
-
-    // Get group members for collaborative tasks
-    List<String>? groupMembers;
-    if (taskType == 'collaborative') {
-      final assignedUsers = json['assignedUserIds'] as List?;
-      if (assignedUsers != null && assignedUsers.isNotEmpty) {
-        groupMembers = [];
-        for (var user in assignedUsers) {
-          final profileImage = user['profileImage'];
-          String imageUrl = "assets/images/dummy_user_image.png";
-          if (profileImage != null && profileImage['imageUrl'] != null) {
-            imageUrl = getImageUrl(profileImage['imageUrl']);
-          }
-          groupMembers.add(imageUrl);
-        }
-      }
-    }
-
-    // Parse times
-    DateTime createdAt = DateTime.now();
-    if (json['createdAt'] != null) {
-      createdAt = DateTime.tryParse(json['createdAt']) ?? DateTime.now();
-    }
-
-    DateTime startTime = DateTime.now();
-    if (json['startTime'] != null) {
-      startTime = DateTime.tryParse(json['startTime']) ?? DateTime.now();
-    }
-
-    DateTime? completedTime;
-    final myProgress = json['myProgress'];
-    if (myProgress != null && myProgress['completedAt'] != null) {
-      completedTime = DateTime.tryParse(myProgress['completedAt']);
-    } else if (json['completedTime'] != null) {
-      completedTime = DateTime.tryParse(json['completedTime']);
-    }
-
-    DateTime dueDate = DateTime.now();
-    if (json['dueDate'] != null) {
-      dueDate = DateTime.tryParse(json['dueDate']) ?? DateTime.now();
-    }
-
-    final subtaskProgress = json['subtaskProgress'] ?? {};
-    final totalSubtasks =
-        subtaskProgress['total'] ?? json['totalSubtasks'] ?? 0;
-    final completedSubtasks =
-        subtaskProgress['completed'] ?? json['completedSubtasks'] ?? 0;
-
-    return UgcTask(
-      id: json['_id'] ?? '',
-      taskType: taskType,
-      title: json['title'] ?? '',
-      description: json['description'] ?? '',
-      time: json['scheduledTime'] ?? '',
-      totalSubtasks: totalSubtasks,
-      completedSubtasks: completedSubtasks,
-      status: taskStatus,
-      createdAt: createdAt,
-      startTime: startTime,
-      completedTime: completedTime,
-      dueDate: dueDate,
-      priority: json['priority'] ?? 'medium',
-      subtasks: ugcSubtasks,
-      assignedBy: assignedBy,
-      assignedByImage: assignedByImage,
-      groupMembers: groupMembers,
-    );
-  }
-
-  // Refresh method for pull-to-refresh
-  Future<void> refreshData() async {
-    _currentPage = 1;
-    hasMoreTasks.value = true;
-    _isLoadingMore = false; // ✅ FIX: Reset guard on full refresh
-    await Future.wait([
-      fetchDailyProgress(),
-      fetchTasks(isLoadMore: false),
-    ]);
-  }
-
-  // Load more tasks for pagination
-  void loadMoreTasks() {
-    // ✅ FIX: All guards are inside fetchTasks — this stays clean
-    if (!isLoadingTasks.value && hasMoreTasks.value && !_isLoadingMore) {
-      fetchTasks(isLoadMore: true);
-    }
-  }
-}*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import 'package:get/get.dart';
-import '../../../../../utils/network/app_url.dart';
-import '../../../../../utils/network/network_caller_dio.dart';
-import '../../../../../utils/network/secure_storage_service.dart';
-import '../../../widget/ugc_home_widget/ugc_daily_progress_widget.dart';
-import '../ugc_task_details/ugc_task_model/ugc_sub_task_model.dart';
-import '../ugc_task_details/ugc_task_model/ugc_task_model.dart';
-
-class UgcHomeController extends GetxController {
-  final NetworkCallerDio _networkCaller = NetworkCallerDio();
-
-  // Observable variables
-  var dailyProgress = Rx<DailyProgressData?>(null);
-  var tasks = <UgcTask>[].obs;
-  var isLoadingProgress = false.obs;
-  var isLoadingTasks = false.obs;
-  var hasMoreTasks = true.obs;
-  var errorMessage = RxString('');
   var isUpdatingStatus = false.obs; // Added for status update
 
   // Pagination
@@ -495,6 +186,391 @@ class UgcHomeController extends GetxController {
       isUpdatingStatus.value = false;
       return false;
     }
+  }
+
+  // Helper method to get full image URL
+  String getImageUrl(String? imagePath) {
+    if (imagePath == null || imagePath.isEmpty) {
+      return "assets/images/dummy_user_image.png";
+    }
+
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+
+    String cleanPath = imagePath;
+    if (cleanPath.startsWith('/')) {
+      cleanPath = cleanPath.substring(1);
+    }
+
+    return '${AppUrl.imageBaseUrl}/$cleanPath';
+  }
+
+  UgcTask _mapApiResponseToUgcTask(Map<String, dynamic> json) {
+    // Parse status
+    TaskStatus taskStatus;
+    final status = json['status']?.toString().toLowerCase() ?? 'pending';
+    switch (status) {
+      case 'completed':
+        taskStatus = TaskStatus.completed;
+        break;
+      case 'inprogress':
+        taskStatus = TaskStatus.inProgress;
+        break;
+      default:
+        taskStatus = TaskStatus.pending;
+    }
+
+    // Parse subtasks
+    final List<UgcSubTask> ugcSubtasks = [];
+    final subtasksList = json['subtasks'] as List?;
+    if (subtasksList != null) {
+      for (var subtaskJson in subtasksList) {
+        final myCompletion = subtaskJson['myCompletion'] ?? {};
+        ugcSubtasks.add(
+          UgcSubTask(
+            id: subtaskJson['_id'] ?? '',
+            title: subtaskJson['title'] ?? '',
+            isCompleted: myCompletion['isCompleted'] ??
+                subtaskJson['isCompleted'] ??
+                false,
+            duration: subtaskJson['duration']?.toString(),
+            completedAt: myCompletion['completedAt'] != null
+                ? DateTime.tryParse(myCompletion['completedAt'])
+                : null,
+          ),
+        );
+      }
+    }
+
+    // Determine assigned by and their image
+    String? assignedBy;
+    String? assignedByImage;
+    final taskType = json['taskType']?.toString() ?? 'personal';
+    final createdBy = json['createdById'];
+
+    if (taskType == 'personal') {
+      assignedBy = null;
+      assignedByImage = null;
+    } else if (createdBy != null && createdBy['name'] != null) {
+      assignedBy = createdBy['name'];
+      final profileImage = createdBy['profileImage'];
+      if (profileImage != null && profileImage['imageUrl'] != null) {
+        assignedByImage = getImageUrl(profileImage['imageUrl']);
+      }
+    }
+
+    // Get group members for collaborative tasks
+    List<String>? groupMembers;
+    if (taskType == 'collaborative') {
+      final assignedUsers = json['assignedUserIds'] as List?;
+      if (assignedUsers != null && assignedUsers.isNotEmpty) {
+        groupMembers = [];
+        for (var user in assignedUsers) {
+          final profileImage = user['profileImage'];
+          String imageUrl = "assets/images/dummy_user_image.png";
+          if (profileImage != null && profileImage['imageUrl'] != null) {
+            imageUrl = getImageUrl(profileImage['imageUrl']);
+          }
+          groupMembers.add(imageUrl);
+        }
+      }
+    }
+
+    // Parse times
+    DateTime createdAt = DateTime.now();
+    if (json['createdAt'] != null) {
+      createdAt = DateTime.tryParse(json['createdAt']) ?? DateTime.now();
+    }
+
+    DateTime startTime = DateTime.now();
+    if (json['startTime'] != null) {
+      startTime = DateTime.tryParse(json['startTime']) ?? DateTime.now();
+    }
+
+    DateTime? completedTime;
+    final myProgress = json['myProgress'];
+    if (myProgress != null && myProgress['completedAt'] != null) {
+      completedTime = DateTime.tryParse(myProgress['completedAt']);
+    } else if (json['completedTime'] != null) {
+      completedTime = DateTime.tryParse(json['completedTime']);
+    }
+
+    DateTime dueDate = DateTime.now();
+    if (json['dueDate'] != null) {
+      dueDate = DateTime.tryParse(json['dueDate']) ?? DateTime.now();
+    }
+
+    final subtaskProgress = json['subtaskProgress'] ?? {};
+    final totalSubtasks =
+        subtaskProgress['total'] ?? json['totalSubtasks'] ?? 0;
+    final completedSubtasks =
+        subtaskProgress['completed'] ?? json['completedSubtasks'] ?? 0;
+
+    return UgcTask(
+      id: json['_id'] ?? '',
+      taskType: taskType,
+      title: json['title'] ?? '',
+      description: json['description'] ?? '',
+      time: json['scheduledTime'] ?? '',
+      totalSubtasks: totalSubtasks,
+      completedSubtasks: completedSubtasks,
+      status: taskStatus,
+      createdAt: createdAt,
+      startTime: startTime,
+      completedTime: completedTime,
+      dueDate: dueDate,
+      priority: json['priority'] ?? 'medium',
+      subtasks: ugcSubtasks,
+      assignedBy: assignedBy,
+      assignedByImage: assignedByImage,
+      groupMembers: groupMembers,
+    );
+  }
+
+  // Refresh method for pull-to-refresh
+  Future<void> refreshData() async {
+    _currentPage = 1;
+    hasMoreTasks.value = true;
+    _isLoadingMore = false; // Reset guard on full refresh
+    await Future.wait([
+      fetchDailyProgress(),
+      fetchTasks(isLoadMore: false),
+    ]);
+  }
+
+  // Load more tasks for pagination
+  void loadMoreTasks() {
+    // All guards are inside fetchTasks — this stays clean
+    if (!isLoadingTasks.value && hasMoreTasks.value && !_isLoadingMore) {
+      fetchTasks(isLoadMore: true);
+    }
+  }
+}*/
+
+
+
+
+
+///
+///
+///
+/// todo:: passing start time with 'start' button
+///
+///
+///
+///
+
+
+
+
+import 'package:get/get.dart';
+import '../../../../../utils/network/app_url.dart';
+import '../../../../../utils/network/network_caller_dio.dart';
+import '../../../../../utils/network/secure_storage_service.dart';
+import '../../../widget/ugc_home_widget/ugc_daily_progress_widget.dart';
+import '../ugc_task_details/ugc_task_model/ugc_sub_task_model.dart';
+import '../ugc_task_details/ugc_task_model/ugc_task_model.dart';
+
+class UgcHomeController extends GetxController {
+  final NetworkCallerDio _networkCaller = NetworkCallerDio();
+
+  // Observable variables
+  var dailyProgress = Rx<DailyProgressData?>(null);
+  var tasks = <UgcTask>[].obs;
+  var isLoadingProgress = false.obs;
+  var isLoadingTasks = false.obs;
+  var hasMoreTasks = true.obs;
+  var errorMessage = RxString('');
+  var isUpdatingStatus = false.obs; // Added for status update
+
+  // Pagination
+  int _currentPage = 1;
+  final int _limit = 10;
+
+  // Guard flag to prevent concurrent/duplicate loadMore calls
+  bool _isLoadingMore = false;
+
+  @override
+  void onInit() {
+    super.onInit();
+    fetchInitialData();
+  }
+
+  Future<void> fetchInitialData() async {
+    await Future.wait([
+      fetchDailyProgress(),
+      fetchTasks(),
+    ]);
+  }
+
+  Future<void> fetchDailyProgress() async {
+    isLoadingProgress.value = true;
+    errorMessage.value = '';
+
+    try {
+      final token = await SecureStorageService.instance.getAccessToken();
+
+      if (token == null) {
+        print('No access token found');
+        return;
+      }
+
+      final response = await _networkCaller.getRequest(
+        AppUrl.getUgcDailyProgress,
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      if (response.isSuccess && response.jsonResponse != null) {
+        final data = response.jsonResponse?['data']?['attributes'];
+        if (data != null) {
+          dailyProgress.value = DailyProgressData.fromJson(data);
+        }
+      }
+    } catch (e) {
+      errorMessage.value = e.toString();
+      print('Error fetching daily progress: $e');
+    } finally {
+      isLoadingProgress.value = false;
+    }
+  }
+
+  Future<void> fetchTasks({bool isLoadMore = false}) async {
+    // Early return guards — prevent fetching if already in progress
+    if (isLoadMore && !hasMoreTasks.value) return;
+    if (isLoadMore && _isLoadingMore) return;
+
+    if (isLoadMore) {
+      _isLoadingMore = true;
+      _currentPage++;
+    } else {
+      _currentPage = 1; // Reset page when doing a fresh fetch
+      isLoadingTasks.value = true;
+    }
+
+    try {
+      final token = await SecureStorageService.instance.getAccessToken();
+
+      if (token == null) {
+        print('No access token found');
+        return;
+      }
+
+      final response = await _networkCaller.getRequest(
+        '${AppUrl.getUgcHomeScreenTask}?page=$_currentPage&limit=$_limit',
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      if (response.isSuccess && response.jsonResponse != null) {
+        final attributes = response.jsonResponse?['data']?['attributes'];
+
+        if (attributes != null && attributes is List) {
+          final newTasks = <UgcTask>[];
+          for (var taskJson in attributes) {
+            final task = _mapApiResponseToUgcTask(taskJson);
+            newTasks.add(task);
+          }
+
+          if (isLoadMore) {
+            // Deduplicate before adding — prevents duplicates if
+            // the listener fires twice before the first response returns
+            final existingIds = tasks.map((t) => t.id).toSet();
+            final uniqueNewTasks =
+            newTasks.where((t) => !existingIds.contains(t.id)).toList();
+            tasks.addAll(uniqueNewTasks);
+          } else {
+            tasks.value = newTasks;
+          }
+
+          // If we got fewer items than the limit, there are no more pages
+          hasMoreTasks.value = newTasks.length == _limit;
+        }
+      }
+    } catch (e) {
+      // Revert page increment on failure so next retry uses correct page
+      if (isLoadMore) _currentPage--;
+      errorMessage.value = e.toString();
+      print('Error fetching tasks: $e');
+    } finally {
+      if (isLoadMore) {
+        _isLoadingMore = false; // Release the guard
+      } else {
+        isLoadingTasks.value = false;
+      }
+    }
+  }
+
+  // ✅ UPDATED: Update task status with startTime for 'inProgress'
+  Future<bool> updateTaskStatus(String taskId, String status) async {
+    isUpdatingStatus.value = true;
+    errorMessage.value = '';
+
+    try {
+      final token = await SecureStorageService.instance.getAccessToken();
+
+      if (token == null) {
+        errorMessage.value = 'No access token found';
+        isUpdatingStatus.value = false;
+        return false;
+      }
+
+      final Map<String, dynamic> requestBody = {"status": status};
+
+      // For 'inProgress' status, add startTime (without Z at the end)
+      if (status == 'inProgress') {
+        final now = DateTime.now();
+        // Format: YYYY-MM-DDTHH:MM:SS (without Z)
+        final formattedStartTime = _formatDateTimeWithoutZ(now);
+        requestBody["startTime"] = formattedStartTime;
+        print('📤 Adding startTime: $formattedStartTime');
+      }
+
+      print('📤 Updating task status to: $status');
+      print('📤 Request body: $requestBody');
+
+      // ✅ FIXED: Removed /v4 from URL
+      final url = '${AppUrl.baseUrl}/tasks/$taskId/status';
+      print('📤 URL: $url');
+
+      final response = await _networkCaller.putRequest(
+        url,
+        body: requestBody,
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      print('📡 Response status code: ${response.statusCode}');
+      print('📡 Response success: ${response.isSuccess}');
+
+      if (response.isSuccess || response.statusCode == 200) {
+        isUpdatingStatus.value = false;
+        return true;
+      } else {
+        String error = response.errorMessage ?? 'Failed to update task status';
+        if (response.jsonResponse != null) {
+          error = response.jsonResponse?['message'] ?? error;
+        }
+        errorMessage.value = error;
+        isUpdatingStatus.value = false;
+        return false;
+      }
+    } catch (e) {
+      print('Error updating task status: $e');
+      errorMessage.value = 'An error occurred. Please try again.';
+      isUpdatingStatus.value = false;
+      return false;
+    }
+  }
+
+  // Format DateTime to YYYY-MM-DDTHH:MM:SS (without Z)
+  String _formatDateTimeWithoutZ(DateTime dateTime) {
+    final year = dateTime.year;
+    final month = dateTime.month.toString().padLeft(2, '0');
+    final day = dateTime.day.toString().padLeft(2, '0');
+    final hour = dateTime.hour.toString().padLeft(2, '0');
+    final minute = dateTime.minute.toString().padLeft(2, '0');
+    final second = dateTime.second.toString().padLeft(2, '0');
+
+    return '$year-$month-${day}T$hour:$minute:$second';
   }
 
   // Helper method to get full image URL
