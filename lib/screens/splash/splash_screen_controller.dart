@@ -2,7 +2,7 @@
 import 'dart:async';
 import 'package:get/get.dart';
 import '../../auth/model/user_model.dart';
-import '../../auth/sign_in/manual_signin_screen_controller.dart';
+import '../../auth/sign_in/manual_sign_in_screen_controller.dart';
 import '../../screens/get_started/get_started_screen.dart';
 import '../../features/individual_user/views/bottom_navigation/main_bottom_nav.dart';
 import '../../features/individual_user/views/home/app_open_home_screen.dart';
@@ -98,7 +98,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:get/get.dart';
 import '../../auth/model/user_model.dart';
-import '../../auth/sign_in/manual_signin_screen_controller.dart';
+import '../../auth/sign_in/manual_sign_in_screen_controller.dart';
 import '../../screens/get_started/get_started_screen.dart';
 import '../../features/individual_user/views/bottom_navigation/main_bottom_nav.dart';
 import '../../features/individual_user/views/home/app_open_home_screen.dart';

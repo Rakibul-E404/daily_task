@@ -5,7 +5,7 @@ import '../../utils/app_colors.dart';
 import '../forgot_password/forgot_password_screen.dart';
 import '../sign_up/sign_up_screen.dart';
 import 'google_signin_screen_controller.dart';
-import 'manual_signin_screen_controller.dart';
+import 'manual_sign_in_screen_controller.dart';
 
 class SignInScreen extends StatelessWidget {
   SignInScreen({super.key}) {
