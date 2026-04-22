@@ -1393,7 +1393,7 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
                                   text: TextSpan(
                                     children: [
                                       TextSpan(
-                                        text: "Task Created Time: ",
+                                        text: "Task Due Time: ",
                                         style: AppTextStyles.smallText,
                                       ),
                                       TextSpan(

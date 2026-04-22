@@ -50,9 +50,8 @@ Widget buildTaskCard({
     return 0.0;
   }
 
-  // Handle Start button tap
+  // Handle Start button tap - Update only this task locally
   void _handleStartTask() async {
-    // Get the TaskController to update the task status
     final taskController = Get.isRegistered<TaskController>()
         ? Get.find<TaskController>()
         : Get.put(TaskController());
@@ -60,7 +59,18 @@ Widget buildTaskCard({
     final success = await taskController.updateTaskStatus(task.id, 'inProgress');
 
     if (success) {
-      // Show success message
+      // Update only this task's status locally without refreshing the whole list
+      final currentTasks = taskController.tasks.toList();
+      final index = currentTasks.indexWhere((t) => t.id == task.id);
+
+      if (index != -1) {
+        final updatedTask = currentTasks[index].copyWith(
+          status: TaskStatus.inProgress,
+        );
+        currentTasks[index] = updatedTask;
+        taskController.tasks.value = currentTasks;
+      }
+
       if (Get.context != null) {
         ScaffoldMessenger.of(Get.context!).showSnackBar(
           const SnackBar(
@@ -70,8 +80,6 @@ Widget buildTaskCard({
           ),
         );
       }
-      // Refresh the task list
-      await taskController.refreshTasks();
     } else {
       if (Get.context != null) {
         ScaffoldMessenger.of(Get.context!).showSnackBar(
@@ -87,7 +95,6 @@ Widget buildTaskCard({
 
   return InkWell(
     onTap: () {
-      // ✅ Pass only taskId to fetch fresh data
       Get.to(() => TaskDetailsScreen(taskId: task.id), transition: Transition.leftToRight);
     },
     child: Stack(
@@ -315,10 +322,14 @@ Widget buildTaskCard({
 
 
 
-
-
-
-
+///
+///
+///
+/// todo:: passng the start time with 'start' button
+///
+///
+///
+///
 
 
 
@@ -380,7 +391,12 @@ Widget buildTaskCard({
         ? Get.find<TaskController>()
         : Get.put(TaskController());
 
-    final success = await taskController.updateTaskStatus(task.id, 'inProgress');
+    // ✅ FIXED: Pass the current time as startTime
+    final success = await taskController.updateTaskStatus(
+      task.id,
+      'inProgress',
+      startTime: DateTime.now(),  // Add this line!
+    );
 
     if (success) {
       // Update only this task's status locally without refreshing the whole list
