@@ -422,100 +422,6 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                 style: AppTextStyles.defaultTextStyle,
               ),
 
-              const SizedBox(height: 20),
-
-              // ── Task Status ────────────────────────────────────────
-              Text('Task Status', style: AppTextStyles.smallHeading),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.grey),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<TaskStatus>(
-                    value: _selectedStatus,
-                    isExpanded: true,
-                    items: TaskStatus.values.map((status) {
-                      return DropdownMenuItem(
-                        value: status,
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 12,
-                              height: 12,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: _getStatusColor(status),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Text(_getStatusText(status),
-                                style: AppTextStyles.defaultTextStyle),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      if (value != null) setState(() => _selectedStatus = value);
-                    },
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // ── Task Priority ──────────────────────────────────────
-              Text('Task Priority', style: AppTextStyles.smallHeading),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.grey),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: _selectedPriority,
-                    isExpanded: true,
-                    items: ['low', 'medium', 'high'].map((priority) {
-                      return DropdownMenuItem(
-                        value: priority,
-                        child: Row(
-                          children: [
-                            Icon(
-                              priority == 'high'
-                                  ? Icons.flag
-                                  : Icons.flag_outlined,
-                              color: priority == 'high'
-                                  ? Colors.red
-                                  : priority == 'medium'
-                                  ? Colors.orange
-                                  : Colors.green,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              priority.toUpperCase(),
-                              style: AppTextStyles.defaultTextStyle.copyWith(
-                                color: priority == 'high'
-                                    ? Colors.red
-                                    : priority == 'medium'
-                                    ? Colors.orange
-                                    : Colors.green,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      if (value != null) setState(() => _selectedPriority = value);
-                    },
-                  ),
-                ),
-              ),
 
               const SizedBox(height: 20),
 
@@ -523,7 +429,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
               Text('Task Date & Time', style: AppTextStyles.smallHeading),
               const SizedBox(height: 8),
               GestureDetector(
-                onTap: () => _selectDateTime(context),
+                // onTap: () => _selectDateTime(context),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 16, vertical: 14),
