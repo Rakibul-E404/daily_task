@@ -90,6 +90,9 @@ class AppUrl {
     return '$baseUrl/tasks/$taskId/status/v5';
   }
 
+  static String editTask(String taskId) {
+    return '$baseUrl/tasks/$taskId/v2';
+  }
   static String deleteTask(String taskId) {
     return '$baseUrl/tasks/$taskId';
   }
