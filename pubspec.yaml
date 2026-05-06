@@ -44,6 +44,14 @@ dependencies:
   dashed_line: ^0.1.0+3
   audioplayers: ^6.5.1
   avatar_stack: ^3.0.0
+  dio: ^5.9.2
+  flutter_secure_storage: ^10.0.0
+  shimmer: ^3.0.0
+  get_storage: ^2.1.1
+  image_picker: ^1.2.1
+  cached_network_image: ^3.4.1
+  url_launcher: ^6.3.2
+  shared_preferences: ^2.5.5
 
 dev_dependencies:
   flutter_test:

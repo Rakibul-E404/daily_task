@@ -1,25 +1,61 @@
-# askfemi
+# 📱 AskFemi
 
-A new Flutter project.
+## 📌 Project Overview
+**AskFemi** is a task management application designed specifically for children, including those with autism, with supervision and control features for parents or teachers. The platform helps guide children through structured daily tasks while allowing guardians to monitor progress and provide support.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## 🎯 Purpose
+The goal of AskFemi is to:
+- Encourage routine and responsibility in children
+- Provide a structured task system for children with special needs
+- Enable parents and teachers to guide and monitor activities effectively
 
-A few resources to get you started if this is your first Flutter project:
+---
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## 🧩 Key Features
+- ✅ Task assignment by parents/teachers
+- 📊 Task monitoring and progress tracking
+- 👨‍👩‍👧 Guardian control panel
+- 🧠 Simple and child-friendly interface
+- 🔔 Notifications/reminders for tasks
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+---
 
+## 👥 Target Users
+- Parents
+- Teachers
+- Children (including children with autism or special needs)
 
-###### ###### ###### 
-###### ###### ###### 
-###### ###### ###### 
-### NOTE ### --->
+---
 
-# - UGC => uSER GUEST CHILD
-# - HOME SCREEN AND THE APP OPEN HOME SCREEN WILL BE ONE SCREEN
+## 🏗️ Technology Stack
+- **Frontend & App Development:** Flutter
+
+---
+
+## ⏱️ Development Timeline
+- Approximate Time: **2 Months**
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Flutter SDK installed
+- Dart installed
+- Android Studio / VS Code
+
+### Installation
+```bash
+# Clone the repository
+git clone https://github.com/your-username/askfemi.git
+
+# Navigate to the project directory
+cd askfemi
+
+# Install dependencies
+flutter pub get
+
+# Run the app
+flutter run

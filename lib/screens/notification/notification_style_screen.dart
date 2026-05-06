@@ -3,6 +3,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../../../../utils/app_colors.dart';
 import '../../../../utils/app_texts_style.dart';
+import '../../../../utils/network/app_url.dart';
+import '../../../../utils/network/network_caller_dio.dart';
+import '../../../../utils/network/secure_storage_service.dart';
 
 class NotificationStyleScreen extends StatefulWidget {
   const NotificationStyleScreen({super.key});
@@ -13,25 +16,139 @@ class NotificationStyleScreen extends StatefulWidget {
 }
 
 class _NotificationStyleScreenState extends State<NotificationStyleScreen> {
+  final NetworkCallerDio _networkCaller = NetworkCallerDio();
+
   String _selectedOption = 'gentle';
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool _isPlaying = false;
+  bool _isLoading = true;
+  bool _isSaving = false;
+  String _errorMessage = '';
 
   @override
   void initState() {
     super.initState();
     _setupAudioPlayer();
-    // Auto-play gentle sound when screen opens
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _playSampleSound('gentle');
+    _fetchNotificationStyle();
+  }
+
+  Future<void> _fetchNotificationStyle() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
     });
+
+    try {
+      final token = await SecureStorageService.instance.getAccessToken();
+
+      if (token == null) {
+        setState(() {
+          _errorMessage = 'No access token found';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final response = await _networkCaller.getRequest(
+        AppUrl.getNotificationStyle,
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      print('📡 GET Response status code: ${response.statusCode}');
+      print('📡 GET Response success: ${response.isSuccess}');
+      print('📡 GET Response body: ${response.jsonResponse}');
+
+      if (response.isSuccess && response.jsonResponse != null) {
+        final attributes = response.jsonResponse?['data']?['attributes'];
+        if (attributes != null) {
+          final notificationStyle = attributes['notificationStyle'] ?? 'gentle';
+          setState(() {
+            _selectedOption = notificationStyle;
+            _isLoading = false;
+          });
+
+          // Auto-play the current selected sound when screen opens (if not silent)
+          if (_selectedOption != 'silent') {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _playSampleSound(_selectedOption);
+            });
+          }
+        } else {
+          setState(() {
+            _errorMessage = 'No data found';
+            _isLoading = false;
+          });
+        }
+      } else {
+        setState(() {
+          _errorMessage = response.errorMessage ?? 'Failed to load notification style';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error fetching notification style: $e');
+      setState(() {
+        _errorMessage = 'An error occurred. Please try again.';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _saveNotificationStyle() async {
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      final token = await SecureStorageService.instance.getAccessToken();
+
+      if (token == null) {
+        _showErrorSnackbar('No access token found. Please login again.');
+        setState(() {
+          _isSaving = false;
+        });
+        return;
+      }
+
+      final Map<String, dynamic> requestBody = {
+        "notificationStyle": _selectedOption,
+      };
+
+      print('📤 PUT Request - Saving notification style: $requestBody');
+
+      final response = await _networkCaller.putRequest(
+        AppUrl.updateNotificationStyle,
+        body: requestBody,
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      print('📡 PUT Response status code: ${response.statusCode}');
+      print('📡 PUT Response success: ${response.isSuccess}');
+      print('📡 PUT Response body: ${response.jsonResponse}');
+
+      if (response.isSuccess || response.statusCode == 200) {
+        _showSuccessSnackbar('Notification style saved successfully');
+        Navigator.pop(context, _selectedOption);
+      } else {
+        String error = response.errorMessage ?? 'Failed to save notification style';
+        if (response.jsonResponse != null) {
+          error = response.jsonResponse?['message'] ?? error;
+        }
+        _showErrorSnackbar(error);
+      }
+    } catch (e) {
+      print('Error saving notification style: $e');
+      _showErrorSnackbar('An error occurred. Please try again.');
+    } finally {
+      setState(() {
+        _isSaving = false;
+      });
+    }
   }
 
   void _setupAudioPlayer() {
-    // Set audio context for better compatibility
     _audioPlayer.setReleaseMode(ReleaseMode.stop);
 
-    // Listen to player state changes
     _audioPlayer.onPlayerStateChanged.listen((PlayerState state) {
       if (mounted) {
         setState(() {
@@ -41,7 +158,6 @@ class _NotificationStyleScreenState extends State<NotificationStyleScreen> {
       }
     });
 
-    // Listen for completion
     _audioPlayer.onPlayerComplete.listen((event) {
       if (mounted) {
         setState(() {
@@ -60,7 +176,6 @@ class _NotificationStyleScreenState extends State<NotificationStyleScreen> {
   }
 
   void _selectOption(String option) async {
-    // Stop any currently playing sound
     if (_isPlaying) {
       await _audioPlayer.stop();
       setState(() {
@@ -72,7 +187,6 @@ class _NotificationStyleScreenState extends State<NotificationStyleScreen> {
       _selectedOption = option;
     });
 
-    // Play sample sound for gentle and firm options
     if (option == 'gentle' || option == 'firm') {
       await _playSampleSound(option);
     }
@@ -84,10 +198,8 @@ class _NotificationStyleScreenState extends State<NotificationStyleScreen> {
         _isPlaying = true;
       });
 
-      // Stop any currently playing sound first
       await _audioPlayer.stop();
 
-      // Different sound files for different notification styles
       String soundPath;
       if (option == 'gentle') {
         soundPath = 'tune/gentle_notification.mp3';
@@ -97,7 +209,6 @@ class _NotificationStyleScreenState extends State<NotificationStyleScreen> {
 
       debugPrint('🎵 Attempting to play: $soundPath');
 
-      // Play the sound from assets with proper source
       await _audioPlayer.play(
         AssetSource(soundPath),
         volume: 1.0,
@@ -112,225 +223,35 @@ class _NotificationStyleScreenState extends State<NotificationStyleScreen> {
           _isPlaying = false;
         });
 
-        // Show error message with detailed help
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Audio file not found: $e'),
             duration: const Duration(seconds: 4),
             backgroundColor: Colors.red[700],
-            action: SnackBarAction(
-              label: 'Setup Help',
-              textColor: Colors.white,
-              onPressed: _showHelpDialog,
-            ),
           ),
         );
       }
     }
   }
 
-  void _showHelpDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Row(
-            children: const [
-              Icon(Icons.info_outline, color: AppColors.primaryColor),
-              SizedBox(width: 8),
-              Text('Audio Files Setup'),
-            ],
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Please follow these steps:',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-
-                // Step 1
-                _buildSetupStep(
-                  '1',
-                  'Create audio files folder',
-                  'Create a folder: assets/tune/',
-                ),
-                const SizedBox(height: 12),
-
-                // Step 2
-                _buildSetupStep(
-                  '2',
-                  'Add MP3 files',
-                  'Place these files in assets/tune/:\n• gentle_notification.mp3\n• firm_notification.mp3',
-                ),
-                const SizedBox(height: 12),
-
-                // Step 3
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.blue[50],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.primaryColor.withOpacity(0.3)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 24,
-                            height: 24,
-                            decoration: BoxDecoration(
-                              color: AppColors.primaryColor,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Center(
-                              child: Text(
-                                '3',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          const Text(
-                            'Update pubspec.yaml',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[800],
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: const Text(
-                          'flutter:\n  assets:\n    - assets/icons/\n    - assets/tune/',
-                          style: TextStyle(
-                            fontFamily: 'monospace',
-                            fontSize: 12,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // Step 4
-                _buildSetupStep(
-                  '4',
-                  'Run commands',
-                  'Execute in terminal:\nflutter clean\nflutter pub get\nflutter run',
-                ),
-
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.orange[50],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: const [
-                      Icon(Icons.lightbulb_outline, color: Colors.orange, size: 20),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Tip: You can use any MP3 files for testing. Just rename them accordingly.',
-                          style: TextStyle(fontSize: 12),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Got it!'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildSetupStep(String number, String title, String description) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryColor,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    number,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.only(left: 32),
-            child: Text(
-              description,
-              style: TextStyle(fontSize: 12, color: Colors.grey[700]),
-            ),
-          ),
-        ],
+  void _showErrorSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
       ),
     );
   }
 
-  Future<void> _testNotificationSound() async {
-    // Stop any currently playing sound
-    if (_isPlaying) {
-      await _audioPlayer.stop();
-    }
-
-    // Play the selected notification style sound
-    await _playSampleSound(_selectedOption);
+  void _showSuccessSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   @override
@@ -347,7 +268,40 @@ class _NotificationStyleScreenState extends State<NotificationStyleScreen> {
         title: Text('Notification Style', style: AppTextStyles.smallHeading),
         centerTitle: false,
       ),
-      body: SafeArea(
+      body: _isLoading
+          ? const Center(
+        child: CircularProgressIndicator(
+          color: AppColors.primaryColor,
+        ),
+      )
+          : _errorMessage.isNotEmpty
+          ? Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 64,
+              color: Colors.red.shade300,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage,
+              style: TextStyle(color: Colors.red.shade400),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _fetchNotificationStyle,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryColor,
+              ),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      )
+          : SafeArea(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.all(16.0),
@@ -392,7 +346,6 @@ class _NotificationStyleScreenState extends State<NotificationStyleScreen> {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 24),
 
                   // Option Tiles
@@ -404,7 +357,6 @@ class _NotificationStyleScreenState extends State<NotificationStyleScreen> {
                     isPlaying: _isPlaying && _selectedOption == 'gentle',
                     onTap: () => _selectOption('gentle'),
                   ),
-
                   const SizedBox(height: 16),
 
                   _buildOptionTile(
@@ -415,7 +367,6 @@ class _NotificationStyleScreenState extends State<NotificationStyleScreen> {
                     isPlaying: _isPlaying && _selectedOption == 'firm',
                     onTap: () => _selectOption('firm'),
                   ),
-
                   const SizedBox(height: 16),
 
                   _buildOptionTile(
@@ -432,17 +383,7 @@ class _NotificationStyleScreenState extends State<NotificationStyleScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {
-                        // Save the selected option
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Notification style set to $_selectedOption'),
-                            duration: const Duration(seconds: 2),
-                            backgroundColor: AppColors.primaryColor,
-                          ),
-                        );
-                        Navigator.pop(context, _selectedOption);
-                      },
+                      onPressed: _isSaving ? null : _saveNotificationStyle,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryColor,
                         foregroundColor: Colors.white,
@@ -451,7 +392,16 @@ class _NotificationStyleScreenState extends State<NotificationStyleScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
+                      child: _isSaving
+                          ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                          : const Text(
                         'Save Preference',
                         style: TextStyle(
                           fontSize: 16,
@@ -581,40 +531,40 @@ class _NotificationStyleScreenState extends State<NotificationStyleScreen> {
                 ],
               ),
             ),
-            const SizedBox(width: 12),
-            // Custom toggle indicator
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: 44,
-              height: 24,
-              decoration: BoxDecoration(
-                color: isSelected ? AppColors.primaryColor : AppColors.lightGrey,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Stack(
-                children: [
-                  AnimatedPositioned(
-                    duration: const Duration(milliseconds: 200),
-                    top: 2,
-                    left: isSelected ? 22 : 2,
-                    child: Container(
-                      width: 20,
-                      height: 20,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 2,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            // const SizedBox(width: 12),
+            // // Custom toggle indicator (replaces radio button)
+            // AnimatedContainer(
+            //   duration: const Duration(milliseconds: 200),
+            //   width: 44,
+            //   height: 24,
+            //   decoration: BoxDecoration(
+            //     color: isSelected ? AppColors.primaryColor : AppColors.lightGrey,
+            //     borderRadius: BorderRadius.circular(12),
+            //   ),
+            //   child: Stack(
+            //     children: [
+            //       AnimatedPositioned(
+            //         duration: const Duration(milliseconds: 200),
+            //         top: 2,
+            //         left: isSelected ? 22 : 2,
+            //         child: Container(
+            //           width: 20,
+            //           height: 20,
+            //           decoration: BoxDecoration(
+            //             color: Colors.white,
+            //             shape: BoxShape.circle,
+            //             boxShadow: [
+            //               BoxShadow(
+            //                 color: Colors.black.withOpacity(0.1),
+            //                 blurRadius: 2,
+            //               ),
+            //             ],
+            //           ),
+            //         ),
+            //       ),
+            //     ],
+            //   ),
+            // ),
           ],
         ),
       ),

@@ -28,6 +28,7 @@ class AppColors{
   static const Color liteRedColor = Color(0xfff9eaec);
   static const Color golden = Color(0xFFFFB74D);
   static const Color transparent = Colors.transparent;
+  static const Color notice = Colors.orange;
   static const Color pendingStatusColor = Color(0xffe6e6e6);
   static const Color inProgressStatusColor = Color(0xffe2edf9);
   static const Color completedStatusColor = Color(0xffdaf1e6);

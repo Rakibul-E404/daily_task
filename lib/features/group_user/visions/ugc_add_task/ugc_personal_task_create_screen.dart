@@ -1,0 +1,1076 @@
+/**
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../../../../utils/app_colors.dart';
+import '../../../../utils/app_texts_style.dart';
+import '../ugc_home/ugc_task_details/ugc_task_model/ugc_sub_task_model.dart';
+import 'controller/ugc_personal_task_create_controller.dart';
+
+class UgcPersonalTaskCreateScreen extends StatefulWidget {
+  const UgcPersonalTaskCreateScreen({super.key});
+
+  @override
+  State<UgcPersonalTaskCreateScreen> createState() => _UgcPersonalTaskCreateScreenState();
+}
+
+class _UgcPersonalTaskCreateScreenState extends State<UgcPersonalTaskCreateScreen> {
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _dateTimeController = TextEditingController();
+
+  final List<UgcSubTask> _subTasks = [];
+  final List<TextEditingController> _subtaskControllers = [];
+  final List<FocusNode> _subtaskFocusNodes = [];
+
+  DateTime? _selectedStartDateTime;
+  DateTime? _selectedDueDate;
+  String? _formattedScheduledTime;
+
+  final UgcPersonalTaskCreateController _controller = Get.put(UgcPersonalTaskCreateController());
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    _dateTimeController.dispose();
+    for (final controller in _subtaskControllers) {
+      controller.dispose();
+    }
+    for (final node in _subtaskFocusNodes) {
+      node.dispose();
+    }
+    super.dispose();
+  }
+
+  Future<void> _selectDateTime() async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2100),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: AppColors.primaryColor,
+              onPrimary: AppColors.black,
+              onSurface: AppColors.black,
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(foregroundColor: AppColors.primaryColor),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (pickedDate != null && mounted) {
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+        builder: (context, child) {
+          return Theme(
+            data: Theme.of(context).copyWith(
+              colorScheme: ColorScheme.light(
+                primary: AppColors.primaryColor,
+                onPrimary: AppColors.black,
+                onSurface: AppColors.black,
+              ),
+              textButtonTheme: TextButtonThemeData(
+                style: TextButton.styleFrom(foregroundColor: AppColors.primaryColor),
+              ),
+            ),
+            child: child!,
+          );
+        },
+      );
+
+      if (pickedTime != null && mounted) {
+        setState(() {
+          _selectedStartDateTime = DateTime(
+            pickedDate.year,
+            pickedDate.month,
+            pickedDate.day,
+            pickedTime.hour,
+            pickedTime.minute,
+          );
+          _selectedDueDate = DateTime(
+            pickedDate.year,
+            pickedDate.month,
+            pickedDate.day,
+            23,
+            59,
+            59,
+          );
+          _formattedScheduledTime = '${pickedTime.format(context)}';
+          _dateTimeController.text =
+          '${pickedDate.day}/${pickedDate.month}/${pickedDate.year} ${pickedTime.format(context)}';
+        });
+      }
+    }
+  }
+
+  void _addNewSubTask() {
+    setState(() {
+      _subTasks.add(UgcSubTask(title: ''));
+      _subtaskControllers.add(TextEditingController());
+      _subtaskFocusNodes.add(FocusNode());
+    });
+  }
+
+  void _removeSubTask(int index) {
+    setState(() {
+      _subtaskControllers[index].dispose();
+      _subtaskFocusNodes[index].dispose();
+      _subTasks.removeAt(index);
+      _subtaskControllers.removeAt(index);
+      _subtaskFocusNodes.removeAt(index);
+    });
+  }
+
+  void _saveSubTask(int index) {
+    setState(() {
+      _subTasks[index] = _subTasks[index].copyWith(
+        title: _subtaskControllers[index].text.trim(),
+      );
+      _subtaskFocusNodes[index].unfocus();
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Subtask saved'),
+        duration: Duration(seconds: 1),
+        backgroundColor: Colors.black,
+      ),
+    );
+  }
+
+  Future<void> _createTask() async {
+    // First, save any unsaved subtasks that are currently being edited
+    for (int i = 0; i < _subTasks.length; i++) {
+      final currentText = _subtaskControllers[i].text.trim();
+      if (currentText.isNotEmpty && _subTasks[i].title != currentText) {
+        _subTasks[i] = _subTasks[i].copyWith(title: currentText);
+      }
+    }
+
+    // VALIDATION: Only show validation errors for missing mandatory fields
+    if (_titleController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter a task title'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (_selectedStartDateTime == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select date and time'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Also save the currently focused subtask if any
+    for (int i = 0; i < _subtaskFocusNodes.length; i++) {
+      if (_subtaskFocusNodes[i].hasFocus) {
+        final currentText = _subtaskControllers[i].text.trim();
+        if (currentText.isNotEmpty) {
+          _subTasks[i] = _subTasks[i].copyWith(title: currentText);
+        }
+        _subtaskFocusNodes[i].unfocus();
+      }
+    }
+
+    final List<UgcSubTask> validSubtasks = _subTasks
+        .where((task) => task.title.trim().isNotEmpty)
+        .toList();
+
+    final success = await _controller.createPersonalTask(
+      title: _titleController.text.trim(),
+      description: _descriptionController.text.trim(),
+      scheduledTime: _formattedScheduledTime ?? '',
+      startDateTime: _selectedStartDateTime!,
+      dueDate: _selectedDueDate!,
+      subtasks: validSubtasks,
+    );
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Task created successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Get.back();
+    } else {
+      // Show the error message from API (no extra messages)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_controller.errorMessage.value),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.backgroundColor,
+      appBar: AppBar(
+        backgroundColor: AppColors.backgroundColor,
+        surfaceTintColor: AppColors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Create Task',
+          style: AppTextStyles.smallHeading.copyWith(fontSize: 22),
+        ),
+        centerTitle: false,
+      ),
+      body: Obx(() {
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Add New Task',
+                          style: AppTextStyles.largeHeading.copyWith(
+                            fontSize: 30,
+                            fontWeight: FontWeight.normal,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'You can add 3 to 5 more tasks today!',
+                          style: AppTextStyles.smallText.copyWith(fontSize: 16),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                /// Task Title
+                Text('Task Title', style: AppTextStyles.smallHeading.copyWith(fontSize: 14)),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _titleController,
+                  decoration: InputDecoration(
+                    hintText: 'Type now',
+                    hintStyle: AppTextStyles.defaultTextStyle,
+                    filled: true,
+                    fillColor: AppColors.backgroundColor,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.grey, width: 1),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.grey, width: 1),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.grey, width: 2),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  ),
+                  cursorColor: AppColors.primaryColor,
+                  style: const TextStyle(color: Colors.black),
+                ),
+                const SizedBox(height: 24),
+
+                /// Task Description
+                Text('Task Description', style: AppTextStyles.smallHeading.copyWith(fontSize: 14)),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _descriptionController,
+                  maxLines: 4,
+                  cursorColor: AppColors.primaryColor,
+                  decoration: InputDecoration(
+                    hintText: 'What needs your attention?',
+                    hintStyle: AppTextStyles.defaultTextStyle,
+                    filled: true,
+                    fillColor: AppColors.backgroundColor,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.grey, width: 2),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.grey, width: 1),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                /// Task Date & Time
+                Text('Task Date & Time', style: AppTextStyles.smallHeading.copyWith(fontSize: 14)),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _dateTimeController,
+                  readOnly: true,
+                  onTap: _selectDateTime,
+                  decoration: InputDecoration(
+                    hintText: '-- : -- --',
+                    hintStyle: const TextStyle(color: AppColors.grey, fontSize: 15),
+                    filled: true,
+                    fillColor: AppColors.backgroundColor,
+                    suffixIcon: const Icon(Icons.access_time, color: Color(0xFF6B7280)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.grey, width: 1),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.grey, width: 1),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.grey, width: 1),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                /// Subtasks list
+                ...List.generate(_subTasks.length, (index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.grey),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryColor.withOpacity(0.5),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  'Sub Task',
+                                  style: AppTextStyles.smallText.copyWith(
+                                    color: AppColors.black,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: _subtaskControllers[index],
+                                  focusNode: _subtaskFocusNodes[index],
+                                  maxLines: null,
+                                  minLines: 1,
+                                  onEditingComplete: () {
+                                    if (_subtaskControllers[index].text.trim().isNotEmpty) {
+                                      _saveSubTask(index);
+                                    }
+                                  },
+                                  onTapOutside: (event) {
+                                    if (_subtaskControllers[index].text.trim().isNotEmpty) {
+                                      _saveSubTask(index);
+                                    }
+                                  },
+                                  decoration: const InputDecoration(
+                                    hintText: 'Enter Sub Task Details',
+                                    border: InputBorder.none,
+                                    hintStyle: TextStyle(color: AppColors.grey),
+                                  ),
+                                ),
+                              ),
+                              ValueListenableBuilder<TextEditingValue>(
+                                valueListenable: _subtaskControllers[index],
+                                builder: (context, value, child) {
+                                  final hasFocus = _subtaskFocusNodes[index].hasFocus;
+                                  final hasText = value.text.isNotEmpty;
+
+                                  return IconButton(
+                                    onPressed: () {
+                                      if (hasFocus && hasText) {
+                                        _saveSubTask(index);
+                                      } else {
+                                        _removeSubTask(index);
+                                      }
+                                    },
+                                    icon: Icon(
+                                      (hasFocus && hasText) ? Icons.check : CupertinoIcons.trash,
+                                      color: (hasFocus && hasText)
+                                          ? AppColors.primaryColor
+                                          : AppColors.iconColor,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+
+                /// Add Sub Task Button
+                GestureDetector(
+                  onTap: _addNewSubTask,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    decoration: BoxDecoration(
+                      color: AppColors.mainBottomNavColor,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.lightGrey),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.add, color: AppColors.black),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Add Sub Task',
+                          style: AppTextStyles.defaultTextStyle.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 40),
+
+                /// Create Task Button
+                SizedBox(
+                  height: 50,
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _controller.isLoading.value ? null : _createTask,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryColor,
+                      foregroundColor: AppColors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: _controller.isLoading.value
+                        ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                        : Text(
+                      'Create Task',
+                      style: AppTextStyles.defaultTextStyle.copyWith(
+                        color: AppColors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        );
+      }),
+    );
+  }
+}*/
+
+
+
+
+
+
+
+///
+///
+///
+///
+/// todo::: updating data pass
+///
+///
+///
+
+
+
+
+
+
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../../../../utils/app_colors.dart';
+import '../../../../utils/app_texts_style.dart';
+import '../ugc_home/ugc_task_details/ugc_task_model/ugc_sub_task_model.dart';
+import 'controller/ugc_personal_task_create_controller.dart';
+
+class UgcPersonalTaskCreateScreen extends StatefulWidget {
+  const UgcPersonalTaskCreateScreen({super.key});
+
+  @override
+  State<UgcPersonalTaskCreateScreen> createState() => _UgcPersonalTaskCreateScreenState();
+}
+
+class _UgcPersonalTaskCreateScreenState extends State<UgcPersonalTaskCreateScreen> {
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _dateTimeController = TextEditingController();
+
+  final List<UgcSubTask> _subTasks = [];
+  final List<TextEditingController> _subtaskControllers = [];
+  final List<FocusNode> _subtaskFocusNodes = [];
+
+  DateTime? _selectedDueDate;
+  String? _formattedScheduledTime;
+
+  final UgcPersonalTaskCreateController _controller = Get.put(UgcPersonalTaskCreateController());
+
+  @override
+  void initState() {
+    super.initState();
+    // Add one empty subtask by default
+    _addNewSubTask();
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    _dateTimeController.dispose();
+    for (final controller in _subtaskControllers) {
+      controller.dispose();
+    }
+    for (final node in _subtaskFocusNodes) {
+      node.dispose();
+    }
+    super.dispose();
+  }
+
+  Future<void> _selectDueDate() async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2100),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: AppColors.primaryColor,
+              onPrimary: AppColors.black,
+              onSurface: AppColors.black,
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(foregroundColor: AppColors.primaryColor),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (pickedDate != null && mounted) {
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+        builder: (context, child) {
+          return Theme(
+            data: Theme.of(context).copyWith(
+              colorScheme: ColorScheme.light(
+                primary: AppColors.primaryColor,
+                onPrimary: AppColors.black,
+                onSurface: AppColors.black,
+              ),
+              textButtonTheme: TextButtonThemeData(
+                style: TextButton.styleFrom(foregroundColor: AppColors.primaryColor),
+              ),
+            ),
+            child: child!,
+          );
+        },
+      );
+
+      if (pickedTime != null && mounted) {
+        setState(() {
+          _selectedDueDate = DateTime(
+            pickedDate.year,
+            pickedDate.month,
+            pickedDate.day,
+            pickedTime.hour,
+            pickedTime.minute,
+          );
+          _formattedScheduledTime = '${_formatTo12HourFormat(_selectedDueDate!)}';
+          _dateTimeController.text =
+          '${pickedDate.day}/${pickedDate.month}/${pickedDate.year} ${pickedTime.format(context)}';
+        });
+      }
+    }
+  }
+
+  String _formatTo12HourFormat(DateTime dateTime) {
+    try {
+      int hour = dateTime.hour;
+      int minute = dateTime.minute;
+
+      final period = hour >= 12 ? 'PM' : 'AM';
+      int hour12 = hour % 12;
+      if (hour12 == 0) hour12 = 12;
+
+      final minuteStr = minute.toString().padLeft(2, '0');
+      return '$hour12:$minuteStr $period';
+    } catch (e) {
+      return 'Not set';
+    }
+  }
+
+  void _addNewSubTask() {
+    setState(() {
+      _subTasks.add(UgcSubTask(title: ''));
+      _subtaskControllers.add(TextEditingController());
+      _subtaskFocusNodes.add(FocusNode());
+    });
+  }
+
+  void _removeSubTask(int index) {
+    setState(() {
+      _subtaskControllers[index].dispose();
+      _subtaskFocusNodes[index].dispose();
+      _subTasks.removeAt(index);
+      _subtaskControllers.removeAt(index);
+      _subtaskFocusNodes.removeAt(index);
+    });
+  }
+
+  void _saveSubTask(int index) {
+    final text = _subtaskControllers[index].text.trim();
+    if (text.isNotEmpty) {
+      setState(() {
+        _subTasks[index] = _subTasks[index].copyWith(
+          title: text,
+        );
+        _subtaskFocusNodes[index].unfocus();
+      });
+    }
+  }
+
+  Future<void> _createTask() async {
+    // First, save any unsaved subtasks that are currently being edited
+    for (int i = 0; i < _subTasks.length; i++) {
+      final currentText = _subtaskControllers[i].text.trim();
+      if (currentText.isNotEmpty && _subTasks[i].title != currentText) {
+        _subTasks[i] = _subTasks[i].copyWith(title: currentText);
+      }
+    }
+
+    // VALIDATION: Check mandatory fields
+    if (_titleController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter a task title'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (_selectedDueDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select due date and time'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Also save the currently focused subtask if any
+    for (int i = 0; i < _subtaskFocusNodes.length; i++) {
+      if (_subtaskFocusNodes[i].hasFocus) {
+        final currentText = _subtaskControllers[i].text.trim();
+        if (currentText.isNotEmpty) {
+          _subTasks[i] = _subTasks[i].copyWith(title: currentText);
+        }
+        _subtaskFocusNodes[i].unfocus();
+      }
+    }
+
+    final List<UgcSubTask> validSubtasks = _subTasks
+        .where((task) => task.title.trim().isNotEmpty)
+        .toList();
+
+    final success = await _controller.createPersonalTask(
+      title: _titleController.text.trim(),
+      description: _descriptionController.text.trim(),
+      scheduledTime: _formattedScheduledTime ?? '10:00 AM',
+      dueDate: _selectedDueDate!,
+      subtasks: validSubtasks,
+    );
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Task created successfully!'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      Get.back(result: true);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_controller.errorMessage.value),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.backgroundColor,
+      appBar: AppBar(
+        backgroundColor: AppColors.backgroundColor,
+        surfaceTintColor: AppColors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Create Task',
+          style: AppTextStyles.smallHeading.copyWith(fontSize: 22),
+        ),
+        centerTitle: false,
+      ),
+      body: Obx(() {
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Add New Task',
+                          style: AppTextStyles.largeHeading.copyWith(
+                            fontSize: 30,
+                            fontWeight: FontWeight.normal,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'You can add 3 to 5 more tasks today!',
+                          style: AppTextStyles.smallText.copyWith(fontSize: 16),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                /// Task Title
+                Text('Task Title', style: AppTextStyles.smallHeading.copyWith(fontSize: 14)),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _titleController,
+                  decoration: InputDecoration(
+                    hintText: 'Type now',
+                    hintStyle: AppTextStyles.defaultTextStyle,
+                    filled: true,
+                    fillColor: AppColors.backgroundColor,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.grey, width: 1),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.grey, width: 1),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.grey, width: 2),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  ),
+                  cursorColor: AppColors.primaryColor,
+                  style: const TextStyle(color: Colors.black),
+                ),
+                const SizedBox(height: 24),
+
+                /// Task Description
+                Text('Task Description', style: AppTextStyles.smallHeading.copyWith(fontSize: 14)),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _descriptionController,
+                  maxLines: 4,
+                  cursorColor: AppColors.primaryColor,
+                  decoration: InputDecoration(
+                    hintText: 'What needs your attention?',
+                    hintStyle: AppTextStyles.defaultTextStyle,
+                    filled: true,
+                    fillColor: AppColors.backgroundColor,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.grey, width: 2),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.grey, width: 1),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                /// Task Due Date & Time
+                Text('Task Due Date & Time', style: AppTextStyles.smallHeading.copyWith(fontSize: 14)),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _dateTimeController,
+                  readOnly: true,
+                  onTap: _selectDueDate,
+                  decoration: InputDecoration(
+                    hintText: '-- : -- --',
+                    hintStyle: const TextStyle(color: AppColors.grey, fontSize: 15),
+                    filled: true,
+                    fillColor: AppColors.backgroundColor,
+                    suffixIcon: const Icon(Icons.access_time, color: Color(0xFF6B7280)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.grey, width: 1),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.grey, width: 1),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.grey, width: 1),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                /// Subtasks list
+                ...List.generate(_subTasks.length, (index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.grey),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryColor.withOpacity(0.5),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  'Sub Task ${index + 1}',
+                                  style: AppTextStyles.smallText.copyWith(
+                                    color: AppColors.black,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: _subtaskControllers[index],
+                                  focusNode: _subtaskFocusNodes[index],
+                                  maxLines: null,
+                                  minLines: 1,
+                                  onEditingComplete: () {
+                                    if (_subtaskControllers[index].text.trim().isNotEmpty) {
+                                      _saveSubTask(index);
+                                    }
+                                  },
+                                  onTapOutside: (event) {
+                                    if (_subtaskControllers[index].text.trim().isNotEmpty) {
+                                      _saveSubTask(index);
+                                    }
+                                  },
+                                  decoration: const InputDecoration(
+                                    hintText: 'Enter Sub Task Details',
+                                    border: InputBorder.none,
+                                    hintStyle: TextStyle(color: AppColors.grey),
+                                  ),
+                                ),
+                              ),
+                              ValueListenableBuilder<TextEditingValue>(
+                                valueListenable: _subtaskControllers[index],
+                                builder: (context, value, child) {
+                                  final hasFocus = _subtaskFocusNodes[index].hasFocus;
+                                  final hasText = value.text.isNotEmpty;
+
+                                  return IconButton(
+                                    onPressed: () {
+                                      if (hasFocus && hasText) {
+                                        _saveSubTask(index);
+                                      } else {
+                                        _removeSubTask(index);
+                                      }
+                                    },
+                                    icon: Icon(
+                                      (hasFocus && hasText) ? Icons.check : CupertinoIcons.trash,
+                                      color: (hasFocus && hasText)
+                                          ? AppColors.primaryColor
+                                          : AppColors.iconColor,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+
+                /// Add Sub Task Button
+                GestureDetector(
+                  onTap: _addNewSubTask,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    decoration: BoxDecoration(
+                      color: AppColors.mainBottomNavColor,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.lightGrey),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.add, color: AppColors.black),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Add Sub Task',
+                          style: AppTextStyles.defaultTextStyle.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 40),
+
+                /// Create Task Button
+                SizedBox(
+                  height: 50,
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _controller.isLoading.value ? null : _createTask,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryColor,
+                      foregroundColor: AppColors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: _controller.isLoading.value
+                        ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                        : Text(
+                      'Create Task',
+                      style: AppTextStyles.defaultTextStyle.copyWith(
+                        color: AppColors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        );
+      }),
+    );
+  }
+}

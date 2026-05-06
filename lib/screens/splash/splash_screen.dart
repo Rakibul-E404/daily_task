@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import '../../utils/app_colors.dart';
 import 'splash_screen_controller.dart';
@@ -40,24 +41,17 @@ class _SplashScreenState extends State<SplashScreen> {
               fit: BoxFit.contain,
             ),
           ),
-          // Align(
-          //   alignment: Alignment.topCenter,
-          //   child: Transform.translate(
-          //     offset: const Offset(0, -200),
-          //     // moves the image up by half its height
-          //     child: Image.asset(
-          //       "assets/images/splash_screen_top_shade.png",
-          //       width: 500,
-          //       height: 500,
-          //       fit: BoxFit.cover,
-          //     ),
-          //   ),
-          // ),
         ],
       ),
     );
   }
 }
+
+
+
+
+
+
 
 
 
